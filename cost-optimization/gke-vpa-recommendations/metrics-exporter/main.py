@@ -24,12 +24,14 @@ from google.cloud import bigquery_storage_v1
 from google.cloud.bigquery_storage_v1 import types
 from google.cloud.bigquery_storage_v1 import writer
 from google.api_core.exceptions import GoogleAPICallError
+from google.api_core.client_info import ClientInfo
 
 warnings.filterwarnings(
     "ignore",
     "Your application has authenticated using end user credentials")
 
 
+USER_AGENT = 'cloud-solutions/gke-vpa-recommendations-v1.1'
 
 async def get_gke_metrics(metric_name, query, namespace, start_time, client):
     """
@@ -201,8 +203,12 @@ if __name__ == "__main__":
     start_time = time.time()
 
     try:
-        client = monitoring_v3.MetricServiceClient()
-        bqclient = bigquery_storage_v1.BigQueryWriteClient()
+        client = monitoring_v3.MetricServiceClient(
+            client_info=ClientInfo(user_agent=USER_AGENT)
+        )
+        bqclient = bigquery_storage_v1.BigQueryWriteClient(
+            client_info=ClientInfo(user_agent=USER_AGENT)
+        )
     except Exception as error:
         logging.error(f'Google client connection error: {error}')   
     monitor_namespaces = get_namespaces(client, start_time)
