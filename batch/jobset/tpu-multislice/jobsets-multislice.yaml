@@ -1,0 +1,146 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: multislice-1slice  
+  labels:
+    kueue.x-k8s.io/queue-name: multislice-queue  
+  annotations:
+    alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool
+spec:
+  failurePolicy:
+    maxRestarts: 4
+  replicatedJobs:
+    - name: slice
+      replicas: 1
+      template:
+        spec:
+          parallelism: 2
+          completions: 2
+          backoffLimit: 0
+          template:
+            spec:
+              hostNetwork: true
+              dnsPolicy: ClusterFirstWithHostNet
+              nodeSelector:
+                cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+                cloud.google.com/gke-tpu-topology: 2x4
+              containers:
+              - name: jax-tpu
+                image: python:3.8
+                ports:
+                - containerPort: 8471
+                - containerPort: 8080
+                securityContext:
+                  privileged: true
+                command:
+                - bash
+                - -c
+                - |
+                  pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+                  python -c 'import jax; print("Global device count:", jax.device_count())'
+                resources:
+                  limits:
+                    google.com/tpu: 4
+
+---
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: multislice-2slice
+  labels:
+    kueue.x-k8s.io/queue-name: multislice-queue
+  annotations:
+    alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool
+spec:
+  failurePolicy:
+    maxRestarts: 4
+  replicatedJobs:
+    - name: slice
+      replicas: 2
+      template:
+        spec:
+          parallelism: 2
+          completions: 2
+          backoffLimit: 0
+          template:
+            spec:
+              hostNetwork: true
+              dnsPolicy: ClusterFirstWithHostNet
+              nodeSelector:
+                cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+                cloud.google.com/gke-tpu-topology: 2x4
+              containers:
+              - name: jax-tpu
+                image: python:3.8
+                ports:
+                - containerPort: 8471
+                - containerPort: 8080
+                securityContext:
+                  privileged: true
+                command:
+                - bash
+                - -c
+                - |
+                  pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+                  python -c 'import jax; print("Global device count:", jax.device_count())'
+                  sleep 60
+                resources:
+                  limits:
+                    google.com/tpu: 4
+---
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: multislice-3slice
+  labels:
+    kueue.x-k8s.io/queue-name: multislice-queue
+  annotations:
+    alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool
+spec:
+  failurePolicy:
+    maxRestarts: 4
+  replicatedJobs:
+    - name: slice
+      replicas: 3
+      template:
+        spec:
+          parallelism: 2
+          completions: 2
+          backoffLimit: 0
+          template:
+            spec:
+              hostNetwork: true
+              dnsPolicy: ClusterFirstWithHostNet
+              nodeSelector:
+                cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+                cloud.google.com/gke-tpu-topology: 2x4
+              containers:
+              - name: jax-tpu
+                image: python:3.8
+                ports:
+                - containerPort: 8471
+                - containerPort: 8080
+                securityContext:
+                  privileged: true
+                command:
+                - bash
+                - -c
+                - |
+                  sleep 60
+                resources:
+                  limits:
+                    google.com/tpu: 4
