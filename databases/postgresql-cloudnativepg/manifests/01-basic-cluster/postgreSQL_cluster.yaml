@@ -32,8 +32,8 @@ spec:
     initdb:
       database: app
   storage:
-    storageClass: ha-regional
-    size: 10Gi
+    storageClass: premium-rwo
+    size: 2Gi
   resources:
     requests:
       memory: "1Gi"
