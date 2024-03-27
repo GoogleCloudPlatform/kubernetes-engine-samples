@@ -54,7 +54,7 @@ client = Elasticsearch(
     ssl_show_warn=False,
     basic_auth=("elastic", os.getenv("PASSWORD"))
 )
-elastic_vector_search = ElasticsearchStore(
+vector_search = ElasticsearchStore(
     index_name=os.getenv("INDEX_NAME"),
     es_connection=client,
     embedding=embedding_model
@@ -84,7 +84,7 @@ if chat_input := st.chat_input():
         st.write(chat_input)
         st.session_state.messages.append({"role": "human", "content": chat_input})
 
-    found_docs = elastic_vector_search.similarity_search(chat_input)
+    found_docs = vector_search.similarity_search(chat_input)
     context = format_docs(found_docs)
 
     prompt_value = prompt_template.format_messages(name="Bot", query=chat_input, context=context, history=st.session_state.memory.load_memory_variables({}))

@@ -56,7 +56,7 @@ client = QdrantClient(
     api_key=os.getenv("APIKEY"),
 )
 collection_name = os.getenv("COLLECTION_NAME")
-qdrant = Qdrant(client, collection_name, embeddings=embedding_model)
+vector_search = Qdrant(client, collection_name, embeddings=embedding_model)
 # [END gke_databases_qdrant_docker_chat_client]
 def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
@@ -83,7 +83,7 @@ if chat_input := st.chat_input():
         st.write(chat_input)
         st.session_state.messages.append({"role": "human", "content": chat_input})
 
-    found_docs = qdrant.similarity_search(chat_input)
+    found_docs = vector_search.similarity_search(chat_input)
     context = format_docs(found_docs)
 
     prompt_value = prompt_template.format_messages(name="Bob", query=chat_input, context=context, history=st.session_state.memory.load_memory_variables({}))

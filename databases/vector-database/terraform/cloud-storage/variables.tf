@@ -14,7 +14,6 @@
 
 variable "project_id" {
   description = "The project ID to host the bucket in"
-  default     = ""
 }
 
 variable "region" {
@@ -23,6 +22,9 @@ variable "region" {
 
 variable "cluster_prefix" {
   description = "The prefix of existing GKE cluster"
-  default     = "postgresql"
+}
+
+variable "db_namespace" {
+  description = "The namespace of the vector database"
 }
 

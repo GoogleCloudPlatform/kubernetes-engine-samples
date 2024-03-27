@@ -9,7 +9,7 @@
 export GOOGLE_OAUTH_ACCESS_TOKEN=$(gcloud auth print-access-token)
 export PROJECT_ID="your project"
 export REGION="us-central1"
-export CLUSTER_PREFIX="postgresql"
+export CLUSTER_PREFIX="your vector db"
 
 terraform init
 terraform plan -var project_id=$PROJECT_ID -var region=${REGION} -var cluster_prefix=${CLUSTER_PREFIX}

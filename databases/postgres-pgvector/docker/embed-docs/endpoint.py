@@ -76,11 +76,12 @@ def kube_test_credentials():
 
 def kube_create_job(bckt, f_name, id):
     container_image = os.getenv("JOB_IMAGE")
+    namespace = os.getenv("JOB_NAMESPACE")
     name = "docs-embedder" + id
     body = kube_create_job_object(name, container_image, bckt, f_name)
     v1=client.BatchV1Api()
     try: 
-        v1.create_namespaced_job("pg-ns", body, pretty=True)
+        v1.create_namespaced_job(namespace, body, pretty=True)
     except ApiException as e:
         print("Exception when calling BatchV1Api->create_namespaced_job: %s\n" % e)
     return

@@ -36,6 +36,10 @@ spec:
           value: https://elasticsearch-ha-es-http:9200
         - name: JOB_IMAGE
           value: <DOCKER_REPO>/embed-docs:1.0
+        - name: JOB_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         ports:
         - containerPort: 5001
         resources:

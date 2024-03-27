@@ -60,7 +60,7 @@ CONNECTION_STRING = PGVector.connection_string_from_db_params(
 )
 COLLECTION_NAME = os.environ.get("COLLECTION_NAME"),
 
-postgres_vector_search = PGVector(
+vector_search = PGVector(
     collection_name=COLLECTION_NAME,
     connection_string=CONNECTION_STRING,
     embedding_function=embedding_model,
@@ -95,7 +95,7 @@ if chat_input := st.chat_input():
         st.write(chat_input)
         st.session_state.messages.append({"role": "human", "content": chat_input})
 
-    found_docs = postgres_vector_search.similarity_search(chat_input)
+    found_docs = vector_search.similarity_search(chat_input)
     context = format_docs(found_docs)
 
     prompt_value = prompt_template.format_messages(name="Bot", query=chat_input, context=context, history=st.session_state.memory.load_memory_variables({}))

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_databases_postgres_pgvector_cloud_storage_bucket_eventarc]
+# [START gke_databases_vector_database_cloud_storage_bucket_eventarc]
 
 resource "google_eventarc_trigger" "trigger" {
   name            = "${var.cluster_prefix}-storage-trigger"
@@ -32,7 +32,7 @@ resource "google_eventarc_trigger" "trigger" {
     gke {
       cluster   = "${var.cluster_prefix}-cluster"
       location  = var.region
-      namespace = "pg-ns"
+      namespace = var.db_namespace
       path      = "/"
       service   = "embed-docs"
     }
@@ -75,5 +75,5 @@ output "service_account_eventarc_name" {
   value = module.service-account-eventarc.email
 }
 
-# [END gke_databases_postgres_pgvector_cloud_storage_bucket_eventarc]
+# [END gke_databases_vector_database_cloud_storage_bucket_eventarc]
 

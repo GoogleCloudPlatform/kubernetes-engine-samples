@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_databases_elasticsearch_cloud_storage_bucket]
+# [START gke_databases_vector_database_cloud_storage_bucket]
 module "cloud-storage" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
   version       = "~> 5.0"
@@ -44,7 +44,7 @@ module "service-account-bucket" {
 
   project_id      = var.project_id
   names           = ["${var.cluster_prefix}-bucket-access"]
-  description     = "Service account to access the bucket with Elasticsearch training documents"
+  description     = "Service account to access the bucket with training documents"
 }
 
 module "project-iam-bindings-bucket" {
@@ -56,7 +56,7 @@ module "project-iam-bindings-bucket" {
 
   bindings = {
     "roles/aiplatform.user"          = ["serviceAccount:${var.cluster_prefix}-bucket-access@${var.project_id}.iam.gserviceaccount.com"] 
-    "roles/iam.workloadIdentityUser" = ["serviceAccount:${var.project_id}.svc.id.goog[elastic/embed-docs-sa]"] 
+    "roles/iam.workloadIdentityUser" = ["serviceAccount:${var.project_id}.svc.id.goog[${var.db_namespace}/embed-docs-sa]"] 
   } 
 
   depends_on = [module.service-account-bucket]
@@ -70,4 +70,5 @@ output "service_account_bucket_name" {
   value = module.service-account-bucket.email
 }
 
-# [END gke_databases_elasticsearch_cloud_storage_bucket]
+# [END gke_databases_vector_database_cloud_storage_bucket]
+

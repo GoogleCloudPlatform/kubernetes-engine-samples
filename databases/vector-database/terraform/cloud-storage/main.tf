@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_qdrant_cloud_storage_bucket]
+# [START gke_databases_vector_database_cloud_storage_bucket]
 module "cloud_storage" {
   source         = "../modules/cloud-storage"
   project_id     = var.project_id
   region         = var.region
   cluster_prefix = var.cluster_prefix
+  db_namespace   = var.db_namespace
 }
 
 output "bucket_name" {
@@ -36,5 +37,5 @@ output "service_account_eventarc_name" {
 }
 
 
-# [END gke_qdrant_cloud_storage_bucket]
+# [END gke_databases_vector_database_cloud_storage_bucket]
 

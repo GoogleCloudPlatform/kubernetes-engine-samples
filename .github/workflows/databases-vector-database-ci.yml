@@ -12,29 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: databases-pgvector-ci.yml
+name: databases-vector-database-ci.yml
 on:
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/databases-pgvector-ci.yml'
-      - 'databases/postgres-pgvector/**'
+      - '.github/workflows/databases-vector-database-ci.yml'
+      - 'databases/vector-database/**'
   pull_request:
     paths:
-      - '.github/workflows/databases-pgvector-ci.yml'
-      - 'databases/postgres-pgvector/**'
+      - '.github/workflows/databases-vector-database-ci.yml'
+      - 'databases/vector-database/**'
 jobs:
   job:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build chatbot app container
+      - name: Validate Cloud Storage module TF for vector databases
         run: |
-          cd databases/postgres-pgvector/docker/chatbot
-          docker build --tag chatbot:1.0 .
-      - name: Build docs embedder container
-        run: |
-          cd databases/postgres-pgvector/docker/embed-docs
-          docker build --tag embed-docs:1.0 .
+          cd databases/vector-database/terraform/cloud-storage
+          terraform init
+          terraform validate
 
