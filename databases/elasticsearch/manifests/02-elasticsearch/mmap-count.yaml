@@ -28,8 +28,6 @@ spec:
       labels:
         name: max-map-count-setter
     spec:
-      nodeSelector:
-        app.stateful/component: elasticsearch
       initContainers:
         - name: max-map-count-setter
           image: docker.io/bash:5.2.21
