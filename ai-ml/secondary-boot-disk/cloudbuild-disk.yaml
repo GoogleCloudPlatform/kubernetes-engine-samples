@@ -1,0 +1,23 @@
+steps:
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/GoogleCloudPlatform/ai-on-gke.git']
+- name: 'gcr.io/cloud-builders/go:1.21'
+  env: ['GOPATH=./ai-on-gke/tools/gke-disk-image-builder']
+  dir: './ai-on-gke/tools/gke-disk-image-builder'
+  args:
+    - 'run'
+    - './cli'
+    - --project-name=$PROJECT_ID
+    - --image-name=${_DISK_IMAGE}
+    - --zone=${_ZONE}
+    - --gcs-path=${_BUCKET_NAME}
+    - --disk-size-gb=100
+    - --timeout=120m
+    - --container-image=${_CONTAINER_IMAGE}
+    - --image-pull-auth=ServiceAccountToken
+
+timeout: 7200s
+#logsBucket: 'gs://kfilatau-cloud-build-logs'
+
+  #options:
+  #  logging: GCS_ONLY
