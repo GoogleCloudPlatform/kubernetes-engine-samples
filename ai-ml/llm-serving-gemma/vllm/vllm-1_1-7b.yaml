@@ -44,6 +44,7 @@ spec:
             memory: "25Gi"
             ephemeral-storage: "25Gi"
             nvidia.com/gpu: 2
+        command: ["python3", "-m", "vllm.entrypoints.api_server"]
         args:
         - --model=$(MODEL_ID)
         - --tensor-parallel-size=2
