@@ -1,9 +1,9 @@
 google-cloud-storage==2.17.0
-google-cloud-aiplatform==1.55.0
+google-cloud-aiplatform==1.56.0
 langchain==0.2.5
 langchain-community==0.2.5
-langchain-google-vertexai==1.0.5
-qdrant-client==1.9.1
+langchain-google-vertexai==1.0.6
+qdrant-client==1.9.2
 pypdf==3.17.4
 click==8.1.7
 Flask==2.3.3
