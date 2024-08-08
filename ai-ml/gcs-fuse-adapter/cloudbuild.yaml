@@ -1,0 +1,51 @@
+steps:
+  # Build step 1 where the bucket for files is created
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: "/bin/bash"
+    args:
+      - "-c"
+      - |
+        gcloud storage buckets list | grep "${_BUCKET_NAME}" || gcloud storage buckets create gs://${_BUCKET_NAME} --location=${_REGION} --uniform-bucket-level-access
+  # Build step 2 where the kubernetes service account is created
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          gcloud container clusters get-credentials ${_CLUSTER_NAME} --location=${_REGION}
+          kubectl get sa | grep ${_KSA_NAME} || kubectl create serviceaccount ${_KSA_NAME}
+  # Build step 3 where the permissions to kubernetes service account are added
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args: 
+      - '-c'
+      - |
+          gcloud storage buckets add-iam-policy-binding gs://${_BUCKET_NAME} \
+            --member "principal://iam.googleapis.com/projects/${_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${_PROJECT_ID}.svc.id.goog/subject/ns/default/sa/${_KSA_NAME}" \
+            --role "${_ROLE_NAME}"
+  # Build step 4 where the model weights and configuration files are cloned
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        df -h && \
+        apt-get update && \
+        apt-get install -y git-lfs && \
+        git lfs install && \
+        git lfs clone https://$$HF_USERNAME:$$HF_TOKEN@huggingface.co/google/${_MODEL_PATH} ./${_MODEL_PATH}
+    secretEnv: ['HF_USERNAME', 'HF_TOKEN']
+  # Build step 5 where the files are uploaded to the bucket
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', '-r', './${_MODEL_PATH}', 'gs://${_BUCKET_NAME}/${_MODEL_PATH}']
+
+options:
+  machineType: 'E2_HIGHCPU_32'
+  diskSizeGb: 100
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$_PROJECT_ID/secrets/hf-username/versions/latest
+    env: 'HF_USERNAME'
+  - versionName: projects/$_PROJECT_ID/secrets/hf-token/versions/latest
+    env: 'HF_TOKEN'
