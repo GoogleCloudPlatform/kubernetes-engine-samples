@@ -2,12 +2,13 @@
 
 # Set up env variables values
 # export HF_TOKEN=HF_TOKEN
+# export PROJECT_ID=
 export REGION=europe-west4
-export GPU_POOL_MACHINE_TYPE="a2-highgpu-1g"
+export GPU_POOL_MACHINE_TYPE="g2-standard-4"
 export GPU_POOL_ACCELERATOR_TYPE="nvidia-l4"
  
 
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+
 
 gcloud services enable container.googleapis.com \
     --project=$PROJECT_ID 
@@ -26,10 +27,11 @@ gateway_api_channel         = "CHANNEL_STANDARD"
 EOF
 
 # Create clusters
+terraform -chdir=gke-platform init 
 terraform -chdir=gke-platform apply 
 
 # Get cluster credentials
-gcloud container clusters get-credentials llm-cluster-1 \
+gcloud container clusters get-credentials llm-cluster \
     --region=$REGION \
     --project=$PROJECT_ID
 
