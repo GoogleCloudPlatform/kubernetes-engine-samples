@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: sample-job-
+  labels:
+    kueue.x-k8s.io/queue-name: lq
+spec:
+  parallelism: 2
+  completions: 8
+  suspend: true
+  template:
+    spec:
+      priorityClassName: default-priority-nonpreempting
+      containers:
+      - name: dummy-job
+        image: gcr.io/k8s-staging-perf-tests/sleep:v0.1.0
+        args: ["10m"]
+        resources:
+          requests:
+            cpu: 1
+            memory: "200Mi"
+            nvidia.com/gpu: 1
+          limits:
+            cpu: 1
+            memory: "200Mi"
+            nvidia.com/gpu: 1
+      tolerations:
+        - key: "ondemand"
+          operator: "Exists"
+          effect: NoSchedule
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: NoSchedule
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-accelerator: "nvidia-l4"

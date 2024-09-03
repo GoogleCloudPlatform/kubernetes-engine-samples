@@ -140,8 +140,16 @@ resource "google_container_node_pool" "gpu_pool" {
     ]
     service_account = data.google_service_account.default.email
 
+    dynamic "taint" {
+      for_each = var.ondemand_taints
+      content {
+        key    = taint.value.key
+        value  = taint.value.taint_value
+        effect = taint.value.effect
+      }
+    }
     labels = {
-      env = var.project_id
+      "resource-type" : "ondemand"
     }
 
     guest_accelerator {

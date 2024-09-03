@@ -51,7 +51,7 @@ kubectl apply -f default-priorityclass.yaml
 kubectl apply -f high-priorityclass.yaml
 kubectl apply -f cluster-queue.yaml
 
-kubectl create -f tgi-2b-it-1.1.yaml -n $NAMESPACE
+kubectl create -f tgi-2b-it-1.1-hp.yaml -n $NAMESPACE
 
 
 # sleep 360
