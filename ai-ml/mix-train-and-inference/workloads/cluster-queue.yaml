@@ -4,17 +4,21 @@ metadata:
   name: "cluster-queue"
 spec:
   namespaceSelector: {} # match all.
+  preemption:
+    reclaimWithinCohort: LowerPriority
+    withinClusterQueue: LowerPriority
   resourceGroups:
     - coveredResources: ["cpu", "memory","nvidia.com/gpu"]
       flavors:
         - name: gpu-l4-ondemand
           resources:
             - name: "cpu"
-              nominalQuota: 4
+              nominalQuota: 24
             - name: "memory"
-              nominalQuota: 12Gi
+              nominalQuota: 96Gi
             - name: "nvidia.com/gpu"
-              nominalQuota: 2
+              nominalQuota: 6
+
 ---
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue

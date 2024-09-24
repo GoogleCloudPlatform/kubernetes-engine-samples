@@ -3,8 +3,8 @@
 # Set up env variables values
 # export HF_TOKEN=HF_TOKEN
 # export PROJECT_ID=
-export REGION=europe-west4
-export GPU_POOL_MACHINE_TYPE="g2-standard-4"
+export REGION=europe-west6
+export GPU_POOL_MACHINE_TYPE="g2-standard-24"
 export GPU_POOL_ACCELERATOR_TYPE="nvidia-l4"
  
 
@@ -49,11 +49,28 @@ sleep 60
 kubectl apply -f flavors.yaml
 kubectl apply -f default-priorityclass.yaml
 kubectl apply -f high-priorityclass.yaml
+kubectl apply -f low-priorityclass.yaml
 kubectl apply -f cluster-queue.yaml
 
-kubectl create -f tgi-2b-it-1.1-hp.yaml -n $NAMESPACE
+gcloud storage buckets add-iam-policy-binding gs://model-bucket-or2-msq-go2-gkes-t1iylu \
+    --role=roles/storage.objectAdmin \
+    --member=principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$PROJECT_ID.svc.id.goog/subject/ns/$NAMESPACE/sa/default \
+    --condition=None
+gcloud storage buckets add-iam-policy-binding gs://data-bucket-or2-msq-go2-gkes-t1iylu \
+    --role=roles/storage.objectAdmin \
+    --member=principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$PROJECT_ID.svc.id.goog/subject/ns/$NAMESPACE/sa/default \
+    --condition=None
 
 
+gcloud artifacts repositories add-iam-policy-binding fine-tuning \
+    --role=roles/artifactregistry.reader \
+    --member=serviceAccount:gke-llm-sa@or2-msq-go2-gkes-t1iylu.iam.gserviceaccount.com \
+    --location=us-central1 \
+    --condition=None
+
+
+kubectl create -f tgi-gemma-2-9b-it-hp.yaml -n $NAMESPACE
+kubectl apply -f fine-tune-l4-dws.yaml -n $NAMESPACE
 # sleep 360
 # kubectl apply -f monitoring.yaml -n $NAMESPACE
 

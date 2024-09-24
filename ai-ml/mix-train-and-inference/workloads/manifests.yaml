@@ -12081,7 +12081,7 @@ spec:
         - --zap-log-level=2
         command:
         - /manager
-        image: registry.k8s.io/kueue/kueue:v0.8.0
+        image: registry.k8s.io/kueue/kueue:v0.8.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:

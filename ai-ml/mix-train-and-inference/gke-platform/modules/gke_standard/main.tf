@@ -33,19 +33,28 @@ resource "google_container_cluster" "ml_cluster" {
   count                    = var.enable_autopilot == false ? 1 : 0
   remove_default_node_pool = true
   initial_node_count       = 1
-  min_master_version       = "1.29"
+  min_master_version       = "1.30"
 
   node_config {
     service_account = data.google_service_account.default.email
     oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform"
+       "https://www.googleapis.com/auth/devstorage.read_only",
+       "https://www.googleapis.com/auth/logging.write",
+       "https://www.googleapis.com/auth/monitoring",
+       "https://www.googleapis.com/auth/service.management.readonly",
+       "https://www.googleapis.com/auth/servicecontrol",
+       "https://www.googleapis.com/auth/trace.append",
     ]
-    reservation_affinity {
-      consume_reservation_type = "NO_RESERVATION"
-    }
   }
+  
   logging_config {
-    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"]
+    enable_components = [
+      "APISERVER",
+      "CONTROLLER_MANAGER",
+      "SCHEDULER",
+      "SYSTEM_COMPONENTS",
+      "WORKLOADS"
+    ]
   }
 
   monitoring_config {
@@ -79,6 +88,20 @@ resource "google_container_cluster" "ml_cluster" {
   }
 
   resource_labels = var.cluster_labels
+
+  addons_config {
+    gcp_filestore_csi_driver_config {
+      enabled = true
+    }
+
+    gcs_fuse_csi_driver_config {
+      enabled = true
+    }
+
+    gce_persistent_disk_csi_driver_config {
+      enabled = true
+    }
+  }
 }
 
 data "google_service_account" "default" {
@@ -105,7 +128,12 @@ resource "google_container_node_pool" "cpu_pool" {
     machine_type    = "n1-standard-4"
     service_account = data.google_service_account.default.email
     oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform"
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/trace.append",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/servicecontrol",
     ]
   }
 }
@@ -121,7 +149,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
   autoscaling {
     min_node_count = "1"
-    max_node_count = "3"
+    max_node_count = "2"
   }
 
   management {
@@ -139,7 +167,11 @@ resource "google_container_node_pool" "gpu_pool" {
       "https://www.googleapis.com/auth/servicecontrol",
     ]
     service_account = data.google_service_account.default.email
-
+    
+    gvnic {
+      enabled = true
+    }
+    
     dynamic "taint" {
       for_each = var.ondemand_taints
       content {
@@ -154,7 +186,7 @@ resource "google_container_node_pool" "gpu_pool" {
 
     guest_accelerator {
       type  = var.gpu_pool_accelerator_type
-      count = 1
+      count = 2
       gpu_driver_installation_config {
         gpu_driver_version = var.gpu_driver_version
       }
@@ -172,4 +204,7 @@ resource "google_container_node_pool" "gpu_pool" {
       disable-legacy-endpoints = "true"
     }
   }
+  # queued_provisioning {
+  #   enabled = true
+  # }
 }

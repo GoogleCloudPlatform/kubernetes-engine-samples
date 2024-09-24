@@ -32,6 +32,12 @@ resource "google_project_iam_member" "project" {
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
+resource "google_project_iam_member" "logs_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+}
+
 module "gke_autopilot" {
   source = "./modules/gke_autopilot"
 
