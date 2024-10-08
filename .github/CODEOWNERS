@@ -3,7 +3,7 @@
 
 # These owners will be the default owners for everything in
 # the repo. Unless a later match takes precedence.
-* @GoogleCloudPlatform/dee-platform-ops @yoshi-approver
+* @GoogleCloudPlatform/cloud-samples-infra @yoshi-approver
 
 # Directory-specific owners
 /ai-ml/ @alizaidis @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
