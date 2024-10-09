@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.15.1-alpine3.12 AS builder
+FROM golang:1.22.0 as builder
 WORKDIR /app
 # Install dependencies in go.mod and go.sum
 COPY go.mod go.sum ./
