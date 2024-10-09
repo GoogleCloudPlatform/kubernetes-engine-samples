@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # [START gke_batch_aiml_workload_dockerfile]
-FROM python:3.10-slim
+FROM python:3.12-slim
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # [START gke_aiml_llm_finetune_gemma_single_node_docker]
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+FROM nvidia/cuda:12.6.1-runtime-ubuntu22.04
 
 RUN apt-get update && \
     apt-get -y --no-install-recommends install python3-dev gcc python3-pip git && \

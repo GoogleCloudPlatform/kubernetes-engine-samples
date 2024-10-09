@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # [START gke_management_gitops_delivery_dockerfile]
-FROM python:3.7-slim
+FROM python:3.12-slim
 RUN pip install flask
 WORKDIR /app
 COPY app.py /app/app.py
