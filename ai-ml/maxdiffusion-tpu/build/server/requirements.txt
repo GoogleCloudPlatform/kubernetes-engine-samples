@@ -1,8 +1,10 @@
+--find-links https://storage.googleapis.com/jax-releases/jax_nightly_releases.html
+--find-links https://storage.googleapis.com/jax-releases/libtpu_releases.html
+
 uvicorn[standard]==0.30.6
 fastapi[all]==0.114.0
 pillow
-jax==0.4.31
-jaxlib==0.4.31
+jax[tpu]==0.4.34.dev20241001 --pre
 google-cloud-storage
 absl-py
 transformers>=4.25.1
