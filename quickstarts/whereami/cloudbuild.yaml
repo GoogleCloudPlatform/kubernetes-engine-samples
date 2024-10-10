@@ -23,9 +23,15 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/whereami:v1.2.22'
     - '-t'
+    - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.22'
+    - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
     - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.22'
+    - '-t'
     - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
+    - '-t'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.22'
     - '.'
   dir: 'quickstarts/whereami'
 - name: ubuntu
@@ -39,5 +45,8 @@ steps:
 
 images:
   - 'gcr.io/google-samples/whereami:v1.2.22'
+  - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.22'
   - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.22'
   - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
+  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.22'
