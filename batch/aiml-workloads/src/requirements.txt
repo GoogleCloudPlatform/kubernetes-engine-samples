@@ -11,15 +11,15 @@ numpy==2.1.1
     #   pandas
     #   scikit-learn
     #   scipy
-pandas==2.2.2
+pandas==2.2.3
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via pandas
 pytz==2024.2
     # via pandas
-redis==5.0.8
+redis==5.1.0
     # via -r requirements.in
-scikit-learn==1.5.1
+scikit-learn==1.5.2
     # via -r requirements.in
 scipy==1.14.1
     # via scikit-learn
@@ -27,5 +27,5 @@ six==1.16.0
     # via python-dateutil
 threadpoolctl==3.5.0
     # via scikit-learn
-tzdata==2024.1
+tzdata==2024.2
     # via pandas
