@@ -75,7 +75,7 @@ resource "google_container_cluster" "ml_cluster" {
     channel = "RAPID"
   }
 
-  min_master_version = "1.29"
+  min_master_version = "1.31"
 
   resource_labels = var.cluster_labels
 }

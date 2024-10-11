@@ -18,7 +18,6 @@ metadata:
   name: tgi-gemma-deployment
   labels: 
     app: gemma-server
-    # kueue.x-k8s.io/queue-name: lq
 spec:
   replicas: 1
   selector:
@@ -35,13 +34,6 @@ spec:
         kueue-job: "true"
     spec:
       priorityClassName: high-priority-preempting
-      tolerations:
-        - key: "ondemand"
-          operator: "Exists"
-          effect: NoSchedule
-        - key: "nvidia.com/gpu"
-          operator: "Exists"
-          effect: NoSchedule
       containers:
       - name: inference-server
         image: ghcr.io/huggingface/text-generation-inference:2.1.1
@@ -49,12 +41,12 @@ spec:
           requests:
             cpu: "2"
             memory: "30Gi"
-            # ephemeral-storage: "40Gi"
+            ephemeral-storage: "40Gi"
             nvidia.com/gpu: 2
           limits:
             cpu: "10"
             memory: "30Gi"
-            # ephemeral-storage: "40Gi"
+            ephemeral-storage: "40Gi"
             nvidia.com/gpu: 2
         args:
         - --model-id=$(MODEL_ID)

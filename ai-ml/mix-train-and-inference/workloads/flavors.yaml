@@ -16,17 +16,6 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
-  name: gpu-l4-ondemand
-spec:
-  nodeLabels:
-    cloud.google.com/gke-accelerator: nvidia-l4
-    cloud.google.com/gke-provisioning: standard
-    resource-type: ondemand
-  nodeTaints:
-    - effect: NoSchedule
-      key: nvidia.com/gpu
-      value: "true"
-    - effect: NoSchedule
-      key: ondemand
-      value: "true"
+  name: default-flavor
+
 

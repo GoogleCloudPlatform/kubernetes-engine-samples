@@ -8,16 +8,18 @@ spec:
     reclaimWithinCohort: LowerPriority
     withinClusterQueue: LowerPriority
   resourceGroups:
-    - coveredResources: ["cpu", "memory","nvidia.com/gpu"]
+    - coveredResources: ["cpu", "memory","nvidia.com/gpu", "ephemeral-storage"]
       flavors:
-        - name: gpu-l4-ondemand
+        - name: default-flavor
           resources:
             - name: "cpu"
-              nominalQuota: 24
+              nominalQuota: 72
             - name: "memory"
-              nominalQuota: 96Gi
+              nominalQuota: 288Gi
             - name: "nvidia.com/gpu"
               nominalQuota: 6
+            - name: "ephemeral-storage"
+              nominalQuota: 200Gi
 
 ---
 apiVersion: kueue.x-k8s.io/v1beta1

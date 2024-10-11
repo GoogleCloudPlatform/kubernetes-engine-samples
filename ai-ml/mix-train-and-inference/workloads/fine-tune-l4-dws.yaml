@@ -18,6 +18,7 @@ spec:
   completions: 2
   parallelism: 2
   completionMode: Indexed
+  suspend: true # Set to true to allow Kueue to control the Job when it starts
   template:
     metadata:
       labels:
@@ -25,18 +26,14 @@ spec:
       annotations:
         gke-gcsfuse/volumes: "true"
         gke-gcsfuse/memory-limit: "35Gi"
-        # cluster-autoscaler.kubernetes.io/consume-provisioning-request: l4-job
-        # cluster-autoscaler.kubernetes.io/provisioning-class-name: "queued-provisioning.gke.io"
     spec:
       priorityClassName: low-priority-preempting
       containers:
       - name: gpu-job
         imagePullPolicy: Always 
-        image: us-central1-docker.pkg.dev/or2-msq-go2-gkes-t1iylu/fine-tuning/fine-tuning:1.1.2
+        image: <REGION>-docker.pkg.dev/<PROJECT_ID>/fine-tuning/fine-tuning:1.0.0
         ports:
         - containerPort: 29500
-        securityContext:
-          privileged: true
         resources:
           requests:
             nvidia.com/gpu: "2"
@@ -65,7 +62,7 @@ spec:
         - name: "MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING"
           value: "false"
         - name: "TRAINING_DATASET_BUCKET"
-          value: "data-bucket-or2-msq-go2-gkes-t1iylu"
+          value: <TRAINING_BUCKET>
         - name: "TRAINING_DATASET_PATH"
           value: "training"
         - name: MODEL_NAME
@@ -92,18 +89,7 @@ spec:
       restartPolicy: OnFailure
       serviceAccountName: default
       subdomain: headless-svc-l4
-      terminationGracePeriodSeconds: 600
-      tolerations:
-      - key: "ondemand"
-        operator: "Exists"
-        effect: NoSchedule
-      - key: "nvidia.com/gpu"
-        operator: "Exists"
-        effect: NoSchedule
-      # - key: "ondemand"
-      #   value: "true"
-      #   operator: "Equal"
-      #   effect: "NoSchedule"
+      terminationGracePeriodSeconds: 60
       volumes:
       - name: dshm
         emptyDir:
@@ -112,6 +98,6 @@ spec:
         csi:
           driver: gcsfuse.csi.storage.gke.io
           volumeAttributes:
-            bucketName: model-bucket-or2-msq-go2-gkes-t1iylu
+            bucketName: <MODEL_BUCKET>
             mountOptions: "implicit-dirs"
             gcsfuseLoggingSeverity: warning

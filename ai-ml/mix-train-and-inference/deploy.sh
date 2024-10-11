@@ -6,8 +6,8 @@
 export REGION=europe-west6
 export GPU_POOL_MACHINE_TYPE="g2-standard-24"
 export GPU_POOL_ACCELERATOR_TYPE="nvidia-l4"
- 
-
+export TRAINING_DATA_BUCKET="data-bucket-$PROJECT_ID"
+export MODEL_BUCKET="model-bucket-$PROJECT_ID"
 
 
 gcloud services enable container.googleapis.com \
@@ -24,6 +24,8 @@ gpu_pool_node_locations     = $(gcloud compute accelerator-types list --filter="
 
 enable_fleet                = false
 gateway_api_channel         = "CHANNEL_STANDARD"
+TRAINING_DATA_BUCKET           = "$TRAINING_DATA_BUCKET"
+model_bucket                = "$MODEL_BUCKET"
 EOF
 
 # Create clusters
@@ -45,32 +47,41 @@ kubectl create secret generic hf-secret \
 
 kubectl apply --server-side -f manifests.yaml
 
-sleep 60
+sleep 180 # wait for kueue deployment
+
 kubectl apply -f flavors.yaml
 kubectl apply -f default-priorityclass.yaml
 kubectl apply -f high-priorityclass.yaml
 kubectl apply -f low-priorityclass.yaml
 kubectl apply -f cluster-queue.yaml
 
-gcloud storage buckets add-iam-policy-binding gs://model-bucket-or2-msq-go2-gkes-t1iylu \
+gcloud storage buckets add-iam-policy-binding "gs://$MODEL_BUCKET" \
     --role=roles/storage.objectAdmin \
     --member=principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$PROJECT_ID.svc.id.goog/subject/ns/$NAMESPACE/sa/default \
     --condition=None
-gcloud storage buckets add-iam-policy-binding gs://data-bucket-or2-msq-go2-gkes-t1iylu \
-    --role=roles/storage.objectAdmin \
+gcloud storage buckets add-iam-policy-binding "gs://$TRAINING_DATA_BUCKET" \
+    --role=roles/storage.objectViewer \
     --member=principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$PROJECT_ID.svc.id.goog/subject/ns/$NAMESPACE/sa/default \
     --condition=None
 
 
 gcloud artifacts repositories add-iam-policy-binding fine-tuning \
     --role=roles/artifactregistry.reader \
-    --member=serviceAccount:gke-llm-sa@or2-msq-go2-gkes-t1iylu.iam.gserviceaccount.com \
-    --location=us-central1 \
+    --member=serviceAccount:gke-llm-sa@$PROJECT_ID.iam.gserviceaccount.com \
+    --location=$REGION \
     --condition=None
 
 
 kubectl create -f tgi-gemma-2-9b-it-hp.yaml -n $NAMESPACE
-kubectl apply -f fine-tune-l4-dws.yaml -n $NAMESPACE
+# kubectl apply -f fine-tune-l4-dws.yaml -n $NAMESPACE
+sed -e "s/<TRAINING_BUCKET>/$TRAINING_DATA_BUCKET/g" \
+-e "s/<MODEL_BUCKET>/$MODEL_BUCKET/g" \
+-e "s/<PROJECT_ID>/$PROJECT_ID/g" \
+-e "s/<REGION>/$REGION/g" \
+fine-tune-l4-dws.yaml |kubectl apply -f - -n $NAMESPACE
+
+
+
 # sleep 360
 # kubectl apply -f monitoring.yaml -n $NAMESPACE
 

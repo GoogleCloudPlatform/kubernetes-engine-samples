@@ -85,3 +85,13 @@ variable "gpu_driver_version" {
   description = "the NVIDIA driver version to install"
   default     = "DEFAULT"
 }
+
+variable "train_data_bucket" {
+  type        = string
+  description = "A bucket, containing training data"
+}
+
+variable "model_bucket" {
+  type        = string
+  description = "A bucket where the fine-tuned model will be stored"
+}

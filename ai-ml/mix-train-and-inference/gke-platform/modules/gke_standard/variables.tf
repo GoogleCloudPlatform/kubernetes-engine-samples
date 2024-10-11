@@ -93,16 +93,3 @@ variable "gpu_driver_version" {
   default     = "DEFAULT"
 }
 
-variable "ondemand_taints" {
-  description = "Taints to be applied to the on-demand node pool."
-  type = list(object({
-    key         = string
-    taint_value = any
-    effect      = string
-  }))
-  default = [{
-    key         = "ondemand"
-    taint_value = true
-    effect      = "NO_SCHEDULE"
-  }]
-}

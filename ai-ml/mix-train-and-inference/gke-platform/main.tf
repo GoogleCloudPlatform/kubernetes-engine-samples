@@ -69,3 +69,15 @@ module "gke_standard" {
   fleet_project_id          = var.fleet_project_id
   gateway_api_channel       = var.gateway_api_channel
 }
+
+resource "google_storage_bucket" "train_data" {
+  name          = var.train_data_bucket
+  location      = var.region
+  uniform_bucket_level_access = true
+}
+
+resource "google_storage_bucket" "model_data" {
+  name          = var.model_bucket
+  location      = var.region
+  uniform_bucket_level_access = true
+}

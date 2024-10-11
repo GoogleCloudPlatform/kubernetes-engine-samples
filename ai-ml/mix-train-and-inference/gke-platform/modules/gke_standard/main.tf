@@ -33,7 +33,7 @@ resource "google_container_cluster" "ml_cluster" {
   count                    = var.enable_autopilot == false ? 1 : 0
   remove_default_node_pool = true
   initial_node_count       = 1
-  min_master_version       = "1.30"
+  min_master_version       = "1.31"
 
   node_config {
     service_account = data.google_service_account.default.email
@@ -172,14 +172,6 @@ resource "google_container_node_pool" "gpu_pool" {
       enabled = true
     }
     
-    dynamic "taint" {
-      for_each = var.ondemand_taints
-      content {
-        key    = taint.value.key
-        value  = taint.value.taint_value
-        effect = taint.value.effect
-      }
-    }
     labels = {
       "resource-type" : "ondemand"
     }
@@ -204,7 +196,5 @@ resource "google_container_node_pool" "gpu_pool" {
       disable-legacy-endpoints = "true"
     }
   }
-  # queued_provisioning {
-  #   enabled = true
-  # }
+
 }
