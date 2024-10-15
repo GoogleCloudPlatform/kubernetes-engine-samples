@@ -1,4 +1,4 @@
-FROM python:3.12.7-slim
+FROM python:3.13.0-slim
 
 #MAINTAINER Alex Mattson "alex.mattson@gmail.com"
 

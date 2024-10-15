@@ -206,5 +206,5 @@ if __name__ == '__main__':
         app.run(
             host=host_ip.strip('[]'), # stripping out the brackets if present
             port=int(os.environ.get('PORT', 8080)),
-            debug=True,
+            #debug=True,
             threaded=True)
