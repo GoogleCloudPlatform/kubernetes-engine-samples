@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ai_ml_llm_serving_multihost_gpus_vllm_llama3_405b_a4]
+# [START gke_ai_ml_llm_serving_multihost_gpus_vllm_llama3_405b_hdml]
+
 
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
@@ -28,8 +29,6 @@ spec:
         labels:
           role: leader
       spec:
-        nodeSelector:
-          cloud.google.com/gke-accelerator: nvidia-h100-80gb
         containers:
           - name: vllm-leader
             image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240821_1034_RC00
@@ -43,7 +42,7 @@ spec:
               - sh
               - -c
               - "/workspace/vllm/examples/ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SiZE); 
-                python3 -m vllm.entrypoints.openai.api_server --port 8080 --model meta-llama/Meta-Llama-3.1-405B-Instruct --tensor-parallel-size 8 --pipeline-parallel-size 2"
+                python3 -m vllm.entrypoints.openai.api_server --port 8080 --model /models/Meta-Llama-3.1-405B-Instruct --tensor-parallel-size 8 --pipeline-parallel-size 2"
             resources:
               limits:
                 nvidia.com/gpu: "8"
@@ -57,15 +56,17 @@ spec:
             volumeMounts:
               - mountPath: /dev/shm
                 name: dshm
+              - mountPath: /models
+                name: llama3-405b
         volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 15Gi
+        - name: llama3-405b
+          persistentVolumeClaim:
+            claimName: hdml-static-pvc
     workerTemplate:
       spec:
-        nodeSelector:
-          cloud.google.com/gke-accelerator: nvidia-h100-80gb
         containers:
           - name: vllm-worker
             image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240821_1034_RC00
@@ -84,12 +85,16 @@ spec:
                     key: hf_api_token
             volumeMounts:
               - mountPath: /dev/shm
-                name: dshm   
+                name: dshm
+              - mountPath: /models
+                name: llama3-405b
         volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 15Gi
+        - name: llama3-405b
+          persistentVolumeClaim:
+            claimName: hdml-static-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -106,4 +111,4 @@ spec:
     role: leader
   type: ClusterIP
 
-  # [END gke_ai_ml_llm_serving_multihost_gpus_vllm_llama3_405b_a4]
+ # [END gke_ai_ml_llm_serving_multihost_gpus_vllm_llama3_405b_hdml]
