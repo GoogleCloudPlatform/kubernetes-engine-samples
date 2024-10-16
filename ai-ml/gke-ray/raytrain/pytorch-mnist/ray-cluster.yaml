@@ -18,7 +18,7 @@ kind: RayCluster
 metadata:
   name: pytorch-mnist-cluster
 spec:
-  rayVersion: '2.9.0'
+  rayVersion: '2.36.1'
   headGroupSpec:
     rayStartParams:
       dashboard-host: '0.0.0.0'
@@ -27,7 +27,7 @@ spec:
       spec:
         containers:
         - name: ray-head
-          image: rayproject/ray:2.9.0
+          image: rayproject/ray:2.36.1
           ports:
           - containerPort: 6379
             name: gcs
@@ -52,7 +52,7 @@ spec:
       spec:
         containers:
         - name: ray-worker
-          image: rayproject/ray:2.9.0
+          image: rayproject/ray:2.36.1
           resources:
             limits:
               cpu: 2
