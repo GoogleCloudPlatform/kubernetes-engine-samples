@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: inference-server
-        image: ghcr.io/huggingface/text-generation-inference:2.0.2
+        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu124.2-3.ubuntu2204.py311
         resources:
           requests:
             cpu: "2"

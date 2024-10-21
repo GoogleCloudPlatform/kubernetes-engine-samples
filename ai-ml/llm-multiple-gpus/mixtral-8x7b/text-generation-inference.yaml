@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: llm
-        image: ghcr.io/huggingface/text-generation-inference:1.4.3
+        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu124.2-3.ubuntu2204.py311
         resources:
           requests:
             cpu: "5"
