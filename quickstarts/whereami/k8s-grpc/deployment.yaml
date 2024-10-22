@@ -46,7 +46,7 @@ spec:
               - all
           privileged: false
           readOnlyRootFilesystem: true
-        image: us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22
+        image: us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23
         resources:
           requests:
             memory: "512Mi"
@@ -117,7 +117,7 @@ spec:
           - name: HOST
             valueFrom:
               configMapKeyRef:
-                name: whereami
+                name: whereami-grpc
                 key: HOST
 # [END gke_k8s_grpc_deployment_deployment_whereami_grpc]
 ---
