@@ -19,7 +19,7 @@
 #
 # Build: 1st stage
 #
-FROM golang:1.18-alpine as builder 
+FROM golang:1.23-alpine as builder 
 ARG BUILDPLATFORM    
 ARG TARGETPLATFORM
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"  
