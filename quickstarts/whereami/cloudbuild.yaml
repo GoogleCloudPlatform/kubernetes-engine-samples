@@ -21,11 +21,11 @@ steps:
   args:
     - 'build'
     - '-t'
-    - 'gcr.io/google-samples/whereami:v1.2.22'
+    - 'gcr.io/google-samples/whereami:v1.2.23'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23'
     - '-t'
-    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23'
     - '.'
   dir: 'quickstarts/whereami'
 - name: ubuntu
@@ -35,9 +35,9 @@ steps:
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     cd quickstarts/whereami/helm-chart
     helm package .
-    helm push whereami-1.2.22.tgz oci://us-docker.pkg.dev/google-samples/charts
+    helm push whereami-1.2.23.tgz oci://us-docker.pkg.dev/google-samples/charts
 
 images:
-  - 'gcr.io/google-samples/whereami:v1.2.22'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
-  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.22'
+  - 'gcr.io/google-samples/whereami:v1.2.23'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23'
+  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23'
