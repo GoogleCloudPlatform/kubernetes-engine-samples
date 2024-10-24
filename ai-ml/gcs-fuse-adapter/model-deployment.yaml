@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-gemma-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-server
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+      labels:
+        app: gemma-server
+        ai.gke.io/model: gemma-2b-it
+        ai.gke.io/inference-server: vllm
+        examples.ai.gke.io/source: user-guide
+    spec:
+      containers:
+      - name: inference-server
+        image: <CONTAINER_IMAGE>
+        readinessProbe:
+          httpGet:
+            path: http://localhost/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: "2"
+            memory: "7Gi"
+            ephemeral-storage: "10Gi"
+            nvidia.com/gpu: 1
+          limits:
+            cpu: "2"
+            memory: "7Gi"
+            ephemeral-storage: "10Gi"
+            nvidia.com/gpu: 1
+        command: ["python3", "-m", "vllm.entrypoints.api_server"]
+        args:
+        - --model=$(MODEL_ID)
+        - --tensor-parallel-size=1
+        env:
+        - name: MODEL_ID
+          value: /model/gemma-2b-it
+        - name: PORT
+          value: "8000"
+        volumeMounts:
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /model
+          readOnly: false
+      serviceAccountName: <KSA_NAME>
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          readOnly: false
+          volumeAttributes:
+            bucketName: <BUCKET_NAME>
+            mountOptions: "implicit-dirs,metadata-cache:ttl-secs:-1,file-cache:max-size-mb:-1,file-cache:cache-file-for-range-read:true,file-cache:enable-parallel-downloads:true"
+            gcsfuseLoggingSeverity: warning
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+spec:
+  selector:
+    app: gemma-server
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
