@@ -1,10 +1,10 @@
 google-cloud-storage==2.18.2
-google-cloud-aiplatform==1.65.0
-langchain==0.2.16
-langchain-community==0.2.16
+google-cloud-aiplatform==1.70.0
+langchain==0.3.3
+langchain-community==0.3.2
 langchain-google-vertexai==1.0.10
-pgvector==0.3.2
-psycopg2-binary==2.9.9
+pgvector==0.3.5
+psycopg2-binary==2.9.10
 pypdf==3.17.4
 click==8.1.7
 Flask==2.3.3
