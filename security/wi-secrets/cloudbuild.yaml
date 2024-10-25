@@ -23,11 +23,11 @@ steps:
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/wi-secret-store'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/wi-secret-store:sample-public-image-tag'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/wi-secret-store:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'security/wi-secrets'
 
 # Push images.
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/wi-secret-store'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/wi-secret-store:sample-public-image-tag'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/wi-secret-store:sample-public-image-${SHORT_SHA}'

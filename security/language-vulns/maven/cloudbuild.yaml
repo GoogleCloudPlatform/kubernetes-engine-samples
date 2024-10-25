@@ -23,10 +23,10 @@ steps:
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/security/maven-vulns'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/security/maven-vulns:sample-public-image-tag'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/security/maven-vulns:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'security/language-vulns/maven'
 
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/security/maven-vulns'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/security/maven-vulns:sample-public-image-tag'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/security/maven-vulns:sample-public-image-${SHORT_SHA}'

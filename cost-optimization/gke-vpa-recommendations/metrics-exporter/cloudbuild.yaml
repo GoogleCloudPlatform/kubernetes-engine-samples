@@ -23,12 +23,12 @@ steps:
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter:sample-public-image-tag'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'cost-optimization/gke-vpa-recommendations/metrics-exporter'
 
 # Push images.
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter:sample-public-image-tag'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter:sample-public-image-${SHORT_SHA}'
 

@@ -23,11 +23,11 @@ steps:
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner:sample-public-image-tag'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'databases/hello-app-cloud-spanner'
 
 # Push images.
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner:sample-public-image-tag'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner:sample-public-image-${SHORT_SHA}'
