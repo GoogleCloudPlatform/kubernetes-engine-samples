@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorflow:22.11-tf2-py3
+FROM nvcr.io/nvidia/tensorflow:22.12-tf2-py3
 
 # Install the latest jax
 RUN pip install --upgrade pip

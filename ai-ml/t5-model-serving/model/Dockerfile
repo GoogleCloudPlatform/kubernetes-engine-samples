@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE=pytorch/torchserve:0.7.1-cpu
+ARG BASE_IMAGE=pytorch/torchserve:0.12.0-cpu
 
 FROM alpine/git
 

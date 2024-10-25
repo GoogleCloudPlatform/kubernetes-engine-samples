@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.21.0 as builder
+FROM golang:1.23.2 as builder
 WORKDIR /app
 RUN go mod init hello-app-tls
 COPY *.go ./
