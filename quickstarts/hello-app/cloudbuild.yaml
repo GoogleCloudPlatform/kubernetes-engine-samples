@@ -25,7 +25,11 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/hello-app:1.0'
     - '-t'
+    - 'gcr.io/google-samples/hello-app:sample-public-image-1.0-${SHORT_SHA}'
+    - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:sample-public-image-1.0-${SHORT_SHA}'
     - '.'
   dir: 'quickstarts/hello-app'
 
@@ -42,13 +46,21 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/hello-app:2.0'
     - '-t'
+    - 'gcr.io/google-samples/hello-app:sample-public-image-2.0-${SHORT_SHA}'
+    - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:sample-public-image-2.0-${SHORT_SHA}'
     - '.'
   dir: 'quickstarts/hello-app'
 
 # Push images.
 images:
   - 'gcr.io/google-samples/hello-app:1.0'
+  - 'gcr.io/google-samples/hello-app:sample-public-image-1.0-${SHORT_SHA}'
   - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:sample-public-image-1.0-${SHORT_SHA}'
   - 'gcr.io/google-samples/hello-app:2.0'
+  - 'gcr.io/google-samples/hello-app:sample-public-image-2.0-${SHORT_SHA}'
   - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app:sample-public-image-2.0-${SHORT_SHA}'

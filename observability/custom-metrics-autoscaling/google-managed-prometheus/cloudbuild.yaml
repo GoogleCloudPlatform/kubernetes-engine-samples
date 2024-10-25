@@ -23,10 +23,16 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/prometheus-dummy-exporter:v0.2.0'
     - '-t'
+    - 'gcr.io/google-samples/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
+    - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:v0.2.0'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
     - '.'
   dir: 'observability/custom-metrics-autoscaling/google-managed-prometheus'
 
 images:
   - 'gcr.io/google-samples/prometheus-dummy-exporter:v0.2.0'
+  - 'gcr.io/google-samples/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
   - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:v0.2.0'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
