@@ -23,10 +23,16 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/pubsub-sample:v2'
     - '-t'
+    - 'gcr.io/google-samples/pubsub-sample:sample-public-image-v2-${SHORT_SHA}'
+    - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/pubsub-sample:v2'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/pubsub-sample:sample-public-image-v2-${SHORT_SHA}'
     - '.'
   dir: 'databases/cloud-pubsub'
 
 images:
   - 'gcr.io/google-samples/pubsub-sample:v2'
+  - 'gcr.io/google-samples/pubsub-sample:sample-public-image-v2-${SHORT_SHA}'
   - 'us-docker.pkg.dev/google-samples/containers/gke/pubsub-sample:v2'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/pubsub-sample:sample-public-image-v2-${SHORT_SHA}'

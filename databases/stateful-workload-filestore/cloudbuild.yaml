@@ -22,9 +22,12 @@ steps:
     - 'build'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/stateful-workload'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/stateful-workload:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'stateful-workload-filestore'
 
 # Push images.
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/stateful-workload'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/stateful-workload:sample-public-image-${SHORT_SHA}'
