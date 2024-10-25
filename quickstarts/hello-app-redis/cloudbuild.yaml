@@ -23,17 +23,17 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/hello-app-redis:1.0'
     - '-t'
-    - 'gcr.io/google-samples/hello-app-redis:sample-public-image-1.0'
+    - 'gcr.io/google-samples/hello-app-redis:sample-public-image-1.0-${SHORT_SHA}'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:1.0'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:sample-public-image-1.0'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:sample-public-image-1.0-${SHORT_SHA}'
     - '.'
   dir: 'quickstarts/hello-app-redis'
 
 images:
   - 'gcr.io/google-samples/hello-app-redis:1.0'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:sample-public-image-1.0'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:sample-public-image-1.0-${SHORT_SHA}'
   - 'gcr.io/google-samples/hello-app-redis:1.0'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:sample-public-image-1.0'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-redis:sample-public-image-1.0-${SHORT_SHA}'
   
