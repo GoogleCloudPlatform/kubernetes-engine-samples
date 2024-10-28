@@ -15,7 +15,7 @@
 # [START gke_management_gitops_delivery_cloudbuild]
 steps:
 # This step runs the unit tests on the app
-- name: 'python:3.12-slim'
+- name: 'python:3.13-slim'
   id: Test
   entrypoint: /bin/sh
   args:
