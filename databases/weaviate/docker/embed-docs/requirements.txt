@@ -1,6 +1,6 @@
 google-cloud-storage==2.18.2
 google-cloud-aiplatform==1.65.0
-langchain==0.2.16
+langchain==0.3.0
 langchain-community==0.2.16
 langchain-google-vertexai==1.0.10
 langchain-weaviate==0.0.2
