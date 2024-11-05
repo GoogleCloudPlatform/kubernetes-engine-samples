@@ -1,0 +1,102 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_vllm_tpu_vllm_llama3_70b]
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-tpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-tpu
+  template:
+    metadata:
+      labels:
+        app: vllm-tpu
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        gke-gcsfuse/cpu-limit: "0"
+        gke-gcsfuse/memory-limit: "0"
+        gke-gcsfuse/ephemeral-storage-limit: "0"
+    spec:
+      serviceAccountName: KSA_NAME
+      nodeSelector:
+        cloud.google.com/gke-tpu-topology: 2x4
+        cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+      containers:
+      - name: vllm-tpu
+        image: REGION_NAME-docker.pkg.dev/PROJECT_ID/vllm-tpu/vllm-tpu:latest
+        command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+        args:
+        - --host=0.0.0.0
+        - --port=8000
+        - --tensor-parallel-size=8
+        - --max-model-len=8192
+        - --model=meta-llama/Meta-Llama-3.1-70B
+        - --download-dir=/data
+        env: 
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        - name: VLLM_XLA_CACHE_PATH
+          value: "/data"
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            google.com/tpu: 8
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        volumeMounts:
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /data
+        - name: dshm
+          mountPath: /dev/shm
+      volumes:
+      - name: gke-gcsfuse-cache
+        emptyDir:
+          medium: Memory
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: GSBUCKET
+            mountOptions: "implicit-dirs,file-cache:enable-parallel-downloads:true,file-cache:parallel-downloads-per-file:100,file-cache:max-parallel-downloads:-1,file-cache:download-chunk-size-mb:10,file-cache:max-size-mb:-1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-service
+spec:
+  selector:
+    app: vllm-tpu
+  type: LoadBalancer	
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000  
+      targetPort: 8000
+
+# [END gke_ai_ml_vllm_tpu_vllm_llama3_70b]
