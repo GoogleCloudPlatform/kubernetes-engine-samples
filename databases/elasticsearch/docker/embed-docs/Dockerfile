@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 ENV ES_URL https://elasticsearch-ha-es-http:9200
 ENV INDEX_NAME training-docs

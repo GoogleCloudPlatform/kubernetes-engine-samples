@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 ENV POSTGRES_HOST gke-pg-cluster-rw.pg-ns
 ENV DATABASE_NAME app

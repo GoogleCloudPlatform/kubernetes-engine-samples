@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 ENV WEAVIATE_ENDPOINT weaviate.weaviate
 ENV WEAVIATE_GRPC_ENDPOINT weaviate-grpc.weaviate
