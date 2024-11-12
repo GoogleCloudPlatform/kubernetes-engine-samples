@@ -44,7 +44,7 @@ spec:
             memory: "30Gi"
             ephemeral-storage: "45Gi"
             nvidia.com/gpu: "2"
-        command: ["python3", "-m", "vllm.entrypoints.api_server"]
+        command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --model=$(MODEL_ID)
         - --tensor-parallel-size=2
