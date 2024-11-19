@@ -39,8 +39,8 @@ All new code samples require the following:
   [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/ai-ml/llm-multiple-gpus/llm-service.yaml#L15-L28)]
   - These surround code to be embeded and look like: `[START gke_topic_sample_title_file_name]` and
     `[END gke_topic_sample_title_file_name]`.
-- **Editable variables**, where applicable.
-  - Samples from this repository that are embedded in cloud.google.com documentation can be configured to include editable variables. In other words, readers should be able edit variables such as `PROJECT_ID` on the cloud.google.com page itself. [[Example doc](https://cloud.google.com/kubernetes-engine/docs/tutorials/serve-vllm-tpu#deploy-vllm)] [[Example sample](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/HEAD/ai-ml/vllm-tpu/vllm-llama3-70b.yaml#L42)]
+- **Editable variables**, where applicable. [[Example doc](https://cloud.google.com/kubernetes-engine/docs/tutorials/serve-vllm-tpu#deploy-vllm)] [[Example sample](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/HEAD/ai-ml/vllm-tpu/vllm-llama3-70b.yaml#L42)]
+  - Samples from this repository that are embedded in cloud.google.com documentation can be configured to include editable variables. In other words, readers should be able edit variables such as `PROJECT_ID` on the cloud.google.com page itself.
   -  To enable editable variables, ensure that your variables
       -  use all-caps (for example, `project_id` should be `PROJECT_ID`),
       -  are underscore-delimited (for example, `PROJECT-ID` shoud be `PROJECT_ID`),
