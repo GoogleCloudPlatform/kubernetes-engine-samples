@@ -39,6 +39,7 @@ All new code samples require the following:
   [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/ai-ml/llm-multiple-gpus/llm-service.yaml#L15-L28)]
   - These surround code to be embeded and look like: `[START gke_topic_sample_title_file_name]` and
     `[END gke_topic_sample_title_file_name]`.
+- **Editable variables**, where applicable. Samples from this repository that are embedded in cloud.google.com documentation can be configured to include editable variables. In other words, readers should be able edit variables such as `PROJECT_ID` on the cloud.google.com page itself. [[Example](https://cloud.google.com/kubernetes-engine/docs/tutorials/serve-vllm-tpu#deploy-vllm)] [[Google-internal instructions](http://go/editable-variables-for-embedded-github-samples)]
 - **CODEOWNERS file** with an entry listing the samples maintainers.
   [[CODEOWNERS](/.github/CODEOWNERS)]
 
