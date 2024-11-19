@@ -1,0 +1,14 @@
+ollama:
+  gpu:
+    enabled: true
+    type: 'nvidia'
+    number: 1
+  models:
+    - gemma:7b
+    - llama2:7b
+persistentVolume:
+  enabled: true
+  size: 100Gi
+  storageClass: "premium-rwo"
+service:
+  port: 11434

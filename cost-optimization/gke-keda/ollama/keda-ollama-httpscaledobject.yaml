@@ -1,0 +1,24 @@
+kind: HTTPScaledObject
+apiVersion: http.keda.sh/v1alpha1
+metadata:
+    namespace: ollama
+    name: ollama
+spec:
+    hosts:
+    - ollama.ollama
+    pathPrefixes:
+    - /
+    scaleTargetRef:
+        name: ollama
+        kind: Deployment
+        apiVersion: apps/v1
+        service: ollama
+        # Must match the value from ollama-values.yaml
+        port: 11434
+    replicas:
+        min: 0
+        max: 2
+    scaledownPeriod: 3600
+    scalingMetric:
+        requestRate:
+            targetValue: 20
