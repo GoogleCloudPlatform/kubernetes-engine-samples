@@ -21,10 +21,6 @@ steps:
   args:
     - 'build'
     - '-t'
-    - 'gcr.io/google-samples/keda-pubsub-sample:v1'
-    - '-t'
-    - 'gcr.io/google-samples/keda-pubsub-sample:sample-public-image-v1-${SHORT_SHA}'
-    - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/keda-pubsub-sample:v1'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/keda-pubsub-sample:sample-public-image-v1-${SHORT_SHA}'
@@ -32,7 +28,5 @@ steps:
   dir: 'cost-optimization/gke-keda/cloud-pubsub'
 
 images:
-  - 'gcr.io/google-samples/keda-pubsub-sample:v1'
-  - 'gcr.io/google-samples/keda-pubsub-sample:sample-public-image-v1-${SHORT_SHA}'
   - 'us-docker.pkg.dev/google-samples/containers/gke/keda-pubsub-sample:v1'
   - 'us-docker.pkg.dev/google-samples/containers/gke/keda-pubsub-sample:sample-public-image-v1-${SHORT_SHA}'

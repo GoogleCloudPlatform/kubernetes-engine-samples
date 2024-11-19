@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_deployment_keda_pubsub_hpa_scaledobject_pubsub]
-# [START container_keda_pubsub_horizontal_pod_autoscaler]
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
@@ -23,6 +21,7 @@ spec:
   podIdentity:
     provider: gcp
 ---
+# [START gke_deployment_keda_pubsub_scaledobject_pubsub]
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -40,6 +39,5 @@ spec:
         name: keda-auth
       metadata:
         subscriptionName: "projects/${PROJECT_ID}/subscriptions/keda-echo-read"
-# [END container_keda_pubsub_horizontal_pod_autoscaler]
-# [END gke_deployment_keda_pubsub_hpa_scaledobject_pubsub]
+# [END gke_deployment_keda_pubsub_scaledobject_pubsub]
 ---

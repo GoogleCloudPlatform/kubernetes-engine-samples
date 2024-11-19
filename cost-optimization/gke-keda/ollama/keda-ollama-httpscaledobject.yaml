@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_deployment_keda_ollama_httpscaledobject_ollama]
 kind: HTTPScaledObject
 apiVersion: http.keda.sh/v1alpha1
 metadata:
@@ -36,3 +37,4 @@ spec:
     scalingMetric:
         requestRate:
             targetValue: 20
+# [END gke_deployment_keda_ollama_httpscaledobject_ollama]
