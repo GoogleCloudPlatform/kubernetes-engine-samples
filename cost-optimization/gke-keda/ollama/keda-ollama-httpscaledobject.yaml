@@ -1,0 +1,40 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_deployment_keda_ollama_httpscaledobject_ollama]
+kind: HTTPScaledObject
+apiVersion: http.keda.sh/v1alpha1
+metadata:
+    namespace: ollama
+    name: ollama
+spec:
+    hosts:
+    - ollama.ollama
+    pathPrefixes:
+    - /
+    scaleTargetRef:
+        name: ollama
+        kind: Deployment
+        apiVersion: apps/v1
+        service: ollama
+        # Must match the value from ollama-values.yaml
+        port: 11434
+    replicas:
+        min: 0
+        max: 2
+    scaledownPeriod: 3600
+    scalingMetric:
+        requestRate:
+            targetValue: 20
+# [END gke_deployment_keda_ollama_httpscaledobject_ollama]

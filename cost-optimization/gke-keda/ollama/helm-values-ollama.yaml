@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ap_autopilot_quickstart_providers_terraform]
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-      version = "5.45.0"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-      version = "2.33.0"
-    }
-  }
-  required_version = ">= 0.13"
-}
-# [END gke_ap_autopilot_quickstart_providers_terraform]
+ollama:
+  gpu:
+    enabled: true
+    type: 'nvidia'
+    number: 1
+  models:
+    - gemma:7b
+    - llama2:7b
+persistentVolume:
+  enabled: true
+  size: 100Gi
+  storageClass: "premium-rwo"
+service:
+  port: 11434
