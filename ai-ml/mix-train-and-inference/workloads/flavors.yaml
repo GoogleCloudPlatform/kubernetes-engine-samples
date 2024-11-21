@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+# [START gke_ai_ml_mix_train_and_inference_workloads_flavors]
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
   name: default-flavor
 
-
+# [END gke_ai_ml_mix_train_and_inference_workloads_flavors]

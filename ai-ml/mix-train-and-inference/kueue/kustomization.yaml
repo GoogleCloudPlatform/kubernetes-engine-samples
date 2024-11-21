@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_ai_ml_mix_train_and_inference_kueue_kustomization]
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
- - https://github.com/kubernetes-sigs/kueue/releases/download/v0.8.1/manifests.yaml
+- https://github.com/kubernetes-sigs/kueue/releases/download/v0.8.1/manifests.yaml
 patches:
-  - path: patch.yaml
-    target:
-      version: v1
-      kind: ConfigMap
-      name: kueue-manager-config
+- path: patch.yaml
+  target:
+    version: v1
+    kind: ConfigMap
+    name: kueue-manager-config
 
+# [END gke_ai_ml_mix_train_and_inference_kueue_kustomization]

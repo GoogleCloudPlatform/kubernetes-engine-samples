@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_ai_ml_mix_train_and_inference_workloads_cluster_queue]
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
@@ -22,16 +23,17 @@ spec:
     reclaimWithinCohort: LowerPriority
     withinClusterQueue: LowerPriority
   resourceGroups:
-    - coveredResources: ["cpu", "memory","nvidia.com/gpu", "ephemeral-storage"]
-      flavors:
-        - name: default-flavor
-          resources:
-            - name: "cpu"
-              nominalQuota: 72
-            - name: "memory"
-              nominalQuota: 288Gi
-            - name: "nvidia.com/gpu"
-              nominalQuota: 6
-            - name: "ephemeral-storage"
-              nominalQuota: 200Gi
+  - coveredResources: [ "cpu", "memory", "nvidia.com/gpu", "ephemeral-storage" ]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: 72
+      - name: "memory"
+        nominalQuota: 288Gi
+      - name: "nvidia.com/gpu"
+        nominalQuota: 6
+      - name: "ephemeral-storage"
+        nominalQuota: 200Gi
 
+# [END gke_ai_ml_mix_train_and_inference_workloads_cluster_queue]

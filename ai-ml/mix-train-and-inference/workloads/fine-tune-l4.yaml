@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_ai_ml_mix_train_and_inference_workloads_fine_tune_l4]
 apiVersion: v1
 kind: Service
 metadata:
@@ -44,7 +45,7 @@ spec:
       priorityClassName: low-priority-preempting
       containers:
       - name: gpu-job
-        imagePullPolicy: Always 
+        imagePullPolicy: Always
         image: us-docker.pkg.dev/google-samples/containers/gke/gemma-fine-tuning:v1.0.0
         ports:
         - containerPort: 29500
@@ -54,18 +55,18 @@ spec:
           limits:
             nvidia.com/gpu: "2"
         command:
-          - bash
-          - -c
-          - |
-            accelerate launch \
-            --config_file fsdp_config.yaml \
-            --debug \
-            --main_process_ip finetune-gemma-l4-0.headless-svc-l4 \
-            --main_process_port 29500 \
-            --machine_rank ${JOB_COMPLETION_INDEX} \
-            --num_processes 4 \
-            --num_machines 2 \
-            fine_tune.py
+        - bash
+        - -c
+        - |
+          accelerate launch \
+          --config_file fsdp_config.yaml \
+          --debug \
+          --main_process_ip finetune-gemma-l4-0.headless-svc-l4 \
+          --main_process_port 29500 \
+          --machine_rank ${JOB_COMPLETION_INDEX} \
+          --num_processes 4 \
+          --num_machines 2 \
+          fine_tune.py
         env:
         - name: "EXPERIMENT"
           value: "finetune-experiment"
@@ -111,3 +112,5 @@ spec:
             bucketName: <MODEL_BUCKET>
             mountOptions: "implicit-dirs"
             gcsfuseLoggingSeverity: warning
+
+# [END gke_ai_ml_mix_train_and_inference_workloads_fine_tune_l4]
