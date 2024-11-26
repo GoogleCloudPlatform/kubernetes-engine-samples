@@ -11,10 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM php:7.4-apache-buster
-RUN apt update && apt -y install zip unzip git-all
+
+FROM php:7.4-cli-alpine
+
+# Install necessary packages
+RUN apk add --no-cache apache2 \
+    && apk add --no-cache zip unzip git \
+    && docker-php-ext-install zip
+
+# Install composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . .
 
-RUN composer update
+RUN composer update --no-dev
