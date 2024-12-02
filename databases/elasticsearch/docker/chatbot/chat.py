@@ -46,7 +46,7 @@ prompt_template = ChatPromptTemplate.from_messages(
     ]
 )
 
-embedding_model = VertexAIEmbeddings("textembedding-gecko@001")
+embedding_model = VertexAIEmbeddings("text-embedding-005")
 
 client = Elasticsearch(
     [os.getenv("ES_URL")], 
