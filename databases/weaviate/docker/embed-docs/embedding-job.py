@@ -37,7 +37,7 @@ documents = loader.load_and_split(text_splitter)
 # [END gke_databases_weaviate_docker_embed_docs_split]
 
 # [START gke_databases_weaviate_docker_embed_docs_embed]
-embeddings = VertexAIEmbeddings("textembedding-gecko@001")
+embeddings = VertexAIEmbeddings("text-embedding-005")
 # [END gke_databases_weaviate_docker_embed_docs_embed]
 
 # [START gke_databases_weaviate_docker_embed_docs_storage]
