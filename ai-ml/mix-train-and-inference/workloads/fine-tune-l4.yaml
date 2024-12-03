@@ -1,0 +1,116 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_mix_train_and_inference_workloads_fine_tune_l4]
+apiVersion: v1
+kind: Service
+metadata:
+  name: headless-svc-l4
+spec:
+  clusterIP: None # clusterIP must be None to create a headless service
+  selector:
+    job-name: finetune-gemma-l4 # must match Job name
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: finetune-gemma-l4
+  labels:
+    kueue.x-k8s.io/queue-name: lq
+spec:
+  backoffLimit: 4
+  completions: 2
+  parallelism: 2
+  completionMode: Indexed
+  suspend: true # Set to true to allow Kueue to control the Job when it starts
+  template:
+    metadata:
+      labels:
+        app: finetune-job
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        gke-gcsfuse/memory-limit: "35Gi"
+    spec:
+      priorityClassName: low-priority-preempting
+      containers:
+      - name: gpu-job
+        imagePullPolicy: Always
+        image: us-docker.pkg.dev/google-samples/containers/gke/gemma-fine-tuning:v1.0.0
+        ports:
+        - containerPort: 29500
+        resources:
+          requests:
+            nvidia.com/gpu: "2"
+          limits:
+            nvidia.com/gpu: "2"
+        command:
+        - bash
+        - -c
+        - |
+          accelerate launch \
+          --config_file fsdp_config.yaml \
+          --debug \
+          --main_process_ip finetune-gemma-l4-0.headless-svc-l4 \
+          --main_process_port 29500 \
+          --machine_rank ${JOB_COMPLETION_INDEX} \
+          --num_processes 4 \
+          --num_machines 2 \
+          fine_tune.py
+        env:
+        - name: "EXPERIMENT"
+          value: "finetune-experiment"
+        - name: "TRAINING_DATASET_BUCKET"
+          value: <TRAINING_BUCKET>
+        - name: "TRAINING_DATASET_PATH"
+          value: "training"
+        - name: MODEL_NAME
+          value: "google/gemma-2-9b-it"
+        - name: NEW_MODEL
+          value: "gemma-ft"
+        - name: MODEL_PATH
+          value: "/model-data/model-gemma2/experiment"
+        - name: EPOCHS
+          value: "1"
+        - name: CHECKPOINT_SAVE_STEPS
+          value: "1"
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /model-data
+          readOnly: false
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      restartPolicy: OnFailure
+      serviceAccountName: default
+      subdomain: headless-svc-l4
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: <MODEL_BUCKET>
+            mountOptions: "implicit-dirs"
+            gcsfuseLoggingSeverity: warning
+
+# [END gke_ai_ml_mix_train_and_inference_workloads_fine_tune_l4]
