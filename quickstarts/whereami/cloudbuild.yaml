@@ -46,8 +46,9 @@ steps:
     apt install curl -y
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     cd quickstarts/whereami/helm-chart
-    helm package .
+    helm package . # This creates a file similar to whereami-X.Y.Z.tgz
     helm push whereami-1.2.23.tgz oci://us-docker.pkg.dev/google-samples/charts
+    cp whereami-1.2.23.tgz whereami-1.tgz
     helm push whereami-1.tgz oci://us-docker.pkg.dev/google-samples/charts
 
 images:
