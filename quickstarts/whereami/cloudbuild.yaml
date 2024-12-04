@@ -49,7 +49,7 @@ steps:
     helm package . # This creates a file similar to whereami-X.Y.Z.tgz
     helm push whereami-1.2.23.tgz oci://us-docker.pkg.dev/google-samples/charts
     # Push Helm chart which could be referred to with just the major version tag
-    helm push oci://us-docker.pkg.dev/google-samples/charts/whereami --version 1
+    helm push us-docker.pkg.dev/google-samples/charts/whereami:1.2.23
 
 images:
   - 'gcr.io/google-samples/whereami:v1'
