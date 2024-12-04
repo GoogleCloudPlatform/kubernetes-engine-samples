@@ -31,5 +31,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build maxdiffusion-tpu-server container image
         run: |
-          cd ai-ml/maxdiffusion-tpu/build/server/**
+          cd ai-ml/maxdiffusion-tpu/build/server/
           docker build --tag maxdiffusion-tpu-server .
