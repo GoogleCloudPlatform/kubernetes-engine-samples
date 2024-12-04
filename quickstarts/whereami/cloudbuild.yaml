@@ -48,8 +48,14 @@ steps:
     cd quickstarts/whereami/helm-chart
     helm package . # This creates a file similar to whereami-X.Y.Z.tgz
     helm push whereami-1.2.23.tgz oci://us-docker.pkg.dev/google-samples/charts
-    # Push Helm chart which could be referred to with just the major version tag
-    helm push oci://us-docker.pkg.dev/google-samples/charts/whereami:1.2.23
+    
+    # Push Helm chart which allows users to refer to the chart by just the major tag (and pull the latest patch).
+    # Unfortunately, we cannot reuse the whereami-X.Y.Z.tgz file/package created above.
+    # We need to update the "version" and "appVersion" values in Chart.yaml and repackage.
+    sed -i "s/version: .*/version: $new_version/" Chart.yaml
+    sed -i "s/appVersion: .*/appVersion: \"$new_version\"/" Chart.yaml
+    helm package . # This creates a file similar to whereami-X.tgz
+    helm push whereami-1.tgz oci://us-docker.pkg.dev/google-samples/charts/whereami
 
 images:
   - 'gcr.io/google-samples/whereami:v1'
