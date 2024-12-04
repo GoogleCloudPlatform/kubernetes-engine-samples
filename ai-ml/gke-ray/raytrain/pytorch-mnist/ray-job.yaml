@@ -29,14 +29,14 @@ spec:
       NUM_WORKERS: "4"
       CPUS_PER_WORKER: "2"
   rayClusterSpec:
-    rayVersion: '2.9.0'
+    rayVersion: '2.36.1'
     headGroupSpec:
       rayStartParams: {}
       template:
         spec:
           containers:
             - name: ray-head
-              image: rayproject/ray:2.9.0
+              image: rayproject/ray:2.36.1
               ports:
                 - containerPort: 6379
                   name: gcs-server
@@ -61,7 +61,7 @@ spec:
           spec:
             containers:
               - name: ray-worker
-                image: rayproject/ray:2.9.0
+                image: rayproject/ray:2.36.1
                 resources:
                   limits:
                     cpu: "2"
