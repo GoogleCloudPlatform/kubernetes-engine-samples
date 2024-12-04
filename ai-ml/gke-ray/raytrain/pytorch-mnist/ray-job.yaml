@@ -29,14 +29,14 @@ spec:
       NUM_WORKERS: "4"
       CPUS_PER_WORKER: "2"
   rayClusterSpec:
-    rayVersion: '2.9.0'
+    rayVersion: '2.37.0'
     headGroupSpec:
       rayStartParams: {}
       template:
         spec:
           containers:
             - name: ray-head
-              image: rayproject/ray:2.9.0
+              image: rayproject/ray:2.37.0
               ports:
                 - containerPort: 6379
                   name: gcs-server
@@ -47,9 +47,11 @@ spec:
               resources:
                 limits:
                   cpu: "2"
+                  ephemeral-storage: "9Gi"
                   memory: "4Gi"
                 requests:
                   cpu: "2"
+                  ephemeral-storage: "9Gi"
                   memory: "4Gi"
     workerGroupSpecs:
       - replicas: 4
@@ -61,12 +63,14 @@ spec:
           spec:
             containers:
               - name: ray-worker
-                image: rayproject/ray:2.9.0
+                image: rayproject/ray:2.37.0
                 resources:
                   limits:
-                    cpu: "2"
+                    cpu: "4"
+                    ephemeral-storage: "9Gi"
                     memory: "8Gi"
                   requests:
-                    cpu: "2"
+                    cpu: "4"
+                    ephemeral-storage: "9Gi"
                     memory: "8Gi"
 # [END gke_ai_ml_gke_ray_raytrain_pytorch_mnist_rayjob]
