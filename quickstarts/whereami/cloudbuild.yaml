@@ -17,7 +17,29 @@
 # are rebuilt and updated upon changes to the repository.
 
 steps:
-# Temporarily removed for faster testing
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - 'gcr.io/google-samples/whereami:v1'
+    - '-t'
+    - 'gcr.io/google-samples/whereami:v1.2.23'
+    - '-t'
+    - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.23-${SHORT_SHA}'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.23-${SHORT_SHA}'
+    - '-t'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1'
+    - '-t'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.23'
+    - '-t'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.23-${SHORT_SHA}'
+    - '.'
+  dir: 'quickstarts/whereami'
 - name: ubuntu
   script: |
     apt update
@@ -26,14 +48,6 @@ steps:
     cd quickstarts/whereami/helm-chart
     helm package . # This creates a file similar to whereami-X.Y.Z.tgz
     helm push whereami-1.2.23.tgz oci://us-docker.pkg.dev/google-samples/charts
-    
-    # Push Helm chart which allows users to refer to the chart by just the major tag (and pull the latest patch).
-    # Unfortunately, we cannot reuse the whereami-X.Y.Z.tgz file/package created above.
-    # We need to update the "version" and "appVersion" values in Chart.yaml and repackage.
-    sed -i "s/version: .*/version: 1/" Chart.yaml
-    sed -i "s/appVersion: .*/appVersion: \"1\"/" Chart.yaml
-    helm package . # This creates a file similar to whereami-X.tgz
-    helm push whereami-1.tgz oci://us-docker.pkg.dev/google-samples/charts/whereami
 
 images:
   - 'gcr.io/google-samples/whereami:v1'
