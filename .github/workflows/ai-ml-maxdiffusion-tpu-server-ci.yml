@@ -18,11 +18,11 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/maxdiffusion-tpu-server.yml'
+      - '.github/workflows/ai-ml-maxdiffusion-tpu-server-ci.yml'
       - 'ai-ml/maxdiffusion-tpu/build/server/**'
   pull_request:
     paths:
-      - '.github/workflows/maxdiffusion-tpu-server.yml'
+      - '.github/workflows/ai-ml-maxdiffusion-tpu-server-ci.yml'
       - 'ai-ml/maxdiffusion-tpu/build/server/**'
 jobs:
   job:
