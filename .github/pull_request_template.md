@@ -13,5 +13,6 @@ This PR....
 * [ ] The samples added / modified have been fully tested.
 * [ ] Workflow files have been added / modified, if applicable.
 * [ ] Region tags have been properly added, if new samples.
+* [ ] Editable variables have been used, where applicable.
 * [ ] All dependencies are set to up-to-date versions, as applicable.
 * [ ] Merge this pull-request for me once it is approved.
