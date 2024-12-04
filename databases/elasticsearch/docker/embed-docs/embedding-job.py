@@ -32,7 +32,7 @@ loader = PyPDFLoader("/documents/" + filename)
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 documents = loader.load_and_split(text_splitter)
 
-embeddings = VertexAIEmbeddings("textembedding-gecko@001")
+embeddings = VertexAIEmbeddings("text-embedding-005")
 
 client = Elasticsearch(
     [os.getenv("ES_URL")], 

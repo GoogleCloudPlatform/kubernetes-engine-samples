@@ -16,6 +16,8 @@
 replicaCount: 3
 
 config:
+  service:
+    enable_tls: false
   cluster:
     enabled: true
   storage:
