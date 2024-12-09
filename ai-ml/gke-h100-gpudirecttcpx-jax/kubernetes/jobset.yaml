@@ -1,0 +1,126 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: pingpong
+spec:
+  replicatedJobs:
+  - name: j
+    template:
+      spec:
+        parallelism: 2
+        completions: 2
+        backoffLimit: 0
+        template:
+          metadata:
+            annotations:
+              kubectl.kubernetes.io/default-container: jax-pingpong-tcpx
+          spec:
+            tolerations:
+            - key: "cloud.google.com/impending-node-termination"
+              operator: "Exists"
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
+            serviceAccountName: "default"
+            restartPolicy: Never
+            volumes:
+            - name: nvidia-install-dir-host
+              hostPath:
+                path: /home/kubernetes/bin/nvidia/lib64
+            - name: tcpx-socket
+              emptyDir: {}
+            - name: shared-memory
+              emptyDir:
+                medium: "Memory"
+                sizeLimit: 200Gi
+            - name: tcpx-nccl-plugin-volume
+              emptyDir: {}
+  
+            initContainers:
+            - name: tcpx-nccl-plugin-installer
+              image: us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpx/nccl-plugin-gpudirecttcpx-dev:v3.1.7
+              imagePullPolicy: Always
+              volumeMounts:
+              - name: tcpx-nccl-plugin-volume
+                mountPath: /var/lib/tcpx
+              resources:
+                requests:
+                  cpu: 150m
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  /scripts/container_entry.sh install
+  
+            containers:
+            - name: tcpx-daemon
+              image: us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpx/tcpgpudmarxd-dev:v2.0.11
+              imagePullPolicy: Always
+              command:
+              - "bash"
+              - "-c"
+              - |
+                /tcpgpudmarxd/build/app/tcpgpudmarxd --gpu_nic_preset a3vm \
+                  --uds_path /run/tcpx \
+                  --gpu_shmem_type fd --setup_param "--verbose 128 2 0" &
+                while [ ! -e "/run/tcpx/workload_terminated" ]; do sleep 10; echo "sleeping"; done
+              securityContext:
+                privileged: true
+              volumeMounts:
+              - name: nvidia-install-dir-host
+                mountPath: /usr/local/nvidia/lib64
+              - name: tcpx-socket
+                mountPath: /run/tcpx
+              env:
+              - name: LD_LIBRARY_PATH
+                value: /usr/local/nvidia/lib64
+  
+            - name: jax-pingpong-tcpx
+              image: gcr.io/<<PROJECT>>/jax-pingpong-tcpx:latest
+              imagePullPolicy: Always
+              securityContext:
+                privileged: true
+              env:
+                - name: NODE_RANK
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+                # this must be the same as completions defined at the job
+                # otherwise init will timeout with connection errors
+                - name: NNODES
+                  value: "2"
+                - name: USE_GPUDIRECT_TCPX
+                  value: "yes"
+                - name: GPUS_PER_NODE
+                  value: "8"
+                - name: COORDINATOR_ADDR
+                  value: "pingpong-j-0-0.pingpong"
+                - name: COORDINATOR_PORT
+                  value: "6002"
+                - name: LD_LIBRARY_PATH
+                  value: /usr/local/nvidia/lib64
+              volumeMounts:
+                - name: nvidia-install-dir-host
+                  mountPath: /usr/local/nvidia/lib64
+                - name: tcpx-nccl-plugin-volume
+                  mountPath: /usr/local/tcpx
+                - name: tcpx-socket
+                  mountPath: /run/tcpx
+                - name: shared-memory
+                  mountPath: /dev/shm
+              resources:
+                limits:
+                  nvidia.com/gpu: "8"
