@@ -1,0 +1,12 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: balanced-storage
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+parameters:
+  type: hyperdisk-balanced
+  provisioned-throughput-on-create: "250Mi"
+  provisioned-iops-on-create: "7000"
+
