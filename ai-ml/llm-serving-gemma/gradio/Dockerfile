@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.13.0-alpine3.19
+FROM python:3.13.1-alpine3.20
 ADD app/ .
 RUN pip install -r requirements.txt
 CMD ["python", "./app.py"] 
