@@ -1,0 +1,160 @@
+---
+# Source: postgresql-ha/templates/postgresql/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+data:
+  password: "UDRLelFFWlBhdg=="
+  repmgr-password: "TDFKRm1PZHFmMA=="
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-ssd-headless
+  namespace: "default"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: "postgresql"
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+  selector:
+    app.kubernetes.io/instance: postgres-ssd
+    app.kubernetes.io/component: postgresql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-ssd
+  labels: &labels
+    app.kubernetes.io/instance: postgres-ssd
+    app.kubernetes.io/component: postgresql
+spec:
+  replicas: 1
+  podManagementPolicy: "Parallel"
+  serviceName: postgres-ssd-headless
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels: *labels
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: "cloud.google.com/gke-nodepool"
+                operator: In
+                values:
+                - "default-pool"
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      containers:
+        - name: postgresql
+          image: docker.io/bitnami/postgresql-repmgr:16.4.0-debian-12-r24
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit, repmgr"
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: REPMGR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: REPMGR_PARTNER_NODES
+              value: postgres-ssd-0.postgres-ssd-headless.$(REPMGR_NAMESPACE)
+            - name: REPMGR_PRIMARY_HOST
+              value: "postgres-ssd-0.postgres-ssd-headless.$(REPMGR_NAMESPACE)"
+            - name: REPMGR_NODE_NAME
+              value: "$(MY_POD_NAME)"
+            - name: REPMGR_NODE_NETWORK_NAME
+              value: "$(MY_POD_NAME).postgres-ssd-headless.$(REPMGR_NAMESPACE)"
+            - name: REPMGR_USERNAME
+              value: "repmgr"
+            - name: REPMGR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: repmgr-password
+            - name: REPMGR_DATABASE
+              value: "repmgr"
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - bash
+                - -ec
+                - 'PGPASSWORD=$POSTGRES_PASSWORD psql -w -U "postgres" -d "postgres" -h 127.0.0.1 -p 5432 -c "SELECT 1"'
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - bash
+                - -ec
+                - |
+                  exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+          resources:
+            limits:
+              cpu: 2
+              memory: 8Gi
+            requests:
+              cpu: 2
+              memory: 8Gi
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/postgresql
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        storageClassName: "premium-rwo"
+        resources:
+          requests:
+            storage: "20Gi"
