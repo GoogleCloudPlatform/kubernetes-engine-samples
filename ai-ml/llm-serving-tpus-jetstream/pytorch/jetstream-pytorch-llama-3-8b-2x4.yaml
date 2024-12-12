@@ -37,7 +37,7 @@ spec:
         image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-pytorch-server:v0.2.4
         args:
         - --model_id=meta-llama/Meta-Llama-3-8B
-        - --override_batch_size=32
+        - --override_batch_size=30
         - --working_dir=/models/pytorch/
         - --enable_model_warmup=True
         volumeMounts:
