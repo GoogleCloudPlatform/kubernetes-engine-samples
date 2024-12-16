@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.3
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
         resources:
           requests:
             cpu: "250m"
@@ -57,8 +57,9 @@ spec:
   selector:
     app: gradio
   ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 7860
+  - protocol: TCP
+    port: 8080
+    targetPort: 7860
   type: ClusterIP
+
 # [END gke_ai_ml_gke_ray_rayserve_llm_llama_2_7b_gradio]

@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.3
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
         resources:
           requests:
             cpu: "250m"
@@ -49,9 +49,13 @@ spec:
         - name: MODEL_ID
           value: "gemma"
         - name: USER_PROMPT
-          value: "<start_of_turn>user\nprompt<end_of_turn>\n"
+          value: "<start_of_turn>user
+
+            prompt<end_of_turn>\n"
         - name: SYSTEM_PROMPT
-          value: "<start_of_turn>model\nprompt<end_of_turn>\n"
+          value: "<start_of_turn>model
+
+            prompt<end_of_turn>\n"
         ports:
         - containerPort: 7860
 ---
@@ -63,8 +67,9 @@ spec:
   selector:
     app: gradio
   ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 7860
+  - protocol: TCP
+    port: 8080
+    targetPort: 7860
   type: ClusterIP
+
 # [END gke_ai_ml_llm_serving_gemma_tgi_gradio_deployment]

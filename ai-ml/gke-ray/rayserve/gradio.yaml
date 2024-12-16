@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.0
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
         env:
         - name: MODEL_ID
           value: "meta-llama/Llama-2-7b-chat-hf"
@@ -50,8 +50,9 @@ spec:
   selector:
     app: gradio
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 7860
+  - protocol: TCP
+    port: 80
+    targetPort: 7860
   type: LoadBalancer
+
 # [END gke_ai_ml_gke_ray_rayserve_gradio]

@@ -20,7 +20,7 @@ metadata:
   labels:
     app: gradio
 spec:
-  strategy: 
+  strategy:
     type: Recreate
   replicas: 1
   selector:
@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.0
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
         resources:
           requests:
             cpu: "512m"
@@ -68,4 +68,5 @@ spec:
   ports:
   - port: 80
     targetPort: 7860
+
 # [END gke_aiml_llm_multi_gpus_falcon_40b_gradio]
