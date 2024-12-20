@@ -39,7 +39,8 @@ preferred order, are:
 Given that the A2 and A3 machines are substantially overpowered for this
 workload, the cluster admin would prefer that they are not used in this case.
 Therefore, they could build a compute class that allows any of the N1 or G2
-machines, but prefers them in the order given, for cost savings.
+machines, but prefers them in the order given, for cost savings. It's also
+possible to use spot instances for any of these node pools.
 
 Notice though that some of these machines have 1 GPU, some have 2, and one shape
 even has 4 GPUs. Using the current Kubernetes Device Plugin, we would have to
@@ -59,7 +60,8 @@ GPU available to it, and make use of them all. But that is a common behavior of 
 existing workloads, as long as they are all NVIDIA GPUs.
 
 Let's give this a try. In this example, we will create a compute class that
-allows the T4, L4, or P4 options, in that order of priority.
+allows the T4, L4, or P4 options, in that order of priority. We will make the P4
+option use spot VMs, to reduce costs.
 
 First, we need a GKE cluster with the DRA beta enabled.  This is available
 starting in GKE 1.32.
@@ -93,9 +95,11 @@ There are a few other items in that NVIDIA repository that are relevant. From
 the GKE `create-cluster.sh` script, we need to do the following:
 
 ```console
-# TODO: verify gpu-driver-version=latest makes this unnecessary
-#kubectl label node --overwrite -l nvidia.com/gpu.present=true cloud.google.com/gke-gpu-driver-version-
-#kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+# Manually install drivers. Use this instead of the file shown in the NVIDIA
+# repository. This creates separate DaemonSets based on the
+# GPU model, as described in
+#  https://cloud.google.com/kubernetes-engine/docs/how-to/gpus#ubuntu
+kubectl apply -f nvidia-driver-installers.yaml
 
 ## Create the nvidia namespace
 kubectl create namespace nvidia
@@ -121,10 +125,8 @@ gcloud container node-pools create "n1-standard-4-2xt4" \
         --location "${LOCATION}" \
         --node-version "${VERSION}" \
         --machine-type "n1-standard-4" \
-        --accelerator "gpu-driver-version=latest,type=nvidia-tesla-t4,count=2" \
+        --accelerator "type=nvidia-tesla-t4,count=2,gpu-driver-version=disabled" \
         --image-type "UBUNTU_CONTAINERD" \
-        --metadata disable-legacy-endpoints=true \
-        --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" \
         --num-nodes "0" \
         --enable-autoscaling \
         --min-nodes "0" \
@@ -138,10 +140,8 @@ gcloud container node-pools create "g2-standard-4" \
         --location "${LOCATION}" \
         --node-version "${VERSION}" \
         --machine-type "g2-standard-4" \
-        --accelerator "gpu-driver-version=latest" \
+        --accelerator "type=nvidia-l4,gpu-driver-version=disabled" \
         --image-type "UBUNTU_CONTAINERD" \
-        --metadata disable-legacy-endpoints=true \
-        --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" \
         --num-nodes "0" \
         --enable-autoscaling \
         --min-nodes "0" \
@@ -149,21 +149,19 @@ gcloud container node-pools create "g2-standard-4" \
         --node-labels=cloud.google.com/compute-class=${COMPUTE_CLASS},gke-no-default-nvidia-gpu-device-plugin=true,nvidia.com/gpu.present=true \
         --node-taints=cloud.google.com/compute-class=${COMPUTE_CLASS}:NoSchedule
 
-# N1 with 4xP4
+# N1 with 4xP4 spot instances
 gcloud container node-pools create "n1-standard-4-4xp4" \
         --cluster "${CLUSTER_NAME}" \
         --location "${LOCATION}" \
         --node-version "${VERSION}" \
         --machine-type "n1-standard-4" \
-        --accelerator "gpu-driver-version=latest,type=nvidia-tesla-p4,count=4" \
+        --accelerator "type=nvidia-tesla-p4,count=4,gpu-driver-version=disabled" \
         --image-type "UBUNTU_CONTAINERD" \
-        --disk-size "100" \
-        --metadata disable-legacy-endpoints=true \
-        --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" \
         --num-nodes "0" \
         --enable-autoscaling \
         --min-nodes "0" \
         --max-nodes "3" \
+        --spot \
         --node-labels=cloud.google.com/compute-class=${COMPUTE_CLASS},gke-no-default-nvidia-gpu-device-plugin=true,nvidia.com/gpu.present=true \
         --node-taints=cloud.google.com/compute-class=${COMPUTE_CLASS}:NoSchedule
 ```

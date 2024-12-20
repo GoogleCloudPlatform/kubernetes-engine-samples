@@ -44,7 +44,7 @@ spec:
       - name: ctr
         image: ubuntu:22.04
         command: ["bash", "-c"]
-        args: ["nvidia-smi -L; trap 'exit 0' TERM; sleep 9999 & wait"]
+        args: ["while [ 1 ]; do date; echo $(nvidia-smi -L || echo Waiting...); sleep 60; done"]
         resources:
           claims:
           - name: gpu
