@@ -54,7 +54,6 @@ spec:
               ephemeral-storage: "15Gi"
               memory: "8Gi"
         nodeSelector:
-          cloud.google.com/compute-class: Performance
           cloud.google.com/machine-family: c3d
     workerGroupSpecs:
     - replicas: 1
