@@ -91,24 +91,12 @@ the following two pending PRs have merged:
 If those haven't merged, you'll need to make those changes manually to the
 script before running it.
 
-There are a few other items in that NVIDIA repository that are relevant. From
-the GKE `create-cluster.sh` script, we need to do the following:
+There are a few other things needed: installing the right GPU drivers, and
+reconfiguring the nodes to work for DRA. This is all done by three different
+DaemonSets, which you can apply like this:
 
 ```console
-# Manually install drivers. Use this instead of the file shown in the NVIDIA
-# repository. This creates separate DaemonSets based on the
-# GPU model, as described in
-#  https://cloud.google.com/kubernetes-engine/docs/how-to/gpus#ubuntu
-kubectl apply -f nvidia-driver-installers.yaml
-
-## Create the nvidia namespace
-kubectl create namespace nvidia
-
-# Deploy a custom daemonset that prepares a node for use with DRA
-# Note, this uses a version from the local directory which adds a toleration
-# for the compute class taint. Using the one from the upstream NVIDIA repository
-# will not work.
-kubectl apply -f prepare-gke-nodes-for-dra.yaml
+kubectl apply -f dra-daemonsets.yaml
 ```
 
 Next, we need node pools representing each machine type. As of now, we cannot use
