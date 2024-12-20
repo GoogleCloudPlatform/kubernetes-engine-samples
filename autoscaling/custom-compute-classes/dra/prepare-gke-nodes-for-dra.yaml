@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: prepare-gpu-node-for-dra
+  namespace: nvidia
+  labels:
+    app: prepare-gpu-node-for-dra
+spec:
+  selector:
+    matchLabels:
+      app: prepare-gpu-node-for-dra
+  template:
+    metadata:
+      labels:
+        app: prepare-gpu-node-for-dra
+    spec:
+      hostPID: true
+      hostIPC: true
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      containers:
+      - image: ubuntu:22.04
+        name: ctr
+        command: ["bash", "-c"]
+        args:
+        - |-
+          chroot /host bash -c "until /opt/nvidia/bin/nvidia-smi; do :; done"
+          chroot /host bash -c "
+            curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --yes --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+              && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+                sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+                tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+              && \
+                apt-get -o DPkg::Lock::Timeout=60 update \
+              && \
+                apt-get -o DPkg::Lock::Timeout=60 install nvidia-container-toolkit-base";
+          chroot /host sed -i -e '/\[plugins."io.containerd.grpc.v1.cri"\]/a \ \ enable_cdi = true' /etc/containerd/config.toml;
+          chroot /host systemctl restart containerd;
+          sleep infinity;
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+        - name: host-sys
+          mountPath: /sys
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
+      - name: host-sys
+        hostPath:
+          path: /sys
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+        - key: cloud.google.com/compute-class
+          operator: Exists
+          effect: NoSchedule
