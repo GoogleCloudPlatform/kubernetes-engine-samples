@@ -27,6 +27,7 @@ minimum sized shapes with various NVIDIA GPU models that qualify, in the admin's
 preferred order, are:
 
 | Node Shape         | vCPUS | Mem (GB) | GPUs     | GPU Mem (GB) |
+| -------------------|-------|----------|----------|--------------|
 | n1-standard-4+T4   | 4     | 15       | 2 x T4   | 32           |
 | g2-standard-4      | 4     | 16       | 1 x L4   | 24           |
 | n1-standard-4+P4   | 4     | 15       | 4 x P4   | 32           |
