@@ -251,7 +251,40 @@ scale up because of insufficient GPU resources. This is in development and will
 be resolved soon. Until then, we use an anti-affinity rule to force
 one-pod-per-node and trigger scaling.
 
-With just one replica, we see one T4 node spins up:
+Results of scaling to 4 replicas:
 
 ```console
+$ k get po
+NAME                       READY   STATUS    RESTARTS   AGE
+ccc-gpu-6b6866cb68-66zrl   1/1     Running   0          29s
+ccc-gpu-6b6866cb68-prb2k   1/1     Running   0          29s
+ccc-gpu-6b6866cb68-rj7z6   1/1     Running   0          29s
+ccc-gpu-6b6866cb68-t2jrp   1/1     Running   0          29s
+$ k logs ccc-gpu-6b6866cb68-prb2k
+GPU 0: Tesla T4 (UUID: GPU-9cbaabad-b724-9242-39e2-486a9450527a)
+GPU 1: Tesla T4 (UUID: GPU-3d424488-8672-f8af-3fb7-2ace22ec966e)
+$ k logs ccc-gpu-6b6866cb68-66zrl
+GPU 0: Tesla T4 (UUID: GPU-3901c076-1e26-f103-4dcd-b3a8d5723bcf)
+GPU 1: Tesla T4 (UUID: GPU-4f6e00e5-3d4a-b762-9128-242138949d6f)
+$ k logs ccc-gpu-6b6866cb68-rj7z6
+GPU 0: Tesla T4 (UUID: GPU-b8d5c02e-d43a-82b4-9219-8d3920fedb0c)
+GPU 1: Tesla T4 (UUID: GPU-59057b0c-944b-a66c-7926-89b4cc6c42c8)
+$ k logs ccc-gpu-6b6866cb68-t2jrp
+GPU 0: NVIDIA L4 (UUID: GPU-51d13b1f-8fe5-9270-be7d-2561dadad56e)
+$ k get nodes
+NAME                                           STATUS   ROLES    AGE   VERSION
+gke-drabeta-default-pool-64569529-32z4         Ready    <none>   26h
+v1.32.0-gke.1358000
+gke-drabeta-default-pool-64569529-3wmn         Ready    <none>   26h
+v1.32.0-gke.1358000
+gke-drabeta-default-pool-64569529-57b6         Ready    <none>   26h
+v1.32.0-gke.1358000
+gke-drabeta-g2-standard-4-68897633-vtd8        Ready    <none>   25m
+v1.32.0-gke.1358000
+gke-drabeta-n1-standard-4-2xt4-a48308e9-45vl   Ready    <none>   25m
+v1.32.0-gke.1358000
+gke-drabeta-n1-standard-4-2xt4-a48308e9-92pw   Ready    <none>   28m
+v1.32.0-gke.1358000
+gke-drabeta-n1-standard-4-2xt4-a48308e9-dnqw   Ready    <none>   25m
+v1.32.0-gke.1358000
 ```
