@@ -56,7 +56,7 @@ spec:
         volumeMounts:
           - mountPath: /dev/shm
             name: dshm
-          - mountPath: /data
+          - mountPath: /tmp
             name: ephemeral-volume
       volumes:
         - name: dshm
