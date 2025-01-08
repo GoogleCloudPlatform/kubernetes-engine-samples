@@ -51,6 +51,9 @@ spec:
         volumeMounts:
           - mountPath: /dev/shm
             name: dshm
+          # mountPath is set to /tmp as it's the path where the HF_HOME environment
+          # variable points to i.e. where the downloaded model from the Hub will be
+          # stored
           - mountPath: /tmp
             name: ephemeral-volume
       volumes:
