@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: llm
-        image: ghcr.io/huggingface/text-generation-inference:2.0.4
+        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu121.2-1.ubuntu2204.py310
         resources:
           requests:
             cpu: "10"
@@ -58,10 +58,10 @@ spec:
         volumeMounts:
           - mountPath: /dev/shm
             name: dshm
-          # mountPath is set to /data as it's the path where the HF_HOME environment
-          # variable points to in the TGI container image i.e. where the downloaded model from the Hub will be
-          # stored
-          - mountPath: /data
+          # mountPath is set to /tmp as it's the path where the HF_HOME environment
+          # variable in the TGI DLCs is set to instead of the default /data set within the TGI default image.
+          # i.e. where the downloaded model from the Hub will be stored
+          - mountPath: /tmp
             name: ephemeral-volume
       volumes:
         - name: dshm
