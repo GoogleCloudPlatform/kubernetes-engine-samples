@@ -268,8 +268,11 @@ It overlays the base manifest with the following Kustomization file:
 
 ```yaml
 nameSuffix: "-backend"
-commonLabels:
-  app: whereami-backend
+labels:
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    app: whereami-backend
 resources:
 - ../k8s
 patches:

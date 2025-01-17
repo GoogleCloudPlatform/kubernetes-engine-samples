@@ -1,6 +1,9 @@
 nameSuffix: "-frontend"
-commonLabels:
-  app: whereami-grpc-frontend
+labels:
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    app: whereami-grpc-frontend
 resources:
 - ../k8s-grpc
 patches:
