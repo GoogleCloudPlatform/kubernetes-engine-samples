@@ -1,6 +1,9 @@
 nameSuffix: "-backend"
-commonLabels:
-  app: whereami-grpc-backend
+labels:
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    app: whereami-grpc-backend
 resources:
 - ../k8s-grpc
 patches:
