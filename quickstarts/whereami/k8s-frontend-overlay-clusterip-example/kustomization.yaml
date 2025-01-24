@@ -1,6 +1,9 @@
 nameSuffix: "-frontend"
-commonLabels:
-  app: whereami-frontend
+labels:
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    app: whereami-frontend
 resources:
 - ../k8s
 patches:
