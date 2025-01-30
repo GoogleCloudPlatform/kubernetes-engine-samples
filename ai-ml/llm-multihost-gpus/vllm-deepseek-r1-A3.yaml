@@ -43,7 +43,7 @@ spec:
               - sh
               - -c
               - "/vllm-workspace/ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE); 
-                python3 -m vllm.entrypoints.openai.api_server --port 8080 --model deepseek-ai/DeepSeek-R1 --tensor-parallel-size 8 --pipeline-parallel-size 2 --trust-remote-code"
+                python3 -m vllm.entrypoints.openai.api_server --port 8080 --model deepseek-ai/DeepSeek-R1 --tensor-parallel-size 16 --trust-remote-code --max-model-len 4096"
             resources:
               limits:
                 nvidia.com/gpu: "8"

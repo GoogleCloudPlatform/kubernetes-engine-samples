@@ -47,7 +47,7 @@ spec:
         - sh
         - -c
         - "pip install 'huggingface_hub==0.24.6' && \
-          huggingface-cli download deepseek-ai/DeepSeek-R1 --local-dir-use-symlinks=False --local-dir=/data/DeepSeek-R1 --include *.safetensors *.json"
+          huggingface-cli download deepseek-ai/DeepSeek-R1 --local-dir-use-symlinks=False --local-dir=/data/DeepSeek-R1 --include *.safetensors *.json *.py"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
