@@ -42,9 +42,9 @@ spec:
             cpu: "32"
           limits:
             cpu: "32"
-        image: python:3.11-bookworm
+        image: python:3.11-alpine
         command:
-        - bash
+        - sh
         - -c
         - "pip install 'huggingface_hub==0.24.6' && \
           huggingface-cli download deepseek-ai/DeepSeek-R1 --local-dir-use-symlinks=False --local-dir=/data/DeepSeek-R1 --include *.safetensors *.json"
