@@ -74,7 +74,9 @@ A sample container image, `us-docker.pkg.dev/google-samples/containers/gke/hello
 Google Artifact Registry.
 
 ```
-kubectl run web-app --image us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0 --port 8080
+kubectl create deployment web-app \
+    --image=us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0 \
+    --port=8080
 ```
 
 
@@ -122,7 +124,7 @@ curl http://[IP-ADDRESS]
 ## Step 13: Deploy a new version of the web application from Google Container Registry.
 
 ```
-kubectl set image deployment web-app web-app=us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0
+kubectl set image deployment/web-app hello-app=us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0
 watch kubectl get pods
 ```
 
