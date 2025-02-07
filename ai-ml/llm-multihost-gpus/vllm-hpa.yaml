@@ -34,4 +34,4 @@ spec:
     kind: LeaderWorkerSet
     name: vllm
 
-# [END gke_ai_ml_llm_serving_multihost_gpus_vllm_pod_hpa]
+# [END gke_ai_ml_llm_serving_multihost_gpus_vllm_hpa]
