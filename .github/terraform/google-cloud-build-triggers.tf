@@ -1,3 +1,19 @@
+/**
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Some of the Docker images from this repository are stored in Google Cloud's Artifact Registry (e.g., images referenced by GKE tutorials).
 // Such images are rebuilt and repushed to Artifact Registry whenever related changes occur.
 // The rebuilding/repushing is done by Google Cloud Build Triggers that we have set up in the "google-samples" Google Cloud project.
@@ -71,11 +87,11 @@ resource "google_cloudbuild_trigger" "custom-metrics-direct-to-sd" {
     }
 }
 
-resource "google_cloudbuild_trigger" "custom-metrics-prometheus-to-sd" {
-    name = "kubernetes-engine-samples-custom-metrics-prometheus-to-sd"
+resource "google_cloudbuild_trigger" "custom-metrics-gmp" {
+    name = "kubernetes-engine-samples-custom-metrics-gmp"
     description = local.trigger_description
-    filename = "observability/custom-metrics-autoscaling/prometheus-to-sd/cloudbuild.yaml"
-    included_files = ["observability/custom-metrics-autoscaling/prometheus-to-sd/**"]
+    filename = "observability/custom-metrics-autoscaling/google-managed-prometheus/cloudbuild.yaml"
+    included_files = ["observability/custom-metrics-autoscaling/google-managed-prometheus/**"]
 
     github {
         owner = "GoogleCloudPlatform"
@@ -225,6 +241,21 @@ resource "google_cloudbuild_trigger" "workload-metrics" {
     name = "kubernetes-engine-samples-workload-metrics"
     filename = "observability/workload-metrics/cloudbuild.yaml"
     included_files = ["observability/workload-metrics/**"]
+    description = local.trigger_description
+
+    github {
+        owner = "GoogleCloudPlatform"
+        name = "kubernetes-engine-samples"
+        push {
+            branch = "^main$"
+        }
+    }
+}
+
+resource "google_cloudbuild_trigger" "keda-cloud-pubsub" {
+    name = "kubernetes-engine-samples-keda-cloud-pubsub"
+    filename = "cost-optimization/gke-keda/cloud-pubsub/cloudbuild.yaml"
+    included_files = ["cost-optimization/gke-keda/cloud-pubsub/**"]
     description = local.trigger_description
 
     github {

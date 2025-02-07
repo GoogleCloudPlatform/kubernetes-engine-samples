@@ -1,0 +1,83 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgi-gemma-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-server
+  template:
+    metadata:
+      labels:
+        ai.gke.io/inference-server: text-generation-inference
+        ai.gke.io/model: gemma-7b-token
+        app: gemma-server
+        examples.ai.gke.io/source: user-guide
+    spec:
+      containers:
+      - args:
+        - --model-id=$(MODEL_ID)
+        - --num-shard=1
+        - --max-total-tokens=3072
+        - --max-batch-prefill-tokens=512
+        - --max-input-length=512
+        env:
+        - name: MODEL_ID
+          value: google/gemma-7b
+        - name: PORT
+          value: "8000"
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: hf_api_token
+              name: hf-secret
+        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu124.2-3.ubuntu2204.py311
+        name: inference-server
+        resources:
+          limits:
+            cpu: "2"
+            ephemeral-storage: 20Gi
+            memory: 7Gi
+            nvidia.com/gpu: 1
+          requests:
+            cpu: "2"
+            ephemeral-storage: 20Gi
+            memory: 7Gi
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: dshm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: gemma-server
+  type: ClusterIP

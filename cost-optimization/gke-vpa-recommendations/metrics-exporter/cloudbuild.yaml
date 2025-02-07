@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # This file and other cloudbuild.yaml files are used to ensure that
-# our public Docker images such as gcr.io/google-samples/hello-app:1.0
+# our public Docker images such as us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
 # are rebuilt and updated upon changes to the repository.
 
 steps:
@@ -22,10 +22,13 @@ steps:
     - 'build'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'cost-optimization/gke-vpa-recommendations/metrics-exporter'
 
 # Push images.
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/metrics-exporter:sample-public-image-${SHORT_SHA}'
 

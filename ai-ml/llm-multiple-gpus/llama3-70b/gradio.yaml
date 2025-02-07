@@ -1,0 +1,72 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_llm_multi_gpus_llama3_70b_gradio]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gradio
+  labels:
+    app: gradio
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gradio
+  template:
+    metadata:
+      labels:
+        app: gradio
+    spec:
+      containers:
+      - name: gradio
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
+        resources:
+          requests:
+            cpu: "512m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+        env:
+        - name: CONTEXT_PATH
+          value: "/generate"
+        - name: HOST
+          value: "http://llm-service"
+        - name: LLM_ENGINE
+          value: "tgi"
+        - name: MODEL_ID
+          value: "meta-llama/Meta-Llama-3-70B-Instruct"
+        - name: USER_PROMPT
+          value: "<|begin_of_text|><|start_header_id|>user<|end_header_id|> prompt <|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+        - name: SYSTEM_PROMPT
+          value: "prompt <|eot_id|>"
+        ports:
+        - containerPort: 7860
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gradio-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: gradio
+  ports:
+  - port: 80
+    targetPort: 7860
+
+# [END gke_aiml_llm_multi_gpus_llama3_70b_gradio]

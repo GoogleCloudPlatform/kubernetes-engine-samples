@@ -1,0 +1,205 @@
+﻿@{
+// Copyright 2021 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+}
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Demo .NET Application</h1>
+    <p class="lead">This is a demo app that will be used to demonstrate a .NET Framework App (MVC) running in a Windows Container and is enabled to use Active Directory.</p>
+    <p>This page is configured to accept <span style="color:red">Anonymous Authentication</span>.</p>
+    <p>
+        To test Windows Authentication, click @Html.ActionLink("Login", "Authenticate", "Secure")
+    </p>
+    <p>
+        To test access to network resources, click @Html.ActionLink("Test network access", "Index", "NetworkAccess")
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <style>
+            table {
+                font-family: 'Courier New', sans-serif;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #010b13;
+                text-align: left;
+                padding: 8px;
+            }            
+        </style>
+        <h2 style="color:blue;">Basic System Information</h2>
+        <p>
+            <table style="width:auto">
+                <tr>
+                    <th style="text-align:center; background-color:dodgerblue; color:white"><strong>Environment Variable</strong></th>
+                    <th style="text-align:center; background-color:dodgerblue; color:white"><strong>System Value</strong></th>
+                </tr>
+                <tr>
+                    <td>Container Name</td>
+                    <td>@System.Net.Dns.GetHostName()</td>
+                </tr>
+                <tr>
+                    <td>Pod Name</td>
+                    <td>@(Environment.GetEnvironmentVariable("POD_NAME") ?? "Environment Variable was not set in Dockerfile")</td>
+                </tr>
+                <tr>
+                    <td>OS Version</td>
+                    <td>@Environment.OSVersion</td>
+                </tr>
+                <tr>
+                    <td>Application Pool identity</td>
+                    <td>@System.Security.Principal.WindowsIdentity.GetCurrent().Name</td>
+                </tr>
+            </table>
+        </p>
+    </div>
+
+    <div class="col-lg-12">
+        <h2 style="color:blue;">Preflight Checks</h2>
+        <pre style="color:red">Please run these checks first! The tests will confirm that the all prerequisites are in place.</pre>
+        <p>
+            <button class="btn btn-primary" id="btn-preFlightChecks-run" style="width:175px;">Run Preflight Checks</button>
+        </p>
+        <h3>Output</h3>
+        <p>
+            <textarea id="output-preFlightChecks-results" style="width:900px; font-family:'Courier New';" rows="15"></textarea>
+        </p>
+    </div>
+    <br />
+    <br />
+    <div class="col-lg-12">
+        <h2 style="color:blue;">Container Information</h2>
+        <p><strong>Run Container Diagnostic Tests</strong></p>
+        <pre style="color:darkorange">Results may take a few seconds to populate</pre>
+        <p>
+            <button class="btn btn-primary" id="btn-containerDiag-run" style="width:175px;">Run Script</button>
+            <button class="btn btn-primary" id="btn-containerDiag-clear" style="width:175px;">Clear Output</button>
+        </p>
+        <h3>Output</h3>
+        <p>
+            <textarea id="output-containerDiag-results" style="width:900px; font-family:'Courier New';" rows="15"></textarea>
+        </p>
+    </div>
+    <br />
+    <div class="col-lg-12">
+        <h2 style="color:blue;">Domain Connectivity</h2>
+        <p><strong>Run Domain Connectivity Diagnostic Tests</strong></p>
+        <dl>
+            <dd>
+                <dl>
+                    <dd>
+                        <pre>Input the Group Managed Service Account (gMSA) then click &quot;Run Script&quot;. <span style="color:red">Do not include the Domain Name.</span></pre>
+                    </dd>
+                    <dd>
+                        <p>Account Name: <input id="gMSAInput" style="width:300px; font-family:'Courier New';" type="text"/></p>
+                    </dd>
+                </dl>
+            </dd>
+        </dl>
+        <p>
+            <button class="btn btn-primary" id="btn-domainDiag-run" style="width:175px;">Run Script</button>
+            <button class="btn btn-primary" id="btn-domainDiag-clear" style="width:175px;">Clear Output</button>
+        </p>
+        <h3>Output</h3>
+        <p>
+            <textarea id="output-domainDiag-results" style="width:900px; font-family:'Courier New';" rows="15"></textarea>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" defer>
+       
+        $(document).ready(function ()
+        {
+
+            $("#btn-containerDiag-clear").click(function ()
+            {
+                document.getElementById("output-containerDiag-results").value="";
+            });
+
+            $("#btn-domainDiag-clear").click(function () {
+                document.getElementById("output-domainDiag-results").value="";
+            });
+
+            $("#btn-preFlightChecks-run").click(function ()
+            {
+                document.getElementById("output-preFlightChecks-results").value = "Running...";
+                var preFlightChecksOutputText = $("#output-preFlightChecks-results");
+                 $.ajax({
+                     cache: false,
+                     type: "GET",
+                     url: "@Url.Action("PreFlightChecks", "Powershell")",
+
+                    success: function (data)
+                    {
+                        preFlightChecksOutputText.val(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError)
+                    {
+                        alert('Failed to execute script.');
+                    }
+                });
+            });
+
+            $("#btn-containerDiag-run").click(function ()
+            {
+                document.getElementById("output-containerDiag-results").value = "Running...";
+                var containerDiagOutputText = $("#output-containerDiag-results");
+                 $.ajax({
+                     cache: false,
+                     type: "GET",
+                     url: "@Url.Action("ContainerDiagnostics", "Powershell")",
+
+                    success: function (data)
+                    {
+                        containerDiagOutputText.val(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError)
+                    {
+                        alert('Failed to execute script.');
+                    }
+                });
+            });
+
+            $("#btn-domainDiag-run").click(function ()
+            {
+                document.getElementById("output-domainDiag-results").value = "Running...";
+                var domainDiagOutputText = $("#output-domainDiag-results");
+                var gMSA = document.getElementById("gMSAInput").value;
+                 $.ajax({
+                     cache: false,
+                     type: "GET",
+                     url: "@Url.Action("DomainDiagnostics", "Powershell")",
+                     data: { 'gMSAInput': gMSA },
+
+                    success: function (data)
+                    {
+                        domainDiagOutputText.val(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError)
+                    {
+                        alert('Failed to execute script.');
+                    }
+                });
+            });
+        });
+    </script>
+}

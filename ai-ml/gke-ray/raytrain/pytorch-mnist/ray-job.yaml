@@ -1,0 +1,76 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_raytrain_pytorch_mnist_rayjob]
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: pytorch-mnist-job
+spec:
+  shutdownAfterJobFinishes: true
+  entrypoint: python ai-ml/gke-ray/raytrain/pytorch-mnist/train.py
+  runtimeEnvYAML: |
+    pip:
+      - torch
+      - torchvision
+    working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/main.zip"
+    env_vars:
+      NUM_WORKERS: "4"
+      CPUS_PER_WORKER: "2"
+  rayClusterSpec:
+    rayVersion: '2.37.0'
+    headGroupSpec:
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: rayproject/ray:2.37.0
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+              resources:
+                limits:
+                  cpu: "2"
+                  ephemeral-storage: "9Gi"
+                  memory: "4Gi"
+                requests:
+                  cpu: "2"
+                  ephemeral-storage: "9Gi"
+                  memory: "4Gi"
+    workerGroupSpecs:
+      - replicas: 4
+        minReplicas: 1
+        maxReplicas: 5
+        groupName: small-group
+        rayStartParams: {}
+        template:
+          spec:
+            containers:
+              - name: ray-worker
+                image: rayproject/ray:2.37.0
+                resources:
+                  limits:
+                    cpu: "4"
+                    ephemeral-storage: "9Gi"
+                    memory: "8Gi"
+                  requests:
+                    cpu: "4"
+                    ephemeral-storage: "9Gi"
+                    memory: "8Gi"
+# [END gke_ai_ml_gke_ray_raytrain_pytorch_mnist_rayjob]

@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# [START gke_networking_dpv2_observability_cluster_pod_monitoring]
 apiVersion: monitoring.googleapis.com/v1
 kind: ClusterPodMonitoring
 metadata:
@@ -100,3 +102,4 @@ spec:
       action: replace
   targetLabels:
     metadata: []
+# [END gke_networking_dpv2_observability_cluster_pod_monitoring]

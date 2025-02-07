@@ -1,6 +1,9 @@
 nameSuffix: "-echo-headers"
-commonLabels:
-  app: whereami-echo-headers
+labels:
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    app: whereami-echo-headers
 resources:
 - ../k8s
 patches:

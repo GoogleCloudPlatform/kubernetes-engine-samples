@@ -1,0 +1,21 @@
+name: ai-ml-finetune-gemma
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ai-ml-gke-finetuning-gemma.yml'
+      - 'ai-ml/llm-finetuning-gemma/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ai-ml-gke-finetuning-gemma.yml'
+      - 'ai-ml/llm-finetuning-gemma/**'
+jobs:
+  gke-a100-jax:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build container for llm-finetuning-gemma tutorial
+        run: |
+          cd ai-ml/llm-finetuning-gemma/
+          docker build --tag finetune .

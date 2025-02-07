@@ -1,0 +1,53 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_gemma_saxml_http]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sax-http
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sax-http
+  template:
+    metadata:
+      labels:
+        app: sax-http
+    spec:
+      hostNetwork: false
+      containers:
+      - name: sax-http
+        image: us-docker.pkg.dev/cloud-tpu-images/inference/sax-http:v1.2.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8888
+        env:
+        - name: SAX_ROOT
+          value: "gs://ADMIN_BUCKET_NAME/sax-root"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sax-http-svc
+spec:
+  selector:
+    app: sax-http
+  ports:
+  - protocol: TCP
+    port: 8888
+    targetPort: 8888
+  type: ClusterIP
+# [END gke_ai_ml_llm_serving_gemma_saxml_http]

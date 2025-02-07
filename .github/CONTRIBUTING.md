@@ -1,65 +1,78 @@
-# How to become a contributor and submit your own code
+# How to contribute to kubernetes-engine-samples
 
-## Contributor License Agreements
-
-Before you're able to contribute to this repository, you need to sign a
-Contributor License Agreement (CLA). You can follow the links below to
-fill out the appropriate CLA (individual, or corporate):
-
-* **[Individual
-  CLA](https://developers.google.com/open-source/cla/individual):** You are an individual writing original source code and own the intellectual property.
-* **[Corporate
-  CLA](https://developers.google.com/open-source/cla/corporate):** You work for a company that allows you to contribute your work.
-
-Follow either of the two links above to access the appropriate CLA and
-instructions for how to sign and return it. Once we receive it, we'll be able to
-accept your pull requests. You can visit <https://cla.developers.google.com/> to
-confirm your current agreements or to sign a new one.
-
-## Contributing a patch
+## Steps to follow
 
 1. [Submit an issue](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/issues/new) describing your proposed changes.
-1. The repo owner will respond to your issue promptly. Once accepted:
-1. Sign a Contributor License Agreement (see details above) if you haven't done so.
-1. Fork the repo, develop and test your code changes.
-1. Ensure that your code adheres to the existing style in the sample to which
-   you are contributing.
-1. Ensure that your code has an appropriate set of unit tests which all pass.
-1. Submit a pull request.
+1. Wait for the proposed changes to be accepted by a repo maintainer.
+1. Sign a [Contributor License Agreement](#contributor-license-agreement-cla) if you haven't done so.
+1. Fork the repo, develop, and test your code changes.
+1. Ensure that your code follows [samples requirements](#samples-requirements).
+1. Create a [pull request (PR)](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/compare).
 
-## Code reviews
-
-All submissions, including submissions by project members, require review. We
-use GitHub pull requests for this purpose. Consult
-[GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
-information on using pull requests.
-
-## Community guidelines
-
-This project follows
-[Google's Open Source Community Guidelines](https://opensource.google/conduct/).
+Note that:
+- The PR reviewer may not be looking at the correctness of the code. They are
+  generally focusing on the PR structure and that it follows samples requirements.
+- You are responsible for making prompt fixes to any issues arising with your samples. If a sample
+  goes out-of-date or breaks, it may be deprecated, depending on business needs.
 
 ## Samples requirements
 
-All new code sample needs the following:
-- An entry in the [CODEOWNERS file](/.github/CODEOWNERS), if applicable.
-- A short `README.md` file with an external link pointing to the tutorial using the sample, if 
-  applicable. There should only be one source of truth for sample instructions.
-- A GitHub Action workflow that tests the sample code. At minimum, this should
-  dry-run any container image or Terraform configs and pass without any errors.
-  [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/.github/workflows/security-ci.yml)]
+All new code samples require the following:
+- **Directory** for all files of the sample (e.g. `/databases/mysql-on-gke/**`).
+  - Use one of the pre-existing top-level topic directories, if possible.
+- **README file** with a link pointing to the tutorial or content using the sample.
+  [[Template](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/.github/new-samples-templates/README.md)]
+  - There should only be one source of truth for sample instructions (i.e. don't duplicate
+    instructions in the README that are or will be made available elsewhere).
+- **Code** that has been tested end-to-end and follows the [Google style guides](https://google.github.io/styleguide/).
+- **GitHub Action workflow** that tests the sample code. At minimum, this should
+  dry-run any container images or Terraform scripts and pass without any errors.
+  [[Template](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/.github/new-samples-templates/workflow.yml)]
   - Each container image should build successfully (e.g. `docker build...`).
-  - Each Terraform config should validate successfully (e.g. `terraform validate...`).
-  - If there are any other simple smoke tests that can be performed, they should also be added here.
+  - Each Terraform script should validate successfully (e.g. `terraform validate...`).
+  - If there are any other quick tests that can be performed, they should also be added here.
+- **Dependencies** using up-to-date versions.
+  - Note that we have automation in place to update these versions on a weekly-basis.
+- **License headers** on all source code and manifest files.
+  [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/.github/new-samples-templates/cloudbuild.yaml#L1-L13)]
+- **Region tags** surrounding any file or snippets of code that will be embeded in a tutorial.
+  [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/ai-ml/llm-multiple-gpus/llm-service.yaml#L15-L28)]
+  - These surround code to be embeded and look like: `[START gke_topic_sample_title_file_name]` and
+    `[END gke_topic_sample_title_file_name]`.
+- **Editable variables**, where applicable. [[Example doc](https://cloud.google.com/kubernetes-engine/docs/tutorials/serve-vllm-tpu#deploy-vllm)] [[Example sample](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/HEAD/ai-ml/vllm-tpu/vllm-llama3-70b.yaml#L42)]
+  - Samples from this repository that are embedded in cloud.google.com documentation can be configured to include editable variables. In other words, readers should be able edit variables such as `PROJECT_ID` on the cloud.google.com page itself.
+  -  To enable editable variables, ensure that your variables
+      -  use all-caps (for example, `project_id` should be `PROJECT_ID`),
+      -  are underscore-delimited (for example, `PROJECT-ID` shoud be `PROJECT_ID`),
+      -  and don't have special characters wrapping them (for example, `[PROJECT_ID]` should be `PROJECT_ID`).
+- **CODEOWNERS file** with an entry listing the samples maintainers.
+  [[CODEOWNERS](/.github/CODEOWNERS)]
+
+### Canonical container images
 - If the sample relies on canonical image artifacts, these can be hosted officially, which requires:
-  - Cloud Build configs for all container images that pushes to the `google-samples` artifact registry.
-  [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/security/wi-secrets/cloudbuild.yaml)]
-  - A Terraform resource for the above Cloud Build configs.
+  - **Cloud Build configs** for all container images that pushes to the `google-samples` artifact registry.
+  [[Template](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/.github/new-samples-templates/cloudbuild.yaml)]
+  - **A Terraform resource** for the above Cloud Build configs.
   [[Example](https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/.github/terraform/google-cloud-build-triggers.tf#L194-L207)]
     - Note that in order for the Cloud Build configs to be applied to the
       `google-samples` project, you need to run `terraform init && terraform apply`
-      while in that project (a repository admin will do this for you). [[docs](/.github/terraform/README.md)]
+      while in that project (a repository admin will do this for you). [[Docs](/.github/terraform/README.md)]
     - The images will be of the form `us-docker.pkg.dev/google-samples/containers/gke<image_name>:latest`
 
-If a pull request modifies any existing files in the `.github/terraform/` directory, these changes must be applied to the `google-samples` project
-once the pull request is merged in. A repository admin will do this for you. [[docs](/.github/terraform/README.md)]
+## Contributor License Agreement (CLA)
+
+Before you're able to contribute to this repository, you need to sign a Contributor License Agreement (CLA).
+You can follow the links below to fill out the appropriate CLA (individual, or corporate):
+
+* **[Individual CLA](https://developers.google.com/open-source/cla/individual):**
+  You are an individual writing original source code and own the intellectual property.
+* **[Corporate CLA](https://developers.google.com/open-source/cla/corporate):**
+  You work for a company that allows you to contribute your work.
+
+Follow either of the two links above to access the appropriate CLA and instructions for how to sign and
+return it. Once we receive it, we'll be able to accept your pull requests. You can visit
+<https://cla.developers.google.com/> to confirm your current agreements or to sign a new one.
+
+## Community guidelines
+
+This project follows [Google's Open Source Community Guidelines](https://opensource.google/conduct/).

@@ -1,0 +1,59 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: envoy
+  template:
+    metadata:
+      labels:
+        app: envoy
+    spec:
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy:v1.24.0@sha256:9ae6b26d14ce92f67cd500cb3e5a89aa3351e013140f8b06c36619d929687ce0
+        ports:
+        - name: https
+          containerPort: 8443
+        resources:
+          requests:
+            cpu: 10m
+            ephemeral-storage: 256Mi
+            memory: 256Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/envoy
+        - name: certs
+          mountPath: /etc/ssl/envoy
+        readinessProbe:
+          httpGet:
+            port: https
+            httpHeaders:
+            - name: x-envoy-livenessprobe
+              value: healthz
+            path: /healthz
+            scheme: HTTPS
+      volumes:
+      - name: config
+        configMap:
+          name: envoy-conf
+      - name: certs
+        secret:
+          secretName: envoy-certs

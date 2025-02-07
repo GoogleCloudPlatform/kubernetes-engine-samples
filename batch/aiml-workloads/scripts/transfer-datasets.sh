@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source scripts/variables.sh
-
 # Copy files containing training datasets from code repository to the GKE Pod
-echo "Copying datasets to Pod '${POD_NAME}'..."
-kubectl cp ${DATASETS_DIR} ${POD_NAME}:${PVC_PATH}
+echo "Copying datasets to Pod 'redis-leader'..."
+kubectl cp datasets redis-leader:/mnt/fileserver

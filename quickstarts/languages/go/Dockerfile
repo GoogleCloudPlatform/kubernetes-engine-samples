@@ -16,7 +16,7 @@
 # Use the offical Go image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.21.0 as builder
+FROM golang:1.23.2 as builder
 WORKDIR /app
 
 # Initialize a new Go module.

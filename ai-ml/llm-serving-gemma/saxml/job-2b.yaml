@@ -1,0 +1,77 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_gemma_saxml_job_2b]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fetch-model-scripts
+data:
+  fetch_model.sh: |-
+    #!/usr/bin/bash -x
+    pip install kaggle --break-system-packages && \
+
+    MODEL_NAME=$(echo ${MODEL_PATH} | awk -F'/' '{print $2}') && \
+    VARIATION_NAME=$(echo ${MODEL_PATH} | awk -F'/' '{print $4}') && \
+
+    mkdir -p /data/${MODEL_NAME}_${VARIATION_NAME} &&\
+    kaggle models instances versions download ${MODEL_PATH} --untar -p /data/${MODEL_NAME}_${VARIATION_NAME} && \
+    echo -e "\nCompleted extraction to /data/${MODEL_NAME}_${VARIATION_NAME}" && \
+
+    gcloud storage rsync --recursive --no-clobber /data/${MODEL_NAME}_${VARIATION_NAME} gs://${BUCKET_NAME}/${MODEL_NAME}_${VARIATION_NAME} && \
+    echo -e "\nCompleted copy of data to gs://${BUCKET_NAME}/${MODEL_NAME}_${VARIATION_NAME}"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-loader-2b
+  labels:
+    app: data-loader-2b
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    metadata:
+      labels:
+        app: data-loader-2b
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: gcloud
+        image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+        command:
+        - /scripts/fetch_model.sh
+        env:
+        - name: BUCKET_NAME
+          value: CHECKPOINTS_BUCKET_NAME
+        - name: KAGGLE_CONFIG_DIR
+          value: /kaggle
+        - name: MODEL_PATH
+          value: "google/gemma/pax/2b-it/2"
+        volumeMounts:
+        - mountPath: "/kaggle/"
+          name: kaggle-credentials
+          readOnly: true
+        - mountPath: "/scripts/"
+          name: scripts-volume
+          readOnly: true
+      volumes:
+      - name: kaggle-credentials
+        secret:
+          defaultMode: 0400
+          secretName: kaggle-secret
+      - name: scripts-volume
+        configMap:
+          defaultMode: 0700
+          name: fetch-model-scripts
+# [END gke_ai_ml_llm_serving_gemma_saxml_job_2b]

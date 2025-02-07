@@ -1,0 +1,133 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_postgres_chaos_testing_05_pod_delete_experiment]
+apiVersion: litmuschaos.io/v1alpha1
+description:
+  message: |
+    Deletes a pod belonging to a deployment/statefulset/daemonset
+kind: ChaosExperiment
+metadata:
+  name: pod-delete
+  labels:
+    name: pod-delete
+    app.kubernetes.io/part-of: litmus
+    app.kubernetes.io/component: chaosexperiment
+    app.kubernetes.io/version: ci
+spec:
+  definition:
+    scope: Namespaced
+    permissions:
+      # Create and monitor the experiment & helper pods
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs:
+          [
+            "create",
+            "delete",
+            "get",
+            "list",
+            "patch",
+            "update",
+            "deletecollection",
+          ]
+      # Performs CRUD operations on the events inside chaosengine and chaosresult
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["create", "get", "list", "patch", "update"]
+      # Fetch configmaps details and mount it to the experiment pod (if specified)
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["get", "list"]
+      # Track and get the runner, experiment, and helper pods log
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get", "list", "watch"]
+      # for creating and managing to execute commands inside target container
+      - apiGroups: [""]
+        resources: ["pods/exec"]
+        verbs: ["get", "list", "create"]
+      # deriving the parent/owner details of the pod(if parent is anyof {deployment, statefulset, daemonsets})
+      - apiGroups: ["apps"]
+        resources: ["deployments", "statefulsets", "replicasets", "daemonsets"]
+        verbs: ["list", "get"]
+      # deriving the parent/owner details of the pod(if parent is deploymentConfig)
+      - apiGroups: ["apps.openshift.io"]
+        resources: ["deploymentconfigs"]
+        verbs: ["list", "get"]
+      # deriving the parent/owner details of the pod(if parent is deploymentConfig)
+      - apiGroups: [""]
+        resources: ["replicationcontrollers"]
+        verbs: ["get", "list"]
+      # deriving the parent/owner details of the pod(if parent is argo-rollouts)
+      - apiGroups: ["argoproj.io"]
+        resources: ["rollouts"]
+        verbs: ["list", "get"]
+      # for configuring and monitor the experiment job by the chaos-runner pod
+      - apiGroups: ["batch"]
+        resources: ["jobs"]
+        verbs: ["create", "list", "get", "delete", "deletecollection"]
+      # for creation, status polling and deletion of litmus chaos resources used within a chaos workflow
+      - apiGroups: ["litmuschaos.io"]
+        resources: ["chaosengines", "chaosexperiments", "chaosresults"]
+        verbs: ["create", "list", "get", "patch", "update", "delete"]
+    image: "litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest"
+    imagePullPolicy: Always
+    args:
+      - -c
+      - ./experiments -name pod-delete
+    command:
+      - /bin/bash
+    env:
+      - name: TOTAL_CHAOS_DURATION
+        value: "15"
+
+      # Period to wait before and after injection of chaos in sec
+      - name: RAMP_TIME
+        value: ""
+
+      - name: FORCE
+        value: "true"
+
+      - name: CHAOS_INTERVAL
+        value: "5"
+
+      ## percentage of total pods to target
+      - name: PODS_AFFECTED_PERC
+        value: ""
+
+      - name: TARGET_CONTAINER
+        value: ""
+
+      - name: TARGET_PODS
+        value: ""
+
+      - name: DEFAULT_HEALTH_CHECK
+        value: "false"
+
+      # To select pods on specific node(s)
+      - name: NODE_LABEL
+        value: ""
+
+      ## it defines the sequence of chaos execution for multiple target pods
+      ## supported values: serial, parallel
+      - name: SEQUENCE
+        value: "parallel"
+
+    labels:
+      name: pod-delete
+      app.kubernetes.io/part-of: litmus
+      app.kubernetes.io/component: experiment-job
+      app.kubernetes.io/version: ci
+# [END gke_databases_postgres_chaos_testing_05_pod_delete_experiment]

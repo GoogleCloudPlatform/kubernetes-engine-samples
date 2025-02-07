@@ -1,0 +1,52 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_tpus_jetstream_pytorch_job_llama_3_8b]
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: checkpoint-converter
+spec:
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: inference-checkpoint
+        image: us-docker.pkg.dev/cloud-tpu-images/inference/inference-checkpoint:v0.2.3
+        args:
+        - -s=jetstream-pytorch
+        - -m=meta-llama/Meta-Llama-3-8B
+        - -o=gs://BUCKET_NAME/pytorch/llama-3-8b/final/bf16/
+        - -n=llama-3
+        - -q=False
+        - -h=True
+        volumeMounts:
+        - mountPath: "/huggingface/"
+          name: huggingface-credentials
+          readOnly: true
+        resources:
+          requests:
+            google.com/tpu: 8
+          limits:
+            google.com/tpu: 8
+      nodeSelector:
+        cloud.google.com/gke-tpu-topology: 2x4
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+      volumes:
+      - name: huggingface-credentials
+        secret:
+          defaultMode: 0400
+          secretName: huggingface-secret
+# [END gke_ai_ml_llm_serving_tpus_jetstream_pytorch_job_llama_3_8b]

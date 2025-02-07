@@ -1,0 +1,95 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_elasticsearch_02_elasticsearch_cluster]
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch-ha
+spec:
+  version: 8.11.4
+  nodeSets:
+  - name: main
+    count: 3
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data 
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: ha-regional
+    config:
+    podTemplate:
+      metadata:
+        labels:
+          app.stateful/component: elasticsearch
+      spec:
+        initContainers:
+        - name: max-map-count-check
+          command: ['sh', '-c', "while true; do mmc=$(cat /proc/sys/vm/max_map_count); if [ ${mmc} -eq 262144 ]; then exit 0; fi; sleep 1; done"]
+        containers:
+        - name: metrics
+          image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.7.0
+          command:
+            - /bin/elasticsearch_exporter
+            - --es.ssl-skip-verify
+            - --es.uri=https://$(ES_USER):$(ES_PASSWORD)@localhost:9200
+          securityContext:
+            runAsNonRoot: true
+            runAsGroup: 10000
+            runAsUser: 10000
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "25m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          ports:
+          - containerPort: 9114
+          env:
+          - name: ES_USER
+            value: "elastic"
+          - name: ES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: elasticsearch-ha-es-elastic-user
+                key: elastic
+        - name: elasticsearch
+          resources:
+            limits:
+              memory: 4Gi
+              cpu: 1
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 1
+                preference:
+                  matchExpressions:
+                  - key: app.stateful/component
+                    operator: In
+                    values:
+                    - elasticsearch
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.stateful/component: elasticsearch
+                topologyKey: topology.kubernetes.io/zone
+# [END gke_databases_elasticsearch_02_elasticsearch_cluster]

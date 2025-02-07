@@ -1,0 +1,71 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_gemma_tgi_gradio_deployment]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gradio
+  labels:
+    app: gradio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gradio
+  template:
+    metadata:
+      labels:
+        app: gradio
+    spec:
+      containers:
+      - name: gradio
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        env:
+        - name: CONTEXT_PATH
+          value: "/generate"
+        - name: HOST
+          value: "http://llm-service:8000"
+        - name: LLM_ENGINE
+          value: "tgi"
+        - name: MODEL_ID
+          value: "gemma"
+        - name: USER_PROMPT
+          value: "<start_of_turn>user\nprompt<end_of_turn>\n"
+        - name: SYSTEM_PROMPT
+          value: "<start_of_turn>model\nprompt<end_of_turn>\n"
+        ports:
+        - containerPort: 7860
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gradio
+spec:
+  selector:
+    app: gradio
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 7860
+  type: ClusterIP
+
+# [END gke_ai_ml_llm_serving_gemma_tgi_gradio_deployment]

@@ -1,0 +1,118 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_postgres_chaos_testing_09_zone_failure_experiment]
+apiVersion: litmuschaos.io/v1alpha1
+description:
+  message: |
+    Stops GCP VM instances and GKE nodes filtered by a label for a specified duration and later restarts them
+kind: ChaosExperiment
+metadata:
+  name: gcp-vm-instance-stop-by-label
+  labels:
+    name: gcp-vm-instance-stop-by-label
+    app.kubernetes.io/part-of: litmus
+    app.kubernetes.io/component: chaosexperiment
+    app.kubernetes.io/version: ci
+spec:
+  definition:
+    scope: Cluster
+    permissions:
+      # Create and monitor the experiment & helper pods
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs:
+          [
+            "create",
+            "delete",
+            "get",
+            "list",
+            "patch",
+            "update",
+            "deletecollection",
+          ]
+      # Performs CRUD operations on the events inside chaosengine and chaosresult
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["create", "get", "list", "patch", "update"]
+      # Fetch configmaps & secrets details and mount it to the experiment pod (if specified)
+      - apiGroups: [""]
+        resources: ["secrets", "configmaps"]
+        verbs: ["get", "list"]
+      # Track and get the runner, experiment, and helper pods log
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get", "list", "watch"]
+      # for configuring and monitor the experiment job by the chaos-runner pod
+      - apiGroups: ["batch"]
+        resources: ["jobs"]
+        verbs: ["create", "list", "get", "delete", "deletecollection"]
+      # for creation, status polling and deletion of litmus chaos resources used within a chaos workflow
+      - apiGroups: ["litmuschaos.io"]
+        resources: ["chaosengines", "chaosexperiments", "chaosresults"]
+        verbs: ["create", "list", "get", "patch", "update", "delete"]
+      # for experiment to perform node status checks
+      - apiGroups: [""]
+        resources: ["nodes"]
+        verbs: ["get", "list"]
+    image: "litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest"
+    imagePullPolicy: Always
+    args:
+      - -c
+      - ./experiments -name gcp-vm-instance-stop-by-label
+    command:
+      - /bin/bash
+    env:
+      # set chaos duration (in sec) as desired
+      - name: TOTAL_CHAOS_DURATION
+        value: "30"
+
+      # set chaos interval (in sec) as desired
+      - name: CHAOS_INTERVAL
+        value: "30"
+
+      - name: SEQUENCE
+        value: "parallel"
+
+      # GCP project ID to which the VM instances belong
+      - name: GCP_PROJECT_ID
+        value: ""
+
+      # Label of the target VM instance(s)
+      - name: INSTANCE_LABEL
+        value: ""
+
+      # Zone in which the target VM instance(s) filtered by the label exist
+      # all the instances should lie in a single zone
+      - name: ZONES
+        value: ""
+
+      # enable it if the target instance is a part of a managed instance group
+      - name: MANAGED_INSTANCE_GROUP
+        value: "disable"
+
+      # set the percentage value of the instances with the given label
+      # which should be targeted as part of the chaos injection
+      - name: INSTANCE_AFFECTED_PERC
+        value: ""
+
+      - name: DEFAULT_HEALTH_CHECK
+        value: "false"
+
+    labels:
+      name: gcp-vm-instance-stop-by-label
+      app.kubernetes.io/part-of: litmus
+      app.kubernetes.io/component: experiment-job
+      app.kubernetes.io/version: ci
+# [END gke_databases_postgres_chaos_testing_09_zone_failure_experiment]

@@ -16,8 +16,20 @@
 replicaCount: 3
 
 config:
+  service:
+    enable_tls: false
   cluster:
     enabled: true
+  storage:
+    optimizers:
+      deleted_threshold: 0.5
+      vacuum_min_vector_number: 1500
+      default_segment_number: 2
+      max_segment_size_kb: null
+      memmap_threshold_kb: null
+      indexing_threshold_kb: 25000
+      flush_interval_sec: 5
+      max_optimization_threads: 1
 
 livenessProbe:
   enabled: true
@@ -67,4 +79,35 @@ persistence:
   storageClassName: ha-regional
 
 apiKey: true
+
+sidecarContainers:
+  - name: metrics
+    image: nginx:1.27
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+    - containerPort: 80
+    env:
+    - name: QDRANT_APIKEY 
+      valueFrom:
+        secretKeyRef:
+          name: qdrant-database-apikey          
+          key: api-key
+    volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/templates/default.conf.template
+          subPath: default.conf.template
+          readOnly: true
+additionalVolumes:
+  - name: nginx-conf
+    configMap:
+      name: nginx-conf
+      items:
+        - key: default.conf.template
+          path: default.conf.template 
 # [END gke_databases_qdrant_02_values_file_config]

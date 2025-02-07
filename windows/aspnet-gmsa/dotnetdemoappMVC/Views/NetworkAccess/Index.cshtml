@@ -1,0 +1,133 @@
+﻿@{
+// Copyright 2021 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+}
+
+@{
+    ViewBag.Title = "Network access tests";
+}
+
+<h2 style="color:blue;">Network access tests</h2>
+<div>
+    <style>
+        table {
+            font-family: 'Courier New', sans-serif;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #010b13;
+            text-align: left;
+            padding: 8px;
+        }
+    </style>
+    <div class="col-lg-12">
+        <h2 style="color:blue;">Access to network file shares</h2>
+        <p><strong>Run Network File Share Access Diagnostic Tests</strong></p>
+        <dl>
+            <dd>
+                <dl>
+                    <dd>
+                        <pre>Input the path to the shared file and then click &quot;Run Script&quot;.</pre>
+                    </dd>
+                    <dd>
+                        <p>File path: <input id="filePathInput" style="width:300px; font-family:'Courier New';" type="text" /></p>
+                    </dd>
+                </dl>
+            </dd>
+        </dl>
+        <p>
+            <button class="btn btn-primary" id="btn-fileShareDiag-run" style="width:175px;">Run Script</button>
+            <button class="btn btn-primary" id="btn-fileShareDiag-clear" style="width:175px;">Clear Output</button>
+        </p>
+        <h3>Output</h3>
+        <p>
+            <textarea id="output-fileShareDiag-results" style="width:900px; font-family:'Courier New';" rows="15"></textarea>
+        </p>
+    </div>
+    <div class="col-lg-12">
+        <h2 style="color:blue;">Access to SQL Server</h2>
+        <p><strong>Run SQL Server Access Diagnostic Tests</strong></p>
+        <dl>
+            <dd>
+                <dl>
+                    <dd>
+                        <pre>Input the name of the SQL Server instance (VM) and then click &quot;Run Script&quot;.</pre>
+                    </dd>
+                    <dd>
+                        <p>SQL Server instance: <input id="sqlServerInput" style="width:300px; font-family:'Courier New';" type="text" /></p>
+                    </dd>
+                </dl>
+            </dd>
+        </dl>
+        <p>
+            <button class="btn btn-primary" id="btn-sqlServerDiag-run" style="width:175px;">Run Script</button>
+            <button class="btn btn-primary" id="btn-sqlServerDiag-clear" style="width:175px;">Clear Output</button>
+        </p>
+        <h3>Output</h3>
+        <p>
+            <textarea id="output-sqlServerDiag-results" style="width:900px; font-family:'Courier New';" rows="15"></textarea>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" defer>
+
+        $(document).ready(function ()
+        {
+            function runDiagnostics(diagnosticName, parameterName, url) {
+                var diagOutputText = $(`#output-${diagnosticName}Diag-results`);
+                diagOutputText.val("Running...");
+                var parameterValue = document.getElementById(`${parameterName}Input`).value;
+                var data = {};
+                data[parameterName] = parameterValue;
+
+                 $.ajax({
+                     cache: false,
+                     type: "GET",
+                     url: url,
+                     data: data,
+
+                    success: function (data)
+                    {
+                        diagOutputText.val(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError)
+                    {
+                        alert('Failed to execute script.');
+                    }
+                });
+            }
+
+            $("#btn-fileShareDiag-clear").click(function () {
+                document.getElementById("output-fileShareDiag-results").value = "";
+            });
+
+            $("#btn-fileShareDiag-run").click(function ()
+            {
+                runDiagnostics("fileShare", "filePath", "@Url.Action("FileShareDiagnostics", "NetworkAccess")");
+            });
+
+            $("#btn-sqlServerDiag-clear").click(function () {
+                document.getElementById("output-sqlServerDiag-results").value = "";
+            });
+
+            $("#btn-sqlServerDiag-run").click(function ()
+            {
+                runDiagnostics("sqlServer", "sqlServer", "@Url.Action("SqlServerDiagnostics", "NetworkAccess")");
+            });
+        });
+    </script>
+}

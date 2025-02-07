@@ -19,7 +19,7 @@ jobs:
         run: |
           cd observability/custom-metrics-autoscaling/direct-to-sd
           docker build --tag direct-to-sd .
-      - name: build prometheus-to-sd container
+      - name: build prometheus-dummy-exporter container
         run: |
-          cd observability/custom-metrics-autoscaling/prometheus-to-sd
-          docker build --tag prometheus-to-sd .
+          cd observability/custom-metrics-autoscaling/google-managed-prometheus
+          docker build --tag google-managed-prometheus .

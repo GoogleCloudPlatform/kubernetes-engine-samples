@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file and other cloudbuild.yaml files are used to ensure that
-// our public Docker images such as gcr.io/google-samples/hello-app:1.0
-// are rebuilt and updated upon changes to the repository.
 package com.example.helloworld;
 
 import org.springframework.beans.factory.annotation.Value;

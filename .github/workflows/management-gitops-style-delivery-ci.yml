@@ -1,0 +1,21 @@
+name: management-gitops-style-delivery-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/management-gitops-style-delivery-ci.yml'
+      - 'management/gitops-style-delivery/**'
+  pull_request:
+    paths:
+      - '.github/workflows/management-gitops-style-delivery-ci.yml'
+      - 'management/gitops-style-delivery/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build management-gitops-style-delivery container
+        run: |
+          cd management/gitops-style-delivery
+          docker build --tag management-gitops-style-delivery .

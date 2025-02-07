@@ -1,0 +1,67 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_postgres_chaos_testing_08_monitoring_exporter]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: chaos-exporter
+    release: prometheus-stack
+  name: chaos-exporter
+  namespace: litmus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-exporter
+  template:
+    metadata:
+      labels:
+        app: chaos-exporter
+        release: prometheus-stack
+    spec:
+      containers:
+        - image: litmuschaos/chaos-exporter:1.13.6
+          imagePullPolicy: Always
+          name: chaos-exporter
+          ports:
+            - containerPort: 8080
+              name: tcp
+          env:
+            - name: TSDB_SCRAPE_INTERVAL
+              value: '10'
+          # uncomment the following lines to use the litmuschaos exporter for monitoring the chaos events and chaosresults for a selected namespace
+          # - name: WATCH_NAMESPACE
+          #   value: 'litmus'
+      # to use with litmus portal in cluster scope change service account name to 'litmus-cluster-scope' and for using litmus portal in namespaced scope change to 'litmus-namespace-scope'
+      serviceAccountName: litmus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: chaos-exporter
+  name: chaos-exporter
+  namespace: litmus
+spec:
+  ports:
+    - port: 8080
+      name: tcp
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: chaos-exporter
+  type: ClusterIP
+# [END gke_databases_postgres_chaos_testing_08_monitoring_exporter]

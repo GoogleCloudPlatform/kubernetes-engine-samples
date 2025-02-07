@@ -1,0 +1,77 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot
+  labels: &labels
+    app: postgres-chatbot
+spec:
+  selector:
+    matchLabels: *labels
+  template:
+    metadata: 
+      labels: *labels
+    spec:
+      serviceAccountName: embed-docs-sa
+      containers:
+      - name: chatbot
+        image: <DOCKER_REPO>/chatbot:1.0
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        env:
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: gke-pg-cluster-app
+              key: password
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: gke-pg-cluster-app
+              key: username
+        - name: POSTGRES_HOST 
+          value: gke-pg-cluster-rw.pg-ns
+        - name: STREAMLIT_SERVER_PORT
+          value: "80"
+        - name: DATABASE_NAME
+          value: "app"
+        - name: COLLECTIONS_NAME
+          value: "training-docs"
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 200m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot
+  labels: &labels
+    app: postgres-chatbot
+spec:
+  # type: ClusterIP
+  type: LoadBalancer
+  ports:
+    - port: 80
+  selector: *labels
+

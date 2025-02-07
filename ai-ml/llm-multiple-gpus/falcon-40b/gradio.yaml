@@ -17,7 +17,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gradio
+  labels:
+    app: gradio
 spec:
+  strategy:
+    type: Recreate
+  replicas: 1
   selector:
     matchLabels:
       app: gradio
@@ -28,21 +33,27 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio:v0.0.6
-        env:
-          - name: MODEL_URL
-            value: "http://llm-service"
-          - name: MODEL
-            value: "falcon-40b"
-          - name: MAX_TOKENS
-            value: "400"
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "250m"
+            cpu: "512m"
+            memory: "512Mi"
           limits:
-            memory: "256Mi"
-            cpu: "500m"
+            cpu: "1"
+            memory: "512Mi"
+        env:
+        - name: CONTEXT_PATH
+          value: "/generate"
+        - name: HOST
+          value: "http://llm-service"
+        - name: LLM_ENGINE
+          value: "tgi"
+        - name: MODEL_ID
+          value: "falcon-40b-instruct"
+        - name: USER_PROMPT
+          value: "User: prompt"
+        - name: SYSTEM_PROMPT
+          value: "Assistant: prompt"
         ports:
         - containerPort: 7860
 ---
@@ -57,4 +68,5 @@ spec:
   ports:
   - port: 80
     targetPort: 7860
+
 # [END gke_aiml_llm_multi_gpus_falcon_40b_gradio]

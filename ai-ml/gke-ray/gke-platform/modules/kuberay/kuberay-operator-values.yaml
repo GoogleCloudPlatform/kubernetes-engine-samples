@@ -1,0 +1,117 @@
+#  Copyright 2024 Google LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+# Default values for kuberay-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: kuberay/operator
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+nameOverride: "kuberay-operator"
+fullnameOverride: "kuberay-operator"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "kuberay-operator"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do whelm to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 100m
+    # Anecdotally, managing 500 Ray pods requires roughly 500MB memory.
+    # Monitor memory usage and adjust as needed.
+    memory: 512Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 512Mi
+
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 5
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 5
+
+batchScheduler:
+  enabled: false
+
+# Set up `securityContext` to improve Pod security.
+# See https://github.com/ray-project/kuberay/blob/master/docs/guidance/pod-security.md for further guidance.
+securityContext: {}
+
+
+# If rbacEnable is set to false, no RBAC resources will be created, including the Role for leader election, the Role for Pods and Services, and so on.
+rbacEnable: true
+
+# When crNamespacedRbacEnable is set to true, the KubeRay operator will create a Role for RayCluster preparation (e.g., Pods, Services)
+# and a corresponding RoleBinding for each namespace listed in the "watchNamespace" parameter. Please note that even if crNamespacedRbacEnable
+# is set to false, the Role and RoleBinding for leader election will still be created.
+#
+# Note:
+# (1) This variable is only effective when rbacEnable and singleNamespaceInstall are both set to true.
+# (2) In most cases, it should be set to true, unless you are using a Kubernetes cluster managed by GitOps tools such as ArgoCD.
+crNamespacedRbacEnable: true
+
+# When singleNamespaceInstall is true:
+# - Install namespaced RBAC resources such as Role and RoleBinding instead of cluster-scoped ones like ClusterRole and ClusterRoleBinding so that
+#   the chart can be installed by users with permissions restricted to a single namespace.
+#   (Please note that this excludes the CRDs, which can only be installed at the cluster scope.)
+# - If "watchNamespace" is not set, the KubeRay operator will, by default, only listen
+#   to resource events within its own namespace.
+singleNamespaceInstall: false
+
+# The KubeRay operator will watch the custom resources in the namespaces listed in the "watchNamespace" parameter.
+# watchNamespace:
+#   - n1
+#   - n2
+
+# Environment variables
+env:
+# If not set or set to true, kuberay auto injects an init container waiting for ray GCS.
+# If false, you will need to inject your own init container to ensure ray GCS is up before the ray workers start.
+# Warning: we highly recommend setting to true and let kuberay handle for you.
+# - name: ENABLE_INIT_CONTAINER_INJECTION
+#   value: "true"
+# If not set or set to "", kuberay will pick up the default k8s cluster domain `cluster.local`
+# Otherwise, kuberay will use your custom domain
+# - name: CLUSTER_DOMAIN
+#   value: ""
+# If not set or set to false, when running on OpenShift with Ingress creation enabled, kuberay will create OpenShift route
+# Otherwise, regardless of the type of cluster with Ingress creation enabled, kuberay will create Ingress
+# - name: USE_INGRESS_ON_OPENSHIFT
+#   value: "true"
+# Unconditionally requeue after the number of seconds specified in the
+# environment variable RAYCLUSTER_DEFAULT_REQUEUE_SECONDS_ENV. If the
+# environment variable is not set, requeue after the default value (300).
+# - name: RAYCLUSTER_DEFAULT_REQUEUE_SECONDS_ENV
+#   value: 300
+# If not set or set to "true", KubeRay will clean up the Redis storage namespace when a GCS FT-enabled RayCluster is deleted.
+# - name: ENABLE_GCS_FT_REDIS_CLEANUP
+#   value: "true"

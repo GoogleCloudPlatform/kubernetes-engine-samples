@@ -1,19 +1,30 @@
 {
-  "category": "CUSTOM",
+  "displayName": "Qdrant Overview",
   "dashboardFilters": [
     {
-      "filterType": "METRIC_LABEL",
-      "labelKey": "exported_cluster",
-      "stringValue": "",
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "cluster",
       "templateVariable": "Cluster"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "location",
+      "templateVariable": "Location"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "namespace",
+      "templateVariable": "Namespace"
     }
   ],
-  "displayName": "Qdrant Overview",
-  "labels": {},
+  "category": "CUSTOM",
   "mosaicLayout": {
     "columns": 48,
     "tiles": [
       {
+        "xPos": 0,
+        "yPos": 0,
+        "width": 24,
         "height": 16,
         "widget": {
           "title": "Collections Count",
@@ -26,7 +37,7 @@
                 "plotType": "STACKED_AREA",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
-                  "prometheusQuery": "collections_total{noop_filter=~\".*\"}",
+                  "prometheusQuery": "avg(collections_total{${Cluster},${Location},${Namespace}})",
                   "unitOverride": ""
                 }
               }
@@ -37,12 +48,12 @@
               "scale": "LINEAR"
             }
           }
-        },
-        "width": 24,
-        "xPos": 0,
-        "yPos": 0
+        }
       },
       {
+        "xPos": 24,
+        "yPos": 0,
+        "width": 24,
         "height": 16,
         "widget": {
           "title": "Vectors Count",
@@ -52,10 +63,10 @@
             },
             "dataSets": [
               {
-                "plotType": "STACKED_AREA",
+                "plotType": "LINE",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
-                  "prometheusQuery": "collections_vector_total{noop_filter=~\".*\"}",
+                  "prometheusQuery": "collections_vector_total{${Cluster},${Location},${Namespace}}",
                   "unitOverride": ""
                 }
               }
@@ -66,12 +77,12 @@
               "scale": "LINEAR"
             }
           }
-        },
-        "width": 24,
-        "xPos": 24,
-        "yPos": 0
+        }
       },
       {
+        "xPos": 0,
+        "yPos": 16,
+        "width": 24,
         "height": 16,
         "widget": {
           "title": "Pending Operations Count",
@@ -84,7 +95,7 @@
                 "plotType": "STACKED_AREA",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
-                  "prometheusQuery": "cluster_pending_operations_total{noop_filter=~\".*\"}",
+                  "prometheusQuery": "sum(cluster_pending_operations_total{${Cluster},${Location},${Namespace}})",
                   "unitOverride": ""
                 }
               }
@@ -95,12 +106,12 @@
               "scale": "LINEAR"
             }
           }
-        },
-        "width": 24,
-        "xPos": 0,
-        "yPos": 16
+        }
       },
       {
+        "xPos": 24,
+        "yPos": 16,
+        "width": 24,
         "height": 16,
         "widget": {
           "title": "Cluster Nodes Count",
@@ -113,7 +124,7 @@
                 "plotType": "STACKED_AREA",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
-                  "prometheusQuery": "cluster_peers_total{noop_filter=~\".*\"}",
+                  "prometheusQuery": "avg(cluster_peers_total{${Cluster},${Location},${Namespace}})",
                   "unitOverride": ""
                 }
               }
@@ -124,11 +135,9 @@
               "scale": "LINEAR"
             }
           }
-        },
-        "width": 24,
-        "xPos": 24,
-        "yPos": 16
+        }
       }
     ]
-  }
+  },
+  "labels": {}
 }

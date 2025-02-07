@@ -37,7 +37,7 @@ variable "node_machine_type" {
 
 variable "node_disk_type" {
   description = "The persistent disk type for node instances"
-  default     = "pd-standard"
+  default     = "pd-ssd"
   type        = string
 }
 

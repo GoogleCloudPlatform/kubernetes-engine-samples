@@ -12,50 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from langchain.chat_models import ChatVertexAI
+from langchain_google_vertexai import ChatVertexAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.embeddings import VertexAIEmbeddings
+from langchain_google_vertexai import VertexAIEmbeddings
 from langchain.memory import ConversationBufferWindowMemory
-from langchain.vectorstores import Qdrant
+from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 import streamlit as st
 import os
 
-vertexAI = ChatVertexAI(streaming=True)
+# [START gke_databases_qdrant_docker_chat_model]
+vertexAI = ChatVertexAI(model_name="gemini-pro", streaming=True, convert_system_message_to_human=True)
 prompt_template = ChatPromptTemplate.from_messages(
     [
-        ("system", "You are a helpful AI bot. Your name is {name}."),
+        ("system", "You are a helpful assistant who helps in finding answers to questions using the provided context."),
         ("human", """
-        Use the provided context and the current conversation to answer the provided user query. Only use the provided context and the current conversation to answer the query. If you do not know the answer, response with "I don't know"
+        The answer should be based on the text context given in "text_context" and the conversation history given in "conversation_history" along with its Caption: \n
+        Base your response on the provided text context and the current conversation history to answer the query.
+        Select the most relevant information from the context.
+        Generate a draft response using the selected information. Remove duplicate content from the draft response.
+        Generate your final response after adjusting it to increase accuracy and relevance.
+        Now only show your final response!
+        If you do not know the answer or context is not relevant, response with "I don't know".
 
-        CONTEXT:
+        text_context:
         {context}
 
-        CURRENT CONVERSATION:
+        conversation_history:
         {history}
 
-        QUERY:
+        query:
         {query}
         """),
     ]
 )
 
-embedding_model = VertexAIEmbeddings()
+embedding_model = VertexAIEmbeddings("text-embedding-005")
+# [END gke_databases_qdrant_docker_chat_model]
 
+# [START gke_databases_qdrant_docker_chat_client]
 client = QdrantClient(
     url=os.getenv("QDRANT_URL"),
     api_key=os.getenv("APIKEY"),
 )
 collection_name = os.getenv("COLLECTION_NAME")
-qdrant = Qdrant(client, collection_name, embeddings=embedding_model)
-
+vector_search = Qdrant(client, collection_name, embeddings=embedding_model)
+# [END gke_databases_qdrant_docker_chat_client]
 def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
 
 st.title("🤖 Chatbot")
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "ai", "content": "How can I help you?"}]
-
+# [START gke_databases_qdrant_docker_chat_session]
 if "memory" not in st.session_state:
     st.session_state["memory"] = ConversationBufferWindowMemory(
         memory_key="history",
@@ -63,17 +72,18 @@ if "memory" not in st.session_state:
         human_prefix="User",
         k=3,
     )
-
+# [END gke_databases_qdrant_docker_chat_session]
+# [START gke_databases_qdrant_docker_chat_history]
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
-
+# [END gke_databases_qdrant_docker_chat_history]
 if chat_input := st.chat_input():
     with st.chat_message("human"):
         st.write(chat_input)
         st.session_state.messages.append({"role": "human", "content": chat_input})
 
-    found_docs = qdrant.similarity_search(chat_input)
+    found_docs = vector_search.similarity_search(chat_input)
     context = format_docs(found_docs)
 
     prompt_value = prompt_template.format_messages(name="Bob", query=chat_input, context=context, history=st.session_state.memory.load_memory_variables({}))

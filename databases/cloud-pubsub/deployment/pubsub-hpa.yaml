@@ -15,7 +15,7 @@
 
 # [START gke_deployment_pubsub_hpa_horizontalpodautoscaler_pubsub]
 # [START container_pubsub_horizontal_pod_autoscaler]
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: pubsub

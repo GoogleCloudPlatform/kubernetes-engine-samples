@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source scripts/variables.sh
-
 echo "**************************************"
 echo "Populating queue for batch training..."
 echo "**************************************"
@@ -23,13 +21,13 @@ filenames=""
 
 # Report all the files containing the training datasets
 # and create a concatenated string of filenames to add to the Redis queue
-for filepath in ${DATASETS_DIR}/training/*.pkl; do
+for filepath in datasets/training/*.pkl; do
   echo $filepath
   filenames+=" $filepath"
 done
 
 # Push filenames to a Redis queue running on the `redis-leader` GKE Pod
-QUEUE_LENGTH=$(kubectl exec ${POD_NAME} -- /bin/sh -c \
-  "redis-cli rpush ${QUEUE_NAME} ${filenames}")
+QUEUE_LENGTH=$(kubectl exec redis-leader -- /bin/sh -c \
+  "redis-cli rpush datasets ${filenames}")
 
 echo "Queue length: ${QUEUE_LENGTH}"

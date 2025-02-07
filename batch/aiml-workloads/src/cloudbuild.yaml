@@ -22,8 +22,11 @@ steps:
     - 'build'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/batch-ml-workload'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/batch-ml-workload:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'batch/aiml-workloads/src'
 
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/batch-ml-workload'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/batch-ml-workload:sample-public-image-${SHORT_SHA}'

@@ -1,0 +1,21 @@
+name: workloads-migrate-x86-app-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/workloads-migrate-x86-app-ci.yml'
+      - 'workloads/migrate-x86-app-to-multi-arch/**'
+  pull_request:
+    paths:
+      - '.github/workflows/workloads-migrate-x86-app-ci.yml'
+      - 'workloads/migrate-x86-app-to-multi-arch/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build workloads-migrate-x86-app container
+        run: |
+          cd workloads/migrate-x86-app-to-multi-arch
+          docker build --tag workloads-migrate-x86-app .

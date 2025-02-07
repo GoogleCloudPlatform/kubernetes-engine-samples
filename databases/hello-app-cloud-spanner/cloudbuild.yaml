@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # This file and other cloudbuild.yaml files are used to ensure that
-# our public Docker images such as gcr.io/google-samples/hello-app:1.0
+# our public Docker images such as us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
 # are rebuilt and updated upon changes to the repository.
 
 steps:
@@ -22,9 +22,12 @@ steps:
     - 'build'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner:sample-public-image-${SHORT_SHA}'
     - '.'
   dir: 'databases/hello-app-cloud-spanner'
 
 # Push images.
 images:
   - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/hello-app-cloud-spanner:sample-public-image-${SHORT_SHA}'

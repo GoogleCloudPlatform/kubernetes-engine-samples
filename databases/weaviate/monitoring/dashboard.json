@@ -1,0 +1,175 @@
+{
+  "displayName": "Weaviate Overview",
+  "dashboardFilters": [
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "cluster",
+      "templateVariable": "Cluster"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "location",
+      "templateVariable": "Location"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "namespace",
+      "templateVariable": "Namespace"
+    }
+  ],
+  "mosaicLayout": {
+    "columns": 48,
+    "tiles": [
+      {
+        "width": 23,
+        "height": 18,
+        "widget": {
+          "title": "Batch Objects Latency (ms)",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "rate(batch_durations_ms_sum{${Cluster},${Location},${Namespace}}[${__interval}])/rate(batch_durations_ms_count{${Cluster},${Location},${Namespace}}[${__interval}])",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 23,
+        "width": 25,
+        "height": 18,
+        "widget": {
+          "title": "Persistence Tasks (ms)",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "rate(batch_durations_ms_sum{${Cluster},${Location},${Namespace},operation=\"object_storage\"}[${__interval}])/rate(batch_durations_ms_count{${Cluster},${Location},${Namespace},operation=\"object_storage\"}[${__interval}])",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "rate(batch_durations_ms_sum{operation=\"vector_storage\"}[${__interval}])/rate(batch_durations_ms_count{operation=\"vector_storage\"}[${__interval}])",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 18,
+        "width": 19,
+        "height": 15,
+        "widget": {
+          "title": "Heap in use (bytes)",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "go_memstats_heap_inuse_bytes{${Cluster},${Location},${Namespace}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 38,
+        "yPos": 18,
+        "width": 10,
+        "height": 15,
+        "widget": {
+          "title": "Overall Object Count",
+          "scorecard": {
+            "sparkChartView": {
+              "sparkChartType": "SPARK_LINE"
+            },
+            "thresholds": [],
+            "timeSeriesQuery": {
+              "prometheusQuery": "sum(object_count{${Cluster},${Location},${Namespace}})",
+              "unitOverride": ""
+            }
+          }
+        }
+      },
+      {
+        "xPos": 28,
+        "yPos": 18,
+        "width": 10,
+        "height": 15,
+        "widget": {
+          "title": "Object Count per Class / Shard",
+          "scorecard": {
+            "sparkChartView": {
+              "sparkChartType": "SPARK_LINE"
+            },
+            "thresholds": [],
+            "timeSeriesQuery": {
+              "prometheusQuery": "object_count{${Cluster},${Location},${Namespace}}",
+              "unitOverride": ""
+            }
+          }
+        }
+      },
+      {
+        "xPos": 19,
+        "yPos": 18,
+        "width": 9,
+        "height": 15,
+        "widget": {
+          "title": "Shards Count",
+          "scorecard": {
+            "sparkChartView": {
+              "sparkChartType": "SPARK_LINE"
+            },
+            "thresholds": [],
+            "timeSeriesQuery": {
+              "outputFullDuration": true,
+              "prometheusQuery": "sum(avg_over_time(up{${Cluster},${Location},${Namespace}}[5m]))",
+              "unitOverride": ""
+            }
+          }
+        }
+      }
+    ]
+  },
+  "labels": {}
+}

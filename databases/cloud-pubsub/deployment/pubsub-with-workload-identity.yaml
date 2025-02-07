@@ -1,0 +1,41 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pubsub-sa
+---
+# [START gke_deployment_pubsub_with_workflow_identity_deployment_pubsub]
+# [START container_pubsub_workload_identity_deployment]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pubsub
+spec:
+  selector:
+    matchLabels:
+      app: pubsub
+  template:
+    metadata:
+      labels:
+        app: pubsub
+    spec:
+      serviceAccountName: pubsub-sa
+      containers:
+      - name: subscriber
+        image: us-docker.pkg.dev/google-samples/containers/gke/pubsub-sample:v2
+# [END container_pubsub_workload_identity_deployment]
+# [END gke_deployment_pubsub_with_workflow_identity_deployment_pubsub]
+---

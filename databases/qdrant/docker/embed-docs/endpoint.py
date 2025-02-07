@@ -42,7 +42,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 # Setup K8 configs
 config.load_incluster_config()
-
+# [START gke_databases_qdrant_docker_embed_endpoint_job]
 def kube_create_job_object(name, container_image, bucket_name, f_name, namespace="qdrant", container_name="jobcontainer", env_vars={}):
 
     body = client.V1Job(api_version="batch/v1", kind="Job")
@@ -56,7 +56,7 @@ def kube_create_job_object(name, container_image, bucket_name, f_name, namespace
         client.V1EnvVar(name="COLLECTION_NAME", value="training-docs"), 
         client.V1EnvVar(name="FILE_NAME", value=f_name), 
         client.V1EnvVar(name="BUCKET_NAME", value=bucket_name),
-        client.V1EnvVar(name="APIKEY", value_from=client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(key="api-key", name="qdrant-apikey"))), 
+        client.V1EnvVar(name="APIKEY", value_from=client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(key="api-key", name="qdrant-database-apikey"))), 
     ]
     
     container = client.V1Container(name=container_name, image=container_image, env=env_list)
@@ -64,7 +64,7 @@ def kube_create_job_object(name, container_image, bucket_name, f_name, namespace
 
     body.spec = client.V1JobSpec(backoff_limit=3, ttl_seconds_after_finished=60, template=template.template)
     return body
-
+# [END gke_databases_qdrant_docker_embed_endpoint_job]
 def kube_test_credentials():
     try: 
         api_response = api_instance.get_api_resources()
@@ -74,11 +74,12 @@ def kube_test_credentials():
 
 def kube_create_job(bckt, f_name, id):
     container_image = os.getenv("JOB_IMAGE")
+    namespace = os.getenv("JOB_NAMESPACE")
     name = "docs-embedder" + id
     body = kube_create_job_object(name, container_image, bckt, f_name)
     v1=client.BatchV1Api()
     try: 
-        v1.create_namespaced_job("qdrant", body, pretty=True)
+        v1.create_namespaced_job(namespace, body, pretty=True)
     except ApiException as e:
         print("Exception when calling BatchV1Api->create_namespaced_job: %s\n" % e)
     return

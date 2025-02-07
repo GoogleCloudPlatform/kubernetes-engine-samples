@@ -1,0 +1,66 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# [START gke_databases_postgres_pgvector_01_postgresql_cluster]
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: gke-pg-cluster
+spec:
+  description: "Standard GKE PostgreSQL cluster"
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.2
+  enableSuperuserAccess: true
+  instances: 3
+  startDelay: 300
+  primaryUpdateStrategy: unsupervised
+  postgresql:
+    pg_hba:
+      - host all all 10.48.0.0/20 md5
+  bootstrap:
+    initdb:
+      postInitTemplateSQL:
+        - CREATE EXTENSION IF NOT EXISTS vector;
+      database: app
+  storage:
+    storageClass: premium-rwo
+    size: 2Gi
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1000m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+  affinity:
+    enablePodAntiAffinity: true
+    tolerations:
+    - key: cnpg.io/cluster
+      effect: NoSchedule
+      value: gke-pg-cluster
+      operator: Equal
+    additionalPodAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.component
+              operator: In
+              values:
+              - "pg-cluster"
+          topologyKey: topology.kubernetes.io/zone
+  monitoring:
+    enablePodMonitor: true
+# [END gke_databases_postgres_pgvector_01_postgresql_cluster]

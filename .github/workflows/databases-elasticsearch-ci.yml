@@ -1,0 +1,50 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: databases-elasticsearch.yml
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/databases-elasticsearch.yml'
+      - 'databases/elasticsearch/**'
+  pull_request:
+    paths:
+      - '.github/workflows/databases-elasticsearch.yml'
+      - 'databases/elasticsearch/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate GKE Standard TF for Elasticsearch
+        run: |
+          cd databases/elasticsearch/terraform/gke-standard 
+          terraform init
+          terraform validate
+      - name: Validate GKE Autopilot TF for Elasticsearch
+        run: |
+          cd databases/elasticsearch/terraform/gke-autopilot
+          terraform init
+          terraform validate
+      - name: Build chatbot app container
+        run: |
+          cd databases/elasticsearch/docker/chatbot
+          docker build --tag chatbot:1.0 .
+      - name: Build docs embedder container
+        run: |
+          cd databases/elasticsearch/docker/embed-docs
+          docker build --tag embed-docs:1.0 .
+

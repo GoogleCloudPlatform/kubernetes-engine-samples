@@ -1,0 +1,59 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_google_managed_prometheus_custom_metrics_gmp_deployment_custom_metrics_gmp]
+# [START container_custom_metrics_prometheus_deployment]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: custom-metrics-gmp
+  name: custom-metrics-gmp
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: custom-metrics-gmp
+  template:
+    metadata:
+      labels:
+        run: custom-metrics-gmp
+    spec:
+      containers:
+      # sample container generating custom metrics
+      - name: prometheus-dummy-exporter
+        image: us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:v0.2.0
+        command: ["./prometheus-dummy-exporter"]
+        args:
+        - --metric-name=custom_prometheus
+        - --metric-value=40
+        - --port=8080
+# [END container_custom_metrics_prometheus_deployment]
+# [END gke_google_managed_prometheus_custom_metrics_gmp_deployment_custom_metrics_gmp]
+---
+# [START gke_google_managed_prometheus_custom_metrics_gmp_pod_monitoring_custom_metrics_gmp]
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: "custom-metrics-exporter"
+spec:
+  selector:
+    matchLabels:
+      run: custom-metrics-gmp
+  endpoints:
+  - port: 8080
+    path: /metrics
+    interval: 15s
+# [END gke_google_managed_prometheus_custom_metrics_gmp_pod_monitoring_custom_metrics_gmp]

@@ -1,0 +1,61 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_gemma_saxml_model_server_2x2]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sax-model-server-v5e-2x2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: gemma-server
+        ai.gke.io/model: gemma-7b-it
+        ai.gke.io/inference-server: saxml
+        examples.ai.gke.io/source: user-guide
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-tpu-topology: 2x2
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+      hostNetwork: false
+      restartPolicy: Always
+      containers:
+      - name: inference-server
+        image: us-docker.pkg.dev/cloud-tpu-images/inference/sax-model-server:v1.2.0
+        args:
+        - "--jax_platforms=tpu"
+        - "--platform_chip=tpuv5e"
+        - "--platform_topology=2x2"
+        - "--port=10001"
+        - "--sax_cell=/sax/test"
+        ports:
+        - containerPort: 10001
+        securityContext:
+          privileged: true
+        env:
+        - name: SAX_ROOT
+          value: "gs://ADMIN_BUCKET_NAME/sax-root"
+        resources:
+          requests:
+            google.com/tpu: 4
+          limits:
+            google.com/tpu: 4
+# [END gke_ai_ml_llm_serving_gemma_saxml_model_server_2x2]

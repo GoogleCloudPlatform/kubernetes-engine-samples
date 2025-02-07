@@ -1,0 +1,71 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_llm_finetune_gemma_single_node_yaml]
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: finetune-job
+  namespace: default
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: finetuner
+    spec:
+      terminationGracePeriodSeconds: 600
+      containers:
+      - name: finetuner
+        image: $IMAGE_URL
+        resources:
+          limits:
+            nvidia.com/gpu: "8"
+        env:
+        - name: MODEL_NAME
+          value: "google/gemma-2b"
+        - name: NEW_MODEL
+          value: "gemma-2b-sql-finetuned"
+        - name: LORA_R
+          value: "8"
+        - name: LORA_ALPHA
+          value: "16"
+        - name: TRAIN_BATCH_SIZE
+          value: "1"
+        - name: EVAL_BATCH_SIZE
+          value: "2"
+        - name: GRADIENT_ACCUMULATION_STEPS
+          value: "2"
+        - name: DATASET_LIMIT
+          value: "1000"
+        - name: MAX_SEQ_LENGTH
+          value: "512"
+        - name: LOGGING_STEPS
+          value: "5"
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      restartPolicy: OnFailure
+# [END gke_aiml_llm_finetune_gemma_single_node_yaml]

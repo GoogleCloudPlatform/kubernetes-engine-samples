@@ -1,0 +1,22 @@
+name: ai-ml-gke-ray-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ai-ml-gke-ray-ci.yml'
+      - 'ai-ml/gke-ray/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ai-ml-gke-ray-ci.yml'
+      - 'ai-ml/gke-ray/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate terraform
+        run: |
+          cd ai-ml/gke-ray/gke-platform
+          terraform init
+          terraform validate

@@ -15,7 +15,7 @@
 # [START gke_quickstarts_languages_php_dockerfile]
 # Use the official PHP 7.4 image.
 # https://hub.docker.com/_/php
-FROM php:7.4-apache
+FROM php:8.3-apache
 
 # Copy local code to the container image.
 COPY index.php /var/www/html/

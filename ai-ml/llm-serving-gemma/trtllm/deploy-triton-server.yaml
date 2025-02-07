@@ -1,0 +1,136 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_gemma_trtllm_triton_server_deployment]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: launch-tritonserver
+data:
+  entrypoint.sh: |-
+    #!/usr/bin/bash -x
+    # Launch Triton Inference server
+
+    WORLD_SIZE=1
+    TRITON_MODEL_REPO=/data/triton/model_repository
+
+    python3 /tensorrtllm_backend/scripts/launch_triton_server.py \
+      --world_size ${WORLD_SIZE} \
+      --model_repo ${TRITON_MODEL_REPO}
+
+    tail -f /dev/null
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triton-gemma-deployment
+  labels:
+    app: gemma-server
+    version: v1 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-server 
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: gemma-server
+        ai.gke.io/model: gemma
+        ai.gke.io/inference-server: triton
+        examples.ai.gke.io/source: user-guide
+        version: v1
+    spec:
+      containers:
+      - name: inference-server 
+        image: us-docker.pkg.dev/google-samples/containers/gke/tritonserver:2.42.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            ephemeral-storage: "40Gi"
+            memory: "40Gi"
+            nvidia.com/gpu: 1
+          limits:
+            ephemeral-storage: "40Gi"
+            memory: "40Gi"
+            nvidia.com/gpu: 1
+        command:
+        - /scripts/entrypoint.sh
+        volumeMounts:
+        - mountPath: "/scripts/"
+          name: scripts-volume
+          readOnly: true
+        - mountPath: "/data"
+          name: data
+        ports:
+          - containerPort: 8000
+            name: http
+          - containerPort: 8001
+            name: grpc
+          - containerPort: 8002
+            name: metrics
+        livenessProbe:
+          failureThreshold: 60
+          initialDelaySeconds: 600
+          periodSeconds: 5
+          httpGet:
+            path: /v2/health/live
+            port: http
+        readinessProbe:
+          failureThreshold: 60
+          initialDelaySeconds: 600
+          periodSeconds: 5
+          httpGet:
+            path: /v2/health/ready
+            port: http
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      volumes:
+      - name: scripts-volume
+        configMap:
+          defaultMode: 0700
+          name: launch-tritonserver
+      - name: data
+        persistentVolumeClaim:
+          claimName: model-data
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      tolerations:
+      - key: "key"
+        operator: "Exists"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-server
+  labels:
+    app: gemma-server 
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: http
+      name: http-inference-server
+    - port: 8001
+      targetPort: grpc
+      name: grpc-inference-server
+    - port: 8002
+      targetPort: metrics
+      name: http-metrics
+  selector:
+    app: gemma-server
+# [END gke_ai_ml_llm_serving_gemma_trtllm_triton_server_deployment]

@@ -1,0 +1,384 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:01Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from memory resource
+      utilization (percentage of request)"},{"type":"ScalingLimited","status":"False","lastTransitionTime":"2021-04-05T19:54:16Z","reason":"DesiredWithinRange","message":"the
+      desired count is within the acceptable range"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"memory","currentAverageUtilization":48,"currentAverageValue":"32679936"}}]'
+    autoscaling.alpha.kubernetes.io/metrics: '[{"type":"Resource","resource":{"name":"memory","targetAverageUtilization":60}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"cartservice-memory-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"memory","target":{"averageUtilization":60,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"cartservice"}}}
+  creationTimestamp: "2021-04-05T19:53:29Z"
+  name: cartservice-memory-hpa
+  namespace: default
+  resourceVersion: "508648"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/cartservice-memory-hpa
+  uid: 5facf481-5435-4a2d-890b-e684c45a2e9f
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cartservice
+status:
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:44Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-06T09:34:46Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:31:01Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":5,"currentAverageValue":"5m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"checkoutservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"checkoutservice"}}}
+  creationTimestamp: "2021-04-05T19:53:28Z"
+  name: checkoutservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508645"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/checkoutservice-cpu-hpa
+  uid: 9464f32f-6811-449b-a80c-cecdc0d77285
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: checkoutservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 5
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:44Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:44Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:30Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:11:02Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":12,"currentAverageValue":"12m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"currencyservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"currencyservice"}}}
+  creationTimestamp: "2021-04-05T19:53:28Z"
+  name: currencyservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508163"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/currencyservice-cpu-hpa
+  uid: 3523c873-8784-49fe-92a5-f2f024148abc
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: currencyservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 12
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:44Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:44Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:53:59Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:32:03Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":9,"currentAverageValue":"9m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"emailservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"emailservice"}}}
+  creationTimestamp: "2021-04-05T19:53:28Z"
+  name: emailservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508422"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/emailservice-cpu-hpa
+  uid: 5b1bcbe5-3987-43dc-9eba-207e8b07c887
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: emailservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 9
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:44Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:44Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:00Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:31:00Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":18,"currentAverageValue":"18m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"frontend-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"frontend"}}}
+  creationTimestamp: "2021-04-05T19:53:28Z"
+  name: frontend-cpu-hpa
+  namespace: default
+  resourceVersion: "508649"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/frontend-cpu-hpa
+  uid: 671867b0-9877-426d-afd0-073dd98dad4c
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 18
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:55:02Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:30:29Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":4,"currentAverageValue":"12m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"loadgenerator-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"loadgenerator"}}}
+  creationTimestamp: "2021-04-05T19:53:28Z"
+  name: loadgenerator-cpu-hpa
+  namespace: default
+  resourceVersion: "508650"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/loadgenerator-cpu-hpa
+  uid: 760756c4-1499-4f39-9e37-f409f4b6d82b
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: loadgenerator
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 4
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:31Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-05T19:54:31Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":5,"currentAverageValue":"5m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"paymentservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"paymentservice"}}}
+  creationTimestamp: "2021-04-05T19:53:28Z"
+  name: paymentservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508653"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/paymentservice-cpu-hpa
+  uid: 054713f6-de22-4553-82c4-f11938133a54
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: paymentservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 5
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:31Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:31:01Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":11,"currentAverageValue":"11m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"productcatalogservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"productcatalogservice"}}}
+  creationTimestamp: "2021-04-05T19:53:29Z"
+  name: productcatalogservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508646"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/productcatalogservice-cpu-hpa
+  uid: 6232b8b4-269d-456f-bdff-09abb337c6fc
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: productcatalogservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 11
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:31Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:31:01Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":17,"currentAverageValue":"17m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"recommendationservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"recommendationservice"}}}
+  creationTimestamp: "2021-04-05T19:53:29Z"
+  name: recommendationservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508424"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/recommendationservice-cpu-hpa
+  uid: 422f13f1-dee0-48b4-855a-de4022783794
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: recommendationservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 17
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:31Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:31:01Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":7,"currentAverageValue":"5m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"redis-cart-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"redis-cart"}}}
+  creationTimestamp: "2021-04-05T19:53:29Z"
+  name: redis-cart-cpu-hpa
+  namespace: default
+  resourceVersion: "508426"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/redis-cart-cpu-hpa
+  uid: 763c8691-240a-4286-8213-61a02e0afa17
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: redis-cart
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 7
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"
+
+--- 
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2021-04-05T19:53:45Z","reason":"ReadyForNewScale","message":"recommended
+      size matches current size"},{"type":"ScalingActive","status":"True","lastTransitionTime":"2021-04-05T19:54:31Z","reason":"ValidMetricFound","message":"the
+      HPA was able to successfully calculate a replica count from cpu resource utilization
+      (percentage of request)"},{"type":"ScalingLimited","status":"True","lastTransitionTime":"2021-04-06T12:31:32Z","reason":"TooFewReplicas","message":"the
+      desired replica count is increasing faster than the maximum scale rate"}]'
+    autoscaling.alpha.kubernetes.io/current-metrics: '[{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":5,"currentAverageValue":"5m"}}]'
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2beta2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"shippingservice-cpu-hpa","namespace":"default"},"spec":{"maxReplicas":100,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":70,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"shippingservice"}}}
+  creationTimestamp: "2021-04-05T19:53:29Z"
+  name: shippingservice-cpu-hpa
+  namespace: default
+  resourceVersion: "508647"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/shippingservice-cpu-hpa
+  uid: 867b80f5-ca15-41a6-a9df-0e5ced3028b1
+spec:
+  maxReplicas: 100
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: shippingservice
+  targetCPUUtilizationPercentage: 70
+status:
+  currentCPUUtilizationPercentage: 5
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2021-04-05T19:53:45Z"

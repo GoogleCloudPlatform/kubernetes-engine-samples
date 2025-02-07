@@ -1,0 +1,21 @@
+name: cost-optimization-gke-keda-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/cost-optimization-gke-keda-ci.yml'
+      - 'cost-optimization/gke-keda/cloud-pubsub/**'
+  pull_request:
+    paths:
+      - '.github/workflows/cost-optimization-gke-keda-ci.yml'
+      - 'cost-optimization/gke-keda/cloud-pubsub/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build gke-keda cloud-pubsub container
+        run: |
+          cd cost-optimization/gke-keda/cloud-pubsub
+          docker build --tag gke-keda-cloud-pubsub .

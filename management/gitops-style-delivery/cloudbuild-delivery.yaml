@@ -1,0 +1,49 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_management_gitops_delivery_cloudbuild_delivery]
+steps:
+# This step deploys the new version of our container image
+# in the hello-cloudbuild Kubernetes Engine cluster.
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: Deploy
+  args:
+  - 'apply'
+  - '-f'
+  - 'kubernetes.yaml'
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=hello-cloudbuild'
+
+# This step copies the applied manifest to the production branch
+# The COMMIT_SHA variable is automatically
+# replaced by Cloud Build.
+- name: 'gcr.io/cloud-builders/git'
+  id: Copy to production branch
+  entrypoint: /bin/sh
+  args:
+  - '-c'
+  - |
+    set -x && \
+    # Configure Git to create commits with Cloud Build's service account
+    git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)') && \
+    # Switch to the production branch and copy the kubernetes.yaml file from the candidate branch
+    git fetch origin production && git checkout production && \
+    git checkout $COMMIT_SHA kubernetes.yaml && \
+    # Commit the kubernetes.yaml file with a descriptive commit message
+    git commit -m "Manifest from commit $COMMIT_SHA
+    $(git log --format=%B -n 1 $COMMIT_SHA)" && \
+    # Push the changes back to Cloud Source Repository
+    git push origin production
+# [END gke_management_gitops_delivery_cloudbuild_delivery]

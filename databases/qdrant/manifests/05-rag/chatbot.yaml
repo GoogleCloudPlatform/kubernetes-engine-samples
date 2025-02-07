@@ -30,14 +30,21 @@ spec:
       - name: chatbot
         image: <DOCKER_REPO>/chatbot:1.0
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
         env:
         - name: APIKEY
           valueFrom:
             secretKeyRef:
-              name: qdrant-apikey
+              name: qdrant-database-apikey
               key: api-key
         - name: QDRANT_URL
-          value: http://qdrant:6333
+          value: http://qdrant-database:6333
         - name: STREAMLIT_SERVER_PORT
           value: "80"
         - name: COLLECTION_NAME
@@ -55,8 +62,8 @@ metadata:
   labels: &labels
     app: qdrant-chatbot
 spec:
-  type: ClusterIP
-  # type: LoadBalancer
+  # type: ClusterIP
+  type: LoadBalancer
   ports:
     - port: 80
   selector: *labels

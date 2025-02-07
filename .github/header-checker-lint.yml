@@ -25,6 +25,7 @@ allowedLicenses:
 # If you want to ignore certain files/folders, use ignoreFiles.
 ignoreFiles:
  - '**/Chart.yaml'
+ - '.github/workflows/**'
 
 # If you want to ignore checking the license year, use ignoreLicenseYear.
 ignoreLicenseYear: false # Useful when migrating in code licensed at previous years.

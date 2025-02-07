@@ -15,7 +15,7 @@
 
 # [START gke_manifests_workload_metrics_hpa_horizontalpodautoscaler_workload_metrics_hpa]
 # [START container_workload_metrics_horizontal_pod_autoscaler_workload_metrics_hpa]
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: workload-metrics-hpa

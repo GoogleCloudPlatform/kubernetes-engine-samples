@@ -1,3 +1,17 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ## Example is available at https://github.com/bitnami/charts/blob/master/bitnami/postgresql/values.yaml
 
 global:
@@ -12,7 +26,7 @@ postgresql-ha:
   postgresql:
     image:
       repository: bitnami/postgresql-repmgr
-      tag: 16.1.0-debian-11-r0
+      tag: 16.6.0-debian-12-r3
     replicaCount: 3
     nodeAffinityPreset:
       type: "soft"
@@ -47,7 +61,7 @@ postgresql-ha:
   pgpool:
     image:
       repository: bitnami/pgpool
-      tag: 4.4.2-debian-11-r28
+      tag: 4.5.5-debian-12-r1
     replicaCount: 1
     tolerations:
     - key: "app.stateful/component"
@@ -73,7 +87,7 @@ postgresql-ha:
     enabled: true
     image:
       repository: bitnami/postgres-exporter
-      tag: 0.13.2-debian-11-r27
+      tag: 0.16.0-debian-12-r3
     resources:
       requests: 
         cpu: "500m"

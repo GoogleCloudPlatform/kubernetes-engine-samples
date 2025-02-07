@@ -1,0 +1,55 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# [START gke_ai_ml_maxdiffusion_webapp_deployment]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: max-diffusion-client
+spec:
+  selector:
+    matchLabels:
+      app: max-diffusion-client
+  template:
+    metadata:
+      labels:
+        app: max-diffusion-client
+    spec:
+      containers:
+      - name: webclient
+        image: REGION-docker.pkg.dev/PROJECT_ID/gke-llm/max-diffusion-web:latest
+        env:
+          - name: SERVER_URL
+            value: "http://ClusterIP:8000"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: max-diffusion-client-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: max-diffusion-client
+  ports:
+  - port: 8080
+    targetPort: 5000
+# [END gke_ai_ml_maxdiffusion_webapp_deployment]

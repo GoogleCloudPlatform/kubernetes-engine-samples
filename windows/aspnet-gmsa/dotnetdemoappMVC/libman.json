@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "defaultProvider": "jsdelivr",
+  "libraries": [
+    {
+      "library": "jquery@3.4.1",
+      "destination": "Scripts/jquery/"
+    },
+    {
+      "library": "bootstrap@3.4.1",
+      "destination": "Scripts/bootstrap/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "modernizr@3.12.0",
+      "destination": "Scripts/modernizr/"
+    }
+]
+}

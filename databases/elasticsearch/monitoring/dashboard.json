@@ -1,0 +1,522 @@
+{
+  "displayName": "ElasticSearch Overview",
+  "dashboardFilters": [
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "cluster",
+      "stringValue": "",
+      "templateVariable": "Cluster"
+    }
+  ],
+  "mosaicLayout": {
+    "columns": 48,
+    "tiles": [
+      {
+        "width": 12,
+        "height": 10,
+        "widget": {
+          "title": "Cluster Status",
+          "pieChart": {
+            "chartType": "DONUT",
+            "dataSets": [
+              {
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum by (color)(avg_over_time(elasticsearch_cluster_health_status{${Cluster}}[${__interval}]))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "sliceAggregatedThreshold": 0
+          }
+        }
+      },
+      {
+        "xPos": 12,
+        "width": 12,
+        "height": 10,
+        "widget": {
+          "title": "Running Nodes",
+          "scorecard": {
+            "sparkChartView": {
+              "sparkChartType": "SPARK_LINE"
+            },
+            "thresholds": [],
+            "timeSeriesQuery": {
+              "prometheusQuery": "sum(elasticsearch_cluster_health_number_of_nodes{${Cluster}})/count(elasticsearch_cluster_health_number_of_nodes{${Cluster}})",
+              "unitOverride": ""
+            }
+          }
+        }
+      },
+      {
+        "xPos": 32,
+        "yPos": 10,
+        "width": 8,
+        "height": 11,
+        "widget": {
+          "title": "Active Data Nodes",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "elasticsearch_cluster_health_number_of_data_nodes{${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 40,
+        "yPos": 10,
+        "width": 8,
+        "height": 11,
+        "widget": {
+          "title": "Pending Tasks",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "elasticsearch_cluster_health_number_of_pending_tasks{${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 10,
+        "width": 8,
+        "height": 11,
+        "widget": {
+          "title": "Active Shards",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "elasticsearch_cluster_health_active_shards{${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 8,
+        "yPos": 10,
+        "width": 8,
+        "height": 11,
+        "widget": {
+          "title": "Active Primary Shards",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "elasticsearch_cluster_health_active_primary_shards{${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 16,
+        "yPos": 10,
+        "width": 8,
+        "height": 11,
+        "widget": {
+          "title": "Initializing Shards",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "elasticsearch_cluster_health_initializing_shards{${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 10,
+        "width": 8,
+        "height": 11,
+        "widget": {
+          "title": "Relocating Shards",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "elasticsearch_cluster_health_relocating_shards{${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 21,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "Documents indexed",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "Documents",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(elasticsearch_indices_docs{${Cluster}})",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "width": 24,
+        "height": 10,
+        "widget": {
+          "title": "Index Size",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "Index Size",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(elasticsearch_indices_store_size_bytes{${Cluster}})",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "yPos": 34,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "Documents Indexed Rate",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "${labels.name}",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "rate(elasticsearch_indices_indexing_index_total{${Cluster}}[1h])",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 34,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "Query Rate",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "${labels.name}",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "rate(elasticsearch_indices_search_fetch_total{${Cluster}}[1h])",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "yPos": 47,
+        "width": 48,
+        "height": 16,
+        "widget": {
+          "title": "Queue Count",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(elasticsearch_thread_pool_queue_count{${Cluster}, type!=\"management\"}) by (type)",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 63,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "Thread Pools",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(elasticsearch_thread_pool_active_count{${Cluster}, type!=\"management\"}) by (type)",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 63,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "Thread pool rejections",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "rate(elasticsearch_thread_pool_rejected_count{${Cluster}, type!=\"management\"}[5m])",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 76,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "Avg Heap in 15min",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "avg_over_time(elasticsearch_jvm_memory_used_bytes{area=\"heap\",${Cluster}}[15m]) / elasticsearch_jvm_memory_max_bytes{area=\"heap\",${Cluster}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 76,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "RX/TX Rate 5m",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(rate(elasticsearch_transport_rx_packets_total{${Cluster}}[5m]))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(rate(elasticsearch_transport_tx_packets_total{${Cluster}}[5m])) * -1",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 21,
+        "width": 24,
+        "height": 13,
+        "widget": {
+          "title": "GC seconds",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "${labels.name} ${labels.gc}",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "irate(elasticsearch_jvm_gc_collection_seconds_sum{${Cluster}}[1m])",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      }
+    ]
+  },
+  "labels": {}
+}

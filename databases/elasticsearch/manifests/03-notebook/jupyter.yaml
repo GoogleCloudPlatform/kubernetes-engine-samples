@@ -1,0 +1,78 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_elasticsearch_03_notebook]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels: &labels
+    app: jupyter-notebook
+  name: notebook
+spec:
+  ports:
+  - port: 8888
+  selector: *labels
+  type: LoadBalancer
+  # type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notebook
+  labels: &labels
+    app: jupyter-notebook
+spec:
+  selector:
+    matchLabels: *labels
+  template:
+    metadata: 
+      labels: *labels
+    spec:
+      containers:
+      - name: jupyter
+        image: tensorflow/tensorflow:2.15.0-jupyter
+        resources:
+          requests:
+            memory: "4500Mi"
+            cpu: "1"
+          limits:
+            memory: "4500Mi"
+            cpu: "1"
+        ports:
+        - containerPort: 8888
+        env:
+        - name: PW
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-ha-es-elastic-user
+              key: elastic
+        volumeMounts:
+        - name: books-dataset
+          mountPath: /usr/local/dataset
+        - name: notebook
+          mountPath: /tf
+        - name: elastic-cert
+          mountPath: /usr/local/cert
+      volumes:
+      - name: books-dataset
+        configMap:
+          name: books-dataset
+      - name: notebook
+        configMap:
+          name: notebook
+      - name: elastic-cert
+        secret:
+          secretName: elasticsearch-ha-es-http-certs-public
+ # [END gke_databases_elasticsearch_03_notebook]

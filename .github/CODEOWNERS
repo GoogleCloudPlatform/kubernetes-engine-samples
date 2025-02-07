@@ -3,15 +3,15 @@
 
 # These owners will be the default owners for everything in
 # the repo. Unless a later match takes precedence.
-* @GoogleCloudPlatform/dee-platform-ops @yoshi-approver
+* @GoogleCloudPlatform/cloud-samples-infra @yoshi-approver
 
 # Directory-specific owners
-/ai-ml/ @rbarberop @alizaidis @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
-/batch/ @rbarberop @alizaidis @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/ai-ml/ @alizaidis @moficodes @kenthua @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/batch/ @alizaidis @moficodes @kenthua @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /cost-optimization/gke-vpa-recommendations/ @aburhan @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
-/databases/hello-app-cloud-spanner/ @thiagotnunes @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/databases/hello-app-cloud-spanner/ @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /databases/gke-stateful-postgres/ @aburhan @pwschuurman @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /quickstarts/whereami/ @theemadnes @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
-/security/language-vulns/ @thompsonmax @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/security/language-vulns/ @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /streaming/ @aburhan @pwschuurman @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
-/windows/ @ibabou @liurupeng @mcshooter @pjh @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/windows/ @ibabou @yoshi-approver @GoogleCloudPlatform/dee-platform-ops

@@ -15,7 +15,7 @@
 # [START gke_quickstarts_languages_nodejs_dockerfile]
 # Use the official lightweight Node.js 16 image.
 # https://hub.docker.com/_/node
-FROM node:17-slim
+FROM node:21-slim
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app

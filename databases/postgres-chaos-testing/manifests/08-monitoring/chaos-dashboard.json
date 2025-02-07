@@ -1,0 +1,464 @@
+{
+  "displayName": "Litmus Chaos test",
+  "dashboardFilters": [
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "cluster",
+      "templateVariable": "Cluster"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "location",
+      "templateVariable": "Location"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "namespace",
+      "templateVariable": "Namespace"
+    }
+  ],
+  "category": "CUSTOM",
+  "mosaicLayout": {
+    "columns": 48,
+    "tiles": [
+      {
+        "xPos": 15,
+        "yPos": 0,
+        "width": 16,
+        "height": 17,
+        "widget": {
+          "title": "Failed experiments",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "litmuschaos_failed_experiments{${Cluster},${Location},${Namespace}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 31,
+        "yPos": 0,
+        "width": 16,
+        "height": 17,
+        "widget": {
+          "title": "Passed experiments",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "litmuschaos_passed_experiments{${Cluster},${Location},${Namespace}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 17,
+        "width": 22,
+        "height": 16,
+        "widget": {
+          "title": "Success percentage",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "litmuschaos_probe_success_percentage{${Cluster},${Location},${Namespace}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 22,
+        "yPos": 17,
+        "width": 25,
+        "height": 16,
+        "widget": {
+          "title": "Experiments total duration",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "STACKED_AREA",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "litmuschaos_experiment_total_duration{${Cluster},${Location},${Namespace}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 33,
+        "width": 22,
+        "height": 14,
+        "widget": {
+          "title": "Node and pod count",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "node_count",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "count(rate(kubernetes_io:node_cpu_core_usage_time{monitored_resource=\"k8s_node\",cluster_name=~\"${Cluster.value}\"}[1m]))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "pod_count",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y2",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "count(rate(kubernetes_io:pod_network_received_bytes_count{monitored_resource=\"k8s_pod\",cluster_name=~\"${Cluster.value}\"}[1m]))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "timeshiftDuration": "0s",
+            "y2Axis": {
+              "label": "",
+              "scale": "LINEAR"
+            },
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 22,
+        "yPos": 33,
+        "width": 25,
+        "height": 14,
+        "widget": {
+          "title": "CPU Util % per Node",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch k8s_node\n| metric 'kubernetes.io/node/cpu/allocatable_utilization'\n| filter (resource.cluster_name=~'${Cluster.value}')\n| group_by 1m,    [value_allocatable_utilization_mean: mean(value.allocatable_utilization)]\n| every 1m\n| scale '%'\n| top 50\n",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "timeshiftDuration": "0s",
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 0,
+        "width": 15,
+        "height": 17,
+        "widget": {
+          "title": "Number of experiments",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "litmuschaos_cluster_scoped_experiments_run_count{${Cluster},${Location},${Namespace}}",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 47,
+        "width": 22,
+        "height": 14,
+        "widget": {
+          "title": "Memory usage by Pod",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch k8s_container\n| metric 'kubernetes.io/container/memory/used_bytes'\n| filter\n    (resource.cluster_name =~'${Cluster.value}'\n     && resource.namespace_name == 'postgres')\n    && (metric.memory_type == 'non-evictable')\n| group_by 1m, [value_used_bytes_mean: mean(value.used_bytes)]\n| every 1m\n| group_by [resource.namespace_name, resource.pod_name],\n    [value_used_bytes_mean_aggregate: aggregate(value_used_bytes_mean)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "timeshiftDuration": "0s",
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 22,
+        "yPos": 47,
+        "width": 25,
+        "height": 14,
+        "widget": {
+          "title": "Memory Util % per Node",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch k8s_node\n| metric 'kubernetes.io/node/memory/allocatable_utilization'\n| filter (resource.cluster_name=~'${Cluster.value}')\n| group_by 1m,\n    [value_allocatable_utilization_mean: mean(value.allocatable_utilization)]\n| every 1m\n| group_by [resource.node_name],\n    [value_allocatable_utilization_mean_aggregate:\n       aggregate(value_allocatable_utilization_mean)]\n| scale '%'\n| top 50",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "timeshiftDuration": "0s",
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 22,
+        "yPos": 61,
+        "width": 8,
+        "height": 8,
+        "widget": {
+          "title": "Postgres availability [15m] %",
+          "scorecard": {
+            "gaugeView": {
+              "lowerBound": 0,
+              "upperBound": 100
+            },
+            "thresholds": [
+              {
+                "color": "YELLOW",
+                "direction": "BELOW",
+                "label": "",
+                "value": 90
+              },
+              {
+                "color": "RED",
+                "direction": "BELOW",
+                "label": "",
+                "value": 66
+              }
+            ],
+            "timeSeriesQuery": {
+              "prometheusQuery": "min(avg_over_time(pg_up{${Cluster}}[15m])) * 100",
+              "unitOverride": ""
+            }
+          }
+        }
+      },
+      {
+        "xPos": 30,
+        "yPos": 61,
+        "width": 8,
+        "height": 8,
+        "widget": {
+          "title": "Postgres availability [30m] %",
+          "scorecard": {
+            "gaugeView": {
+              "lowerBound": 0,
+              "upperBound": 100
+            },
+            "thresholds": [
+              {
+                "color": "YELLOW",
+                "direction": "BELOW",
+                "label": "",
+                "value": 90
+              },
+              {
+                "color": "RED",
+                "direction": "BELOW",
+                "label": "",
+                "value": 66
+              }
+            ],
+            "timeSeriesQuery": {
+              "prometheusQuery": "min(avg_over_time(pg_up{${Cluster}}[30m])) * 100",
+              "unitOverride": ""
+            }
+          }
+        }
+      },
+      {
+        "xPos": 38,
+        "yPos": 61,
+        "width": 9,
+        "height": 8,
+        "widget": {
+          "title": "Postgres availability total %",
+          "scorecard": {
+            "gaugeView": {
+              "lowerBound": 0,
+              "upperBound": 100
+            },
+            "thresholds": [
+              {
+                "color": "YELLOW",
+                "direction": "BELOW",
+                "label": "",
+                "value": 90
+              },
+              {
+                "color": "RED",
+                "direction": "BELOW",
+                "label": "",
+                "value": 66
+              }
+            ],
+            "timeSeriesQuery": {
+              "prometheusQuery": "min(avg_over_time(pg_up{${Cluster}}[1d])) * 100",
+              "unitOverride": ""
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 61,
+        "width": 22,
+        "height": 8,
+        "widget": {
+          "title": "Postgres workload availability",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "count(rate(kubernetes_io:pod_network_received_bytes_count{cluster_name=~\"${Cluster.value}\",monitored_resource=\"k8s_pod\",namespace_name=\"postgres\",metadata_user_application=\"spilo\",metadata_system_ready_status=\"True\"}[10s])) / max(count(rate(kubernetes_io:pod_network_received_bytes_count{cluster_name=~\"${Cluster.value}\",monitored_resource=\"k8s_pod\",namespace_name=\"postgres\",metadata_user_application=\"spilo\"}[${__interval}]))) * 100",
+                  "unitOverride": "%"
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "labels": {}
+}

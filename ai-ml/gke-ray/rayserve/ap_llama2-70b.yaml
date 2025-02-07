@@ -1,0 +1,133 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_rayserve_ap_llama2_70b]
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: rayllm
+spec:
+  serviceUnhealthySecondThreshold: 2400 # Config for the health check threshold for service. Default value is 60.
+  deploymentUnhealthySecondThreshold: 2400 # Config for the health check threshold for deployments. Default value is 60.
+  # setting the MODEL_ID env var on the workerGroupSpec did not work, it couldn't find it during exec
+  serveConfigV2: |
+    applications:
+    - name: llama-2
+      route_prefix: /
+      import_path: model_nf4_mg:chat_app_nf4_mg
+      runtime_env:
+        env_vars:
+          MODEL_ID: "meta-llama/Llama-2-70b-chat-hf"
+          PYTHONPATH: "${HOME}/models"
+        pip: 
+        - bitsandbytes==0.42.0          
+      deployments:
+      - name: Chat
+        num_replicas: 1
+  rayClusterConfig:
+    # Ray head pod template
+    headGroupSpec:
+      # The `rayStartParams` are used to configure the `ray start` command.
+      # See https://github.com/ray-project/kuberay/blob/master/docs/guidance/rayStartParams.md for the default settings of `rayStartParams` in KubeRay.
+      # See https://docs.ray.io/en/latest/cluster/cli.html#ray-start for all available options in `rayStartParams`.
+      rayStartParams:
+        resources: '"{\"accelerator_type_cpu\": 2}"'
+        dashboard-host: '0.0.0.0'
+        block: 'true'
+      #pod template
+      template:
+        spec:
+          containers:
+          - name: ray-head
+            image: anyscale/ray-llm:0.5.0
+            resources:
+              limits:
+                cpu: "2"
+                memory: "8Gi"
+              requests:
+                cpu: "2"
+                memory: "8Gi"
+            volumeMounts:
+            - mountPath: /home/ray/models
+              name: model                
+            ports:
+            - containerPort: 6379
+              name: gcs-server
+            - containerPort: 8265 # Ray dashboard
+              name: dashboard
+            - containerPort: 10001
+              name: client
+            - containerPort: 8000
+              name: serve
+          volumes:
+          - name: model
+            configMap:
+              name: quantized-model
+              items:
+              - key: model_nf4_mg.py
+                path: model_nf4_mg.py
+    workerGroupSpecs:
+    # the pod replicas in this group typed worker
+    - replicas: 1
+      minReplicas: 0
+      maxReplicas: 1
+      # logical group name, for this called small-group, also can be functional
+      groupName: gpu-group
+      rayStartParams:
+        block: 'true'
+        resources: '"{\"accelerator_type_cpu\": 22, \"accelerator_type_l4\": 2}"'
+      # pod template
+      template:
+        spec:
+          securityContext:
+            runAsUser: 1000
+            fsGroup: 100        
+          containers:
+          - name: llm
+            image: anyscale/ray-llm:0.5.0
+            env:
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-secret
+                  key: hf_api_token
+            lifecycle:
+              preStop:
+                exec:
+                  command: ["/bin/sh","-c","ray stop"]
+            resources:
+              limits:
+                cpu: "22"
+                memory: "40Gi"
+                nvidia.com/gpu: "2"
+              requests:
+                cpu: "22"
+                memory: "40Gi"
+                nvidia.com/gpu: "2"
+            volumeMounts:
+            - mountPath: "/home/ray/.cache"
+              name: worker-disk-vol
+          # Please ensure the following taint has been applied to the GPU node in the cluster.
+          tolerations:
+            - key: "ray.io/node-type"
+              operator: "Equal"
+              value: "worker"
+              effect: "NoSchedule"
+          nodeSelector:
+            cloud.google.com/gke-accelerator: nvidia-l4
+          volumes:
+          - name: worker-disk-vol
+            persistentVolumeClaim:
+              claimName: worker-disk
+# [END gke_ai_ml_gke_ray_rayserve_ap_llama2_70b]

@@ -1,0 +1,122 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_postgres_chaos_testing_03_node_restart_experiment]
+apiVersion: litmuschaos.io/v1alpha1
+description:
+  message: |
+    Stops GCP VM instances and GKE nodes for a specified duration and later restarts them
+kind: ChaosExperiment
+metadata:
+  name: gcp-vm-instance-stop
+  labels:
+    name: gcp-vm-instance-stop
+    app.kubernetes.io/part-of: litmus
+    app.kubernetes.io/component: chaosexperiment
+    app.kubernetes.io/version: ci
+spec:
+  definition:
+    scope: Cluster
+    permissions:
+      # Create and monitor the experiment & helper pods
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs:
+          [
+            "create",
+            "delete",
+            "get",
+            "list",
+            "patch",
+            "update",
+            "deletecollection",
+          ]
+      # Performs CRUD operations on the events inside chaosengine and chaosresult
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["create", "get", "list", "patch", "update"]
+      # Fetch configmaps & secrets details and mount it to the experiment pod (if specified)
+      - apiGroups: [""]
+        resources: ["secrets", "configmaps"]
+        verbs: ["get", "list"]
+      # Track and get the runner, experiment, and helper pods log
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get", "list", "watch"]
+      # for configuring and monitor the experiment job by the chaos-runner pod
+      - apiGroups: ["batch"]
+        resources: ["jobs"]
+        verbs: ["create", "list", "get", "delete", "deletecollection"]
+      # for creation, status polling and deletion of litmus chaos resources used within a chaos workflow
+      - apiGroups: ["litmuschaos.io"]
+        resources: ["chaosengines", "chaosexperiments", "chaosresults"]
+        verbs: ["create", "list", "get", "patch", "update", "delete"]
+      # for experiment to perform node status checks
+      - apiGroups: [""]
+        resources: ["nodes"]
+        verbs: ["get", "list"]
+    image: "litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest"
+    imagePullPolicy: Always
+    args:
+      - -c
+      - ./experiments -name gcp-vm-instance-stop
+    command:
+      - /bin/bash
+    env:
+      - name: TOTAL_CHAOS_DURATION
+        value: "30"
+
+      - name: CHAOS_INTERVAL
+        value: "30"
+
+      # parallel or serial; determines how the VM instances are terminated, all at once or one at a time
+      - name: SEQUENCE
+        value: "parallel"
+
+      # period to wait before and after injection of chaos in sec
+      - name: RAMP_TIME
+        value: ""
+
+      # enable or disable; shall be set to enable if the target instances are a part of a managed instance group
+      - name: MANAGED_INSTANCE_GROUP
+        value: "disable"
+
+      # Instance name of the target VM instance(s)
+      # Multiple instance names can be provided as comma separated values ex: instance1,instance2
+      - name: VM_INSTANCE_NAMES
+        value: ""
+
+      # GCP project ID to which the VM instances belong
+      - name: GCP_PROJECT_ID
+        value: ""
+
+      # Instance zone(s) of the target VM instance(s)
+      # If more than one instance is targetted, provide zone for each in the order of their
+      # respective instance name in VM_INSTANCE_NAME as comma separated values ex: zone1,zone2
+      - name: ZONES
+        value: ""
+
+      - name: DEFAULT_HEALTH_CHECK
+        value: "false"
+
+      # parallel or serial; determines how chaos is injected
+      - name: SEQUENCE
+        value: "parallel"
+
+    labels:
+      name: gcp-vm-instance-stop
+      app.kubernetes.io/part-of: litmus
+      app.kubernetes.io/component: experiment-job
+      app.kubernetes.io/version: ci
+# [END gke_databases_postgres_chaos_testing_03_node_restart_experiment]

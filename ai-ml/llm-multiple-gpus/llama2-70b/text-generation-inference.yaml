@@ -29,9 +29,15 @@ spec:
     spec:
       containers:
       - name: llm
-        image: ghcr.io/huggingface/text-generation-inference:1.1.0
+        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu124.2-3.ubuntu2204.py311
         resources:
+          requests:
+            cpu: "10"
+            memory: "60Gi"
+            nvidia.com/gpu: "2"
           limits:
+            cpu: "10"
+            memory: "60Gi"
             nvidia.com/gpu: "2"
         env:
         - name: MODEL_ID
@@ -50,16 +56,28 @@ spec:
         volumeMounts:
           - mountPath: /dev/shm
             name: dshm
-          - mountPath: /data
-            name: data
+          # mountPath is set to /tmp as it's the path where the HF_HOME environment
+          # variable in the TGI DLCs is set to instead of the default /data set within the TGI default image.
+          # i.e. where the downloaded model from the Hub will be stored
+          - mountPath: /tmp
+            name: ephemeral-volume
       volumes:
         - name: dshm
           emptyDir:
               medium: Memory
-        - name: data
-          emptyDir: {}
+        - name: ephemeral-volume
+          ephemeral:
+            volumeClaimTemplate:
+              metadata:
+                labels:
+                  type: ephemeral
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                storageClassName: "premium-rwo"
+                resources:
+                  requests:
+                    storage: 150Gi
       nodeSelector:
-        cloud.google.com/gke-accelerator: nvidia-l4
-        cloud.google.com/gke-ephemeral-storage-local-ssd: "true"
+        cloud.google.com/gke-accelerator: "nvidia-l4"
         cloud.google.com/gke-spot: "true"
 # [END gke_aiml_llm_multi_gpus_llama2_70b_inference]

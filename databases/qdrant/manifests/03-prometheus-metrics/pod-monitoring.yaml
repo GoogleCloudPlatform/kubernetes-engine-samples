@@ -20,8 +20,8 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: qdrant
-      component: metrics-proxy
+      app: qdrant
+      app.kubernetes.io/instance: qdrant-database
   endpoints:
   - port: 80
     interval: 30s

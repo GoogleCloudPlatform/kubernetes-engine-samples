@@ -1,0 +1,87 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_postgres_chaos_testing_01_postgres_cluster]
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: my-cluster
+spec:
+  dockerImage: ghcr.io/zalando/spilo-15:3.0-p1
+  teamId: "my-team"
+  numberOfInstances: 3
+  users:
+    mydatabaseowner:
+    - superuser
+    - createdb
+    myuser: []
+  databases:
+    mydatabase: mydatabaseowner
+  postgresql:
+    version: "15"
+    parameters:
+      shared_buffers: "32MB"
+      max_connections: "10"
+      log_statement: "all"
+      password_encryption: scram-sha-256
+  volume:
+    size: 5Gi
+    storageClass: ha-regional
+  enableShmVolume: true
+  podAnnotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+  tolerations:
+  - key: "app.stateful/component"
+    operator: "Equal"
+    value: "postgres-operator"
+    effect: NoSchedule
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: "app.stateful/component"
+          operator: In
+          values:
+          - "postgres-operator"
+  resources:
+    requests:
+      cpu: "1"
+      memory: 4Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+  sidecars:
+    - name: exporter
+      image: quay.io/prometheuscommunity/postgres-exporter:v0.14.0
+      args:
+      - --collector.stat_statements
+      ports:
+      - name: exporter
+        containerPort: 9187
+        protocol: TCP
+      resources:
+        limits:
+          cpu: 500m
+          memory: 256M
+        requests:
+          cpu: 100m
+          memory: 256M
+      env:
+      - name: "DATA_SOURCE_URI"
+        value: "localhost/postgres?sslmode=require"
+      - name: "DATA_SOURCE_USER"
+        value: "$(POSTGRES_USER)"
+      - name: "DATA_SOURCE_PASS"
+        value: "$(POSTGRES_PASSWORD)"
+# [END gke_databases_postgres_chaos_testing_01_postgres_cluster]

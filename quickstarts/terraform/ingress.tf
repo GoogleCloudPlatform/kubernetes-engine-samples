@@ -125,7 +125,7 @@ resource "kubernetes_pod_v1" "example" {
 
   spec {
     container {
-      image = "gcr.io/google-samples/hello-app:1.0"
+      image = "us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0"
       name  = "example"
 
       port {
@@ -145,7 +145,7 @@ resource "kubernetes_pod_v1" "example2" {
 
   spec {
     container {
-      image = "gcr.io/google-samples/hello-app:2.0"
+      image = "us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0"
       name  = "example"
 
       port {

@@ -20,15 +20,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
-	"strings"
-
 	gce "cloud.google.com/go/compute/metadata"
+	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
+	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	monitoring "google.golang.org/api/monitoring/v3"
+	"google.golang.org/genproto/googleapis/api/metric"
+	"google.golang.org/genproto/googleapis/api/monitoredres"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // SD Dummy Exporter is a testing utility that exports a metric of constant value to Stackdriver
@@ -98,9 +99,8 @@ func main() {
 	}
 }
 
-func getStackDriverService() (*monitoring.Service, error) {
-	oauthClient := oauth2.NewClient(context.Background(), google.ComputeTokenSource(""))
-	return monitoring.New(oauthClient)
+func getStackDriverService() (*monitoring.MetricClient, error) {
+	return monitoring.NewMetricClient(context.Background())
 }
 
 // getResourceLabelsForOldModel returns resource labels needed to correctly label metric data
@@ -145,36 +145,37 @@ func getResourceLabelsForNewModel(namespace, name string) map[string]string {
 
 // [START gke_custom_metrics_direct_exporter]
 // [START container_custom_metrics_direct_exporter]
-func exportMetric(stackdriverService *monitoring.Service, metricName string,
+func exportMetric(client *monitoring.MetricClient, metricName string,
 	metricValue int64, metricLabels map[string]string, monitoredResource string, resourceLabels map[string]string) error {
-	dataPoint := &monitoring.Point{
-		Interval: &monitoring.TimeInterval{
-			EndTime: time.Now().Format(time.RFC3339),
+	dataPoint := &monitoringpb.Point{
+		Interval: &monitoringpb.TimeInterval{
+			EndTime: timestamppb.New(time.Now()),
 		},
-		Value: &monitoring.TypedValue{
-			Int64Value: &metricValue,
+		Value: &monitoringpb.TypedValue{
+			Value: &monitoringpb.TypedValue_Int64Value{Int64Value: metricValue},
 		},
 	}
 	// Write time series data.
-	request := &monitoring.CreateTimeSeriesRequest{
-		TimeSeries: []*monitoring.TimeSeries{
+	projectName := fmt.Sprintf("projects/%s", resourceLabels["project_id"])
+	request := &monitoringpb.CreateTimeSeriesRequest{
+		Name: projectName,
+		TimeSeries: []*monitoringpb.TimeSeries{
 			{
-				Metric: &monitoring.Metric{
+				Metric: &metric.Metric{
 					Type:   "custom.googleapis.com/" + metricName,
 					Labels: metricLabels,
 				},
-				Resource: &monitoring.MonitoredResource{
+				Resource: &monitoredres.MonitoredResource{
 					Type:   monitoredResource,
 					Labels: resourceLabels,
 				},
-				Points: []*monitoring.Point{
+				Points: []*monitoringpb.Point{
 					dataPoint,
 				},
 			},
 		},
 	}
-	projectName := fmt.Sprintf("projects/%s", resourceLabels["project_id"])
-	_, err := stackdriverService.Projects.TimeSeries.Create(projectName, request).Do()
+	err := client.CreateTimeSeries(context.Background(), request)
 	return err
 }
 

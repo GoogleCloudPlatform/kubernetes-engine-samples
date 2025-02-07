@@ -1,0 +1,21 @@
+name: cost-optimization-gke-shift-left-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/cost-optimization-gke-shift-left-ci.yml'
+      - 'cost-optimization/gke-shift-left-cost/**'
+  pull_request:
+    paths:
+      - '.github/workflows/cost-optimization-gke-shift-left-ci.yml'
+      - 'cost-optimization/gke-shift-left-cost/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build cost-optimization-gke-shift-left container
+        run: |
+          cd cost-optimization/gke-shift-left-cost
+          docker build --tag cost-optimization-gke-shift-left .

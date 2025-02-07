@@ -15,7 +15,7 @@
 
 # [START gke_direct_to_sd_custom_metrics_sd_hpa_horizontalpodautoscaler_custom_metric_sd]
 # [START container_custom_metrics_direct_horizontal_pod_autoscaler]
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: custom-metric-sd

@@ -1,0 +1,38 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This file and other cloudbuild.yaml files are used to ensure that
+# our public Docker images such as us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:v0.2.0
+# are rebuilt and updated upon changes to the repository.
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - 'gcr.io/google-samples/prometheus-dummy-exporter:v0.2.0'
+    - '-t'
+    - 'gcr.io/google-samples/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:v0.2.0'
+    - '-t'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
+    - '.'
+  dir: 'observability/custom-metrics-autoscaling/google-managed-prometheus'
+
+images:
+  - 'gcr.io/google-samples/prometheus-dummy-exporter:v0.2.0'
+  - 'gcr.io/google-samples/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:v0.2.0'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/prometheus-dummy-exporter:sample-public-image-v0.2.0-${SHORT_SHA}'

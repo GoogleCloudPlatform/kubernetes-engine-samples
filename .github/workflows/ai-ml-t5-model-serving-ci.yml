@@ -1,0 +1,25 @@
+name: ai-ml-t5-model-serving-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ai-ml-t5-model-serving-ci.yml'
+      - 'ai-ml/t5-model-serving/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ai-ml-t5-model-serving-ci.yml'
+      - 'ai-ml/t5-model-serving/**'
+jobs:
+  t5-model-serving:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build client-app container for t5-model-serving tutorial
+        run: |
+          cd ai-ml/t5-model-serving/client-app
+          docker build --tag t5-model-serving:client-app .
+      - name: build model container for t5-model-serving tutorial
+        run: |
+          cd ai-ml/t5-model-serving/model
+          docker build --tag t5-model-serving:serving .

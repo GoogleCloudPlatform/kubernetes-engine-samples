@@ -33,9 +33,13 @@ spec:
         command: ["python", "/app/endpoint.py"]
         env:
         - name: QDRANT_URL
-          value: http://qdrant:6333
+          value: http://qdrant-database:6333
         - name: JOB_IMAGE
           value: <DOCKER_REPO>/embed-docs:1.0
+        - name: JOB_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         ports:
         - containerPort: 5001
         resources:

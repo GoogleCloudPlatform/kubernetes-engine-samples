@@ -23,9 +23,11 @@ import (
 	"time"
 
 	gce "cloud.google.com/go/compute/metadata"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/monitoring/v3"
+	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
+	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
+	"google.golang.org/genproto/googleapis/api/metric"
+	"google.golang.org/genproto/googleapis/api/monitoredres"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -39,43 +41,44 @@ func main() {
 }
 
 func export(name string, value float64) {
-	sd, err := monitoring.New(oauth2.NewClient(context.Background(), google.ComputeTokenSource("")))
+	client, err := monitoring.NewMetricClient(context.Background())
 	if err != nil {
 		panic(err)
 	}
+	defer client.Close()
 
 	projectID, _ := gce.ProjectID()
 	project := "projects/" + projectID
-	metric, request := buildTimeSeriesRequest(name, value)
-	if _, err = sd.Projects.TimeSeries.Create(project, request).Do(); err != nil {
+	metric, request := buildTimeSeriesRequest(project, name, value)
+	if err = client.CreateTimeSeries(context.Background(), request); err != nil {
 		panic(err)
 	}
 	log.Printf("Exported custom metric '%v' = %v.", metric, value)
 }
 
-func buildTimeSeriesRequest(name string, value float64) (string, *monitoring.CreateTimeSeriesRequest) {
+func buildTimeSeriesRequest(project, name string, value float64) (string, *monitoringpb.CreateTimeSeriesRequest) {
 	metricType := "custom.googleapis.com/" + name
 	metricLabels := map[string]string{}
 	monitoredResourceType := "k8s_cluster"
 	monitoredResourceLabels := buildMonitoredResourceLabels()
-	now := time.Now().Format(time.RFC3339)
-	return metricType, &monitoring.CreateTimeSeriesRequest{
-		TimeSeries: []*monitoring.TimeSeries{
+	return metricType, &monitoringpb.CreateTimeSeriesRequest{
+		Name: project,
+		TimeSeries: []*monitoringpb.TimeSeries{
 			{
-				Metric: &monitoring.Metric{
+				Metric: &metric.Metric{
 					Type:   metricType,
 					Labels: metricLabels,
 				},
-				Resource: &monitoring.MonitoredResource{
+				Resource: &monitoredres.MonitoredResource{
 					Type:   monitoredResourceType,
 					Labels: monitoredResourceLabels,
 				},
-				Points: []*monitoring.Point{{
-					Interval: &monitoring.TimeInterval{
-						EndTime: now,
+				Points: []*monitoringpb.Point{{
+					Interval: &monitoringpb.TimeInterval{
+						EndTime: timestamppb.New(time.Now()),
 					},
-					Value: &monitoring.TypedValue{
-						DoubleValue: &value,
+					Value: &monitoringpb.TypedValue{
+						Value: &monitoringpb.TypedValue_DoubleValue{DoubleValue: value},
 					},
 				}},
 			},
