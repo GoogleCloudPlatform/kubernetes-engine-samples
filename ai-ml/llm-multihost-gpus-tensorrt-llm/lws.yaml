@@ -27,6 +27,8 @@ spec:
         labels:
           role: leader
       spec:
+        nodeSelector:
+          cloud.google.com/gke-accelerator: nvidia-h100-80gb
         serviceAccountName: tensorrt-sa
         containers:
           - name: leader
