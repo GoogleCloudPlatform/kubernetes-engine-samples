@@ -204,6 +204,7 @@ def build_app(cli_args: Dict[str, str]) -> serve.Application:
             placement_group_strategy="PACK").bind(
             model=os.environ['ASSIST_MODEL_ID'],
             tensor_parallel_size=num_tpu_chips_per_slice,
+            download_dir=os.environ['VLLM_XLA_CACHE_PATH'],
             enforce_eager=True,
         ),
         VLLMSummarizerDeployment.options(
@@ -211,6 +212,7 @@ def build_app(cli_args: Dict[str, str]) -> serve.Application:
             placement_group_strategy="PACK").bind(
             model=os.environ['SUMMARIZER_MODEL_ID'],
             tensor_parallel_size=num_tpu_chips_per_slice,
+            download_dir=os.environ['VLLM_XLA_CACHE_PATH'],
             enforce_eager=True,
         ),
     )

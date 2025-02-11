@@ -12,103 +12,93 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ai_ml_llm_serving_multihost_gpus_vllm_deepseek_r1_a3_hdml]
-
+# [START gke_ai_ml_llm_serving_multihost_gpus_tensorrt_llm_lws]
 
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
-  name: vllm
+  name: tensorrt
 spec:
   replicas: 1
   leaderWorkerTemplate:
     size: 2
-    restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
         labels:
           role: leader
       spec:
+        nodeSelector:
+          cloud.google.com/gke-accelerator: nvidia-h100-80gb
+        serviceAccountName: tensorrt-sa
         containers:
-          - name: vllm-leader
+          - name: leader
             image: IMAGE_NAME
-            env:
-              - name: HUGGING_FACE_HUB_TOKEN
-                valueFrom:
-                  secretKeyRef:
-                    name: hf-secret
-                    key: hf_api_token
             command:
-              - sh
-              - -c
-              - "/vllm-workspace/ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE); 
-                python3 -m vllm.entrypoints.openai.api_server --port 8080 --model /models/DeepSeek-R1 --tensor-parallel-size 8 --pipeline-parallel-size 2 --trust-remote-code --max-model-len 4096"
+            - sh 
+            - -c
+            - "./install_model.sh; python3 ./server.py leader --stateful_set_group_key=${GROUP_KEY} --pp=8 --tp=2 --gpu_per_node=8 --triton_model_repo_dir=/data/tensorrtllm_backend/all_models/inflight_batcher_llm/"
+            env:
+            - name: GROUP_KEY
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['leaderworkerset.sigs.k8s.io/group-key']
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-secret
+                  key: hf_api_token
             resources:
               limits:
                 nvidia.com/gpu: "8"
             ports:
-              - containerPort: 8080
-            readinessProbe:
-              tcpSocket:
-                port: 8080
-              initialDelaySeconds: 15
-              periodSeconds: 10
+              - containerPort: 8000
             volumeMounts:
               - mountPath: /dev/shm
                 name: dshm
-              - mountPath: /models
-                name: deepseek-r1
         volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-        - name: deepseek-r1
-          persistentVolumeClaim:
-            claimName: hdml-static-pvc
     workerTemplate:
       spec:
+        serviceAccountName: tensorrt-sa
         containers:
-          - name: vllm-worker
+          - name: worker
             image: IMAGE_NAME
             command:
-              - sh
-              - -c
-              - "/vllm-workspace/ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)"
+            - sh 
+            - -c
+            - "./install_model.sh; python3 ./server.py worker --triton_model_repo_dir=/data/tensorrtllm_backend/all_models/inflight_batcher_llm/"
             resources:
               limits:
                 nvidia.com/gpu: "8"
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
             env:
               - name: HUGGING_FACE_HUB_TOKEN
                 valueFrom:
                   secretKeyRef:
                     name: hf-secret
                     key: hf_api_token
-            volumeMounts:
-              - mountPath: /dev/shm
-                name: dshm
-              - mountPath: /models
-                name: deepseek-r1
         volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-        - name: deepseek-r1
-          persistentVolumeClaim:
-            claimName: hdml-static-pvc
----
+
+--- 
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: vllm-leader
+  name: tensorrt-service
 spec:
   ports:
     - name: http
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
+      port: 8000
+      targetPort: 8000
   selector:
-    leaderworkerset.sigs.k8s.io/name: vllm
+    leaderworkerset.sigs.k8s.io/name: tensorrt
     role: leader
-  type: ClusterIP
 
- # [END gke_ai_ml_llm_serving_multihost_gpus_vllm_deepseek_r1_a3_hdml]
+# [END gke_ai_ml_llm_serving_multihost_gpus_tensorrt_llm_lws]

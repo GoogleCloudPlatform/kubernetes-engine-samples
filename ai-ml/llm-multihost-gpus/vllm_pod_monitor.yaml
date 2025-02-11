@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ap_autopilot_quickstart_providers_terraform]
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-      version = "5.45.1"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-      version = "2.35.1"
-    }
-  }
-  required_version = ">= 0.13"
-}
-# [END gke_ap_autopilot_quickstart_providers_terraform]
+# [START gke_ai_ml_llm_serving_multihost_gpus_vllm_pod_monitor]
+
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+ name: vllm-pod-monitoring
+spec:
+ selector:
+   matchLabels:
+    leaderworkerset.sigs.k8s.io/name: vllm
+    role: leader
+ endpoints:
+ - path: /metrics
+   port: 8080
+   interval: 15s
+
+# [END gke_ai_ml_llm_serving_multihost_gpus_vllm_pod_monitor]
