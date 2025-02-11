@@ -30,6 +30,7 @@ warnings.filterwarnings(
     "Your application has authenticated using end user credentials")
 
 
+
 async def get_gke_metrics(metric_name, query, namespace, start_time, client):
     """
     Retrieves Google Kubernetes Engine (GKE) metrics.
@@ -202,7 +203,6 @@ if __name__ == "__main__":
     try:
         client = monitoring_v3.MetricServiceClient()
         bqclient = bigquery_storage_v1.BigQueryWriteClient()
-
     except Exception as error:
         logging.error(f'Google client connection error: {error}')   
     monitor_namespaces = get_namespaces(client, start_time)
