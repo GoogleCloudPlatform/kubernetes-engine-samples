@@ -1,0 +1,989 @@
+{
+    "displayName": "Milvus2.0",
+    "dashboardFilters": [
+        {
+            "labelKey": "namespace",
+            "templateVariable": "namespace",
+            "stringValue": "",
+            "filterType": "RESOURCE_LABEL"
+        },
+        {
+            "labelKey": "app_kubernetes_io_instance",
+            "templateVariable": "instance",
+            "stringValue": "",
+            "filterType": "METRIC_LABEL"
+        },
+        {
+            "labelKey": "collection_name",
+            "templateVariable": "collection",
+            "stringValue": "",
+            "filterType": "METRIC_LABEL"
+        }
+    ],
+    "mosaicLayout": {
+        "columns": 24,
+        "tiles": [
+            {
+                "widget": {
+                    "title": "Slow Query (in 1m)",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "increase(milvus_proxy_slow_query_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])"
+                                },
+                                "legendTemplate": "${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 1,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Successful Requests  (in 1m)",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_req_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", status=\"success\"}[1m])) by(function_name) "
+                                },
+                                "legendTemplate": "${labels.function_name}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 1,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Failed Requests  (in 1m)",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_req_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", status!~\"success|total\"}[1m])) by(function_name) "
+                                },
+                                "legendTemplate": "${labels.function_name}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 1,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Mutation Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, msg_type, pod, node_id) (rate(milvus_proxy_mutation_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_mutation_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, msg_type) / sum(increase(milvus_proxy_mutation_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, msg_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(1, sum by (le, msg_type, pod, node_id) (rate(milvus_proxy_mutation_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "max-${labels.pod}-${labels.node-id}-${labels.msg_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 9,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Search Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le,pod, node_id) (rate(milvus_proxy_sq_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"search\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_sq_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"search\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_sq_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"search\"}[2m])) by (pod, node_id)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(1, sum by (le,pod, node_id) (rate(milvus_proxy_sq_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"search\"}[2m])))"
+                                },
+                                "legendTemplate": "max-${labels.pod}-${labels.node-id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 9,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Query Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, pod, node_id) (rate(milvus_proxy_sq_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"query\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_sq_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"query\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_sq_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"query\"}[2m])) by (pod, node_id)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(1, sum by (le, pod, node_id) (rate(milvus_proxy_sq_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", query_type=\"query\"}[2m])))"
+                                },
+                                "legendTemplate": "max-${labels.pod}-${labels.node_id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 9,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "RootCoord Quota State",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(milvus_rootcoord_quota_states{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}) by (quota_states)"
+                                },
+                                "legendTemplate": "${labels.quota_states}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 17,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "RateLimit Requests",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_proxy_rate_limit_req_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", status=\"fail\"}[1m])) by (msg_type)"
+                                },
+                                "legendTemplate": "${labels.msg_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 17,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Channel Checkpoint Lag",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(timestamp(milvus_datacoord_channel_checkpoint_unix_seconds{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"})-milvus_datacoord_channel_checkpoint_unix_seconds{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}) by (channel_name)"
+                                },
+                                "legendTemplate": "${labels.channel_name}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 17,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Time Tick Delay",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(milvus_rootcoord_time_tick_delay{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}) by (role_name, node_id)"
+                                },
+                                "legendTemplate": "${labels.role_name}-${labels.node_id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 25,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Disk Usage",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(milvus_querynode_disk_used_size{namespace=~\"${namespace.value}\",pod=~\"${instance.value}-milvus.*\"} ) by(pod) "
+                                },
+                                "legendTemplate": "${labels.pod}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 25,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Memory Usage Ratio",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(process_resident_memory_bytes{namespace=~\"${namespace.value}\",pod=~\"${instance.value}-milvus.*\"} ) by(pod) / sum(container_spec_memory_limit_bytes{namespace=~\"${namespace.value}\",pod=~\"${instance.value}-milvus.*\",image!=\"\",container!=\"\"} ) by(pod)"
+                                },
+                                "legendTemplate": "${labels.pod}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 25,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "CPU Usage Ratio",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"${namespace.value}\",pod=~\"${instance.value}-milvus.*\",image!=\"\",container!=\"\"}[2m])) by (pod, namespace) / (sum(container_spec_cpu_quota{namespace=~\"${namespace.value}\",pod=~\"${instance.value}-milvus.*\",image!=\"\",container!=\"\"}/100000) by (pod, namespace)) "
+                                },
+                                "legendTemplate": "${labels.pod}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 33,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Restful Search Latency Avg",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "STACKED_AREA",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_restful_req_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[${__interval}])) by (phase) / sum(increase(milvus_proxy_restful_req_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[${__interval}])) by (phase)"
+                                },
+                                "legendTemplate": "avg-${labels.phase}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 33,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Restful Search Latency P99",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "STACKED_AREA",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, phase) (rate(milvus_proxy_restful_req_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[${__interval}])))"
+                                },
+                                "legendTemplate": "p99-${labels.phase}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 33,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Meta Operate Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, meta_op_type) (rate(milvus_meta_request_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "${labels.meta_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 41,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Storage Operate Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, persistent_data_op_type) (rate(milvus_storage_request_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "${labels.persistent_data_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 41,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Message Operate Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, message_op_type) (rate(milvus_msgstream_request_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "${labels.message_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 41,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Meta Request Rate",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_meta_op_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])) by (meta_op_type, status)"
+                                },
+                                "legendTemplate": "${labels.meta_op_type}-${labels.status}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 49,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Storage Request Rate",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_storage_op_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])) by (persistent_data_op_type, status)"
+                                },
+                                "legendTemplate": "${labels.persistent_data_op_type}-${labels.status}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 49,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Message Request Rate",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_msgstream_op_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])) by (message_op_type, status)"
+                                },
+                                "legendTemplate": "${labels.message_op_type}-${labels.status}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 49,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Meta Operation Throughput",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_meta_kv_size_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])) by (meta_op_type)"
+                                },
+                                "legendTemplate": "${labels.meta_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 57,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Storage Operation Throughput",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_storage_kv_size_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])) by (persistent_data_op_type)"
+                                },
+                                "legendTemplate": "${labels.persistent_data_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 57,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Storage Operate Latency[cpp]",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, persistent_data_op_type) (rate(internal_storage_request_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "${labels.persistent_data_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 57,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Storage Request Rate[cpp]",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(internal_storage_op_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])/2) by (persistent_data_op_type, status)"
+                                },
+                                "legendTemplate": "${labels.persistent_data_op_type}-${labels.status}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 65,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Storage Operation Throughput[cpp]",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(internal_storage_kv_size_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m])) by (persistent_data_op_type)"
+                                },
+                                "legendTemplate": "${labels.persistent_data_op_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 65,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Search Vector Count Rate",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_search_vectors_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])/120) by (pod, node_id)"
+                                },
+                                "legendTemplate": "${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(rate(milvus_proxy_search_vectors_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[1m]))"
+                                },
+                                "legendTemplate": "total"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 73,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Insert Vector Count Rate",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_insert_vectors_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])/120) by (pod, node_id)"
+                                },
+                                "legendTemplate": "${labels.pod}-${labels.node_id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 73,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Search Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, query_type, pod, node_id) (rate(milvus_proxy_sq_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.query_type}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_sq_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type) / sum(increase(milvus_proxy_sq_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.query_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 73,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Collection Search Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, query_type, pod, node_id) (rate(milvus_proxy_collection_sq_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", collection_name=~\"${collection.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.query_type}-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_collection_sq_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", collection_name=~\"${collection.value}\"}[2m])) by (pod, node_id, query_type) / sum(increase(milvus_proxy_collection_sq_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", collection_name=~\"${collection.value}\"}[2m])) by (pod, node_id, query_type)"
+                                },
+                                "legendTemplate": "avg-${labels.query_type}-${labels.pod}-${labels.node_id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 81,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Mutation Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.95, sum by (le, msg_type, pod, node_id) (rate(milvus_proxy_mutation_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_mutation_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, msg_type) / sum(increase(milvus_proxy_mutation_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, msg_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 81,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Collection Mutation Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, msg_type, pod, node_id) (rate(milvus_proxy_collection_mutation_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", collection_name=~\"${collection.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_collection_mutation_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", collection_name=~\"${collection.value}\"}[2m])) by (pod, node_id, msg_type) / sum(increase(milvus_proxy_collection_mutation_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", collection_name=~\"${collection.value}\"}[2m])) by (pod, node_id, msg_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 81,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Search Latency In Step",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, query_type, pod, node_id) (rate(milvus_proxy_sq_wait_result_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.query_type}-wait-result"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_sq_wait_result_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type) / sum(increase(milvus_proxy_sq_wait_result_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.query_type}-wait-result"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, query_type, pod, node_id) (rate(milvus_proxy_sq_reduce_result_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.query_type}-reduce"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_sq_reduce_result_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type) / sum(increase(milvus_proxy_sq_reduce_result_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.query_type}-reduce"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, query_type, pod, node_id) (rate(milvus_proxy_sq_decode_result_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))\n"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}-${labels.query_type}-decode"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_sq_decode_result_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type) / sum(increase(milvus_proxy_sq_decode_resultlatency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, query_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.query_type}-decode"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 89,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Mutation Send Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, msg_type, pod, node_id) (rate(milvus_proxy_mutation_send_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_mutation_send_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, msg_type) / sum(increase(milvus_proxy_mutation_send_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id, msg_type)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}-${labels.msg_type}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 89,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "MQ Send Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, pod) (rate(milvus_msgstream_request_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", message_op_type=\"produce\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_msgstream_request_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", message_op_type=\"produce\"}[2m])) by (pod) / sum(increase(milvus_msgstream_request_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\", message_op_type=\"produce\"}[2m])) by (pod)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 89,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Apply Timestamp Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, pod, node_id) (rate(milvus_proxy_apply_timestamp_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_apply_timestamp_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_apply_timestamp_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 97,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Apply PK Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, pod, node_id) (rate(milvus_proxy_apply_pk_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.node_id}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_apply_pk_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_apply_pk_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, node_id)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.node_id}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 8,
+                "yPos": 97,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "In Queue Latency",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "histogram_quantile(0.99, sum by (le, pod, function_name) (rate(milvus_proxy_req_in_queue_latency_bucket{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])))"
+                                },
+                                "legendTemplate": "p99-${labels.pod}-${labels.function_name}"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "sum(increase(milvus_proxy_req_in_queue_latency_sum{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, function_name) / sum(increase(milvus_proxy_req_in_queue_latency_count{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}[2m])) by (pod, function_name)"
+                                },
+                                "legendTemplate": "avg-${labels.pod}-${labels.function_name}"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 16,
+                "yPos": 97,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Msg Stream Object Num",
+                    "xyChart": {
+                        "dataSets": [
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "avg(milvus_proxy_msgstream_obj_num{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}) by (pod, node_id)"
+                                },
+                                "legendTemplate": "${labels.pod}-${labels.node_id}-avg"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "max(milvus_proxy_msgstream_obj_num{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}) by (pod, node_id)"
+                                },
+                                "legendTemplate": "${labels.pod}-${labels.node_id}-max"
+                            },
+                            {
+                                "plotType": "LINE",
+                                "timeSeriesQuery": {
+                                    "prometheusQuery": "min(milvus_proxy_msgstream_obj_num{app_kubernetes_io_instance=~\"${instance.value}\", app_kubernetes_io_name=~\"$app_name\", namespace=~\"${namespace.value}\"}) by (pod, node_id)"
+                                },
+                                "legendTemplate": "${labels.pod}-${labels.node_id}-min"
+                            }
+                        ]
+                    }
+                },
+                "xPos": 0,
+                "yPos": 105,
+                "height": 8,
+                "width": 8
+            },
+            {
+                "widget": {
+                    "title": "Conversion info",
+                    "text": {
+                        "content": "Converted from milvus-dashboard.json on 2025-2-6 at 22:55:05\n\nFor conversion issues such as no data in charts or missing tiles, please see our [troubleshooting docs](https://github.com/GoogleCloudPlatform/monitoring-dashboard-samples/blob/master/scripts/dashboard-importer/README.md#conversion-issues)\n\n##### Generated Warnings\n\n- This dashboard contains collapsible groups that were not imported because the importer doesn't support their conversion. Tiles in collapsible groups will be unnested.\n- Cloud Monitoring only supports up to 40 tiles, 92 tiles have been skipped\n- Template variable 'datasource' was skipped because its type 'datasource' is not supported\n- Template variable 'app_name' was skipped because its type 'textbox' is not supported",
+                        "format": "MARKDOWN"
+                    }
+                },
+                "xPos": 0,
+                "yPos": 417,
+                "height": 7,
+                "width": 24
+            }
+        ]
+    },
+    "labels": {
+        "goog-imported-via-script": "",
+        "cloud-monitoring-dashboard-importer": "",
+        "goog-imported-grafana-dashboard": "",
+        "goog-imported-grafana-revision": "3",
+        "goog-imported-grafana-file-name-milvus-dashboard": ""
+    }
+}
