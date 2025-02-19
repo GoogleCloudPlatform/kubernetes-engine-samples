@@ -1,0 +1,28 @@
+name: ai-ml-nl-to-sql-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ai-ml-nl-to-sql-ci.yml'
+      - 'ai-ml/nl-to-sql/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ai-ml-nl-to-sql-ci.yml'
+      - 'ai-ml/nl-to-sql/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate terraform autopilot
+        run: |
+          cd ai-ml/nl-to-sql/terraform/gke-autopilot
+          terraform init
+          terraform validate
+      - name: Validate terraform standard
+        run: |
+          cd ai-ml/nl-to-sql/terraform/gke-standard
+          terraform init
+          terraform validate
+
