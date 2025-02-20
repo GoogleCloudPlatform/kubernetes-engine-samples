@@ -1,0 +1,2 @@
+# jupytext.toml at your notebook directory
+formats = "ipynb,.nb.py:percent"
