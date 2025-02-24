@@ -35,7 +35,7 @@ spec:
       containers:
       - name: tfserve-server
         image: tensorflow/serving:2.13.1-gpu
-        command: [ "tensorflow_model_server", "--model_name=$MODEL_NAME", "--model_base_path=/data/tfserve-model-repository/$MODEL_NAME", "--rest_api_port=8000"  ]
+        command: [ "tensorflow_model_server", "--model_name=$MODEL_NAME", "--model_base_path=/data/tfserve-model-repository/$MODEL_NAME", "--rest_api_port=8000", "--monitoring_config_file=/data/tfserve-model-repository/monitoring_config.txt" ]
         ports:
         - name: http
           containerPort: 8000
