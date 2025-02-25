@@ -23,10 +23,10 @@ spec:
   ports:
     - port: 8500
       targetPort: 8500
-      name: http
+      name: grpc
     - port: 8000
       targetPort: 8000
-      name: grpc
+      name: http
   selector:
     app: tfserve
 
