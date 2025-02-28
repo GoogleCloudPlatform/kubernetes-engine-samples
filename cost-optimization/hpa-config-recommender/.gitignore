@@ -1,0 +1,106 @@
+#Terraform temp files
+**/.terraform/
+**/terraform.tfstate*
+
+### JS Proto ###
+**/.protojs_generated/
+
+### JS ###
+**/node_modules/
+**/dist/
+**/dist-ssr/
+
+# JS testing
+coverage/
+
+# REACT environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+
+### Python Proto ###
+**/*_pb2.py
+**/*_pb.py
+**/*_pb2.pyi
+**/*_pb.pyi
+
+### Python cache ###
+**/__pycache__/
+/tests/__pycache__/
+
+# Logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+**/lerna-debug.log*
+**/logs
+*.log
+
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+**/.idea/
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Go proto generated files ###
+*.pb.go
+
+### TS Proto generated files ###
+*.pb.ts
+
+output/
+.markdownlint.yaml
+
+### Test files
+test.py
+
+### other files to ignore
+src/hpaconfigrecommender.egg-info/
+dist/
+tests/__pycache__/
+__pycache__/
+
+

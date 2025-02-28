@@ -1,0 +1,7 @@
+exclude OWNERS
+exclude buildtest.dockerfile
+exclude docs/hpa-config-recommender.ipynb
+exclude test/
+exclude SOLUTION.yaml
+include requirements.in
+include LICENSE
