@@ -50,7 +50,6 @@ spec:
         - --tensor-parallel-size=2
         - --host=0.0.0.0
         - --port=8000
-        - --limit_mm_per_prompt='image=5'
         - --max-model-len=32768
         - --max-num-seqs=4
         env:

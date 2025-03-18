@@ -52,7 +52,6 @@ spec:
         - --port=8000
         - --swap-space=16
         - --gpu-memory-utilization=0.95
-        - --limit_mm_per_prompt='image=5'
         - --max-model-len=32768
         - --max-num-seqs=4
         env:
