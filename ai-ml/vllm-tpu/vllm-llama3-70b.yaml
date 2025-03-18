@@ -39,7 +39,7 @@ spec:
         cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
       containers:
       - name: vllm-tpu
-        image: IMAGE_NAME
+        image: docker.io/vllm/vllm-tpu:2e33fe419186c65a18da6668972d61d7bbc31564
         command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --host=0.0.0.0
