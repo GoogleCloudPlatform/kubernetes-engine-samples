@@ -35,19 +35,19 @@ spec:
         image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20250312_0916_RC01
         resources:
           requests:
-            cpu: "72"
-            memory: "280Gi"
-            ephemeral-storage: "200Gi"
-            nvidia.com/gpu : "8"
+            cpu: "10"
+            memory: "128Gi"
+            ephemeral-storage: "120Gi"
+            nvidia.com/gpu : "1"
           limits:
-            cpu: "72"
-            memory: "280Gi"
-            ephemeral-storage: "200Gi"
-            nvidia.com/gpu : "8"
+            cpu: "10"
+            memory: "128Gi"
+            ephemeral-storage: "120Gi"
+            nvidia.com/gpu : "1"
         command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --model=$(MODEL_ID)
-        - --tensor-parallel-size=8
+        - --tensor-parallel-size=1
         - --host=0.0.0.0
         - --port=8000
         - --swap-space=16
@@ -70,7 +70,7 @@ spec:
         emptyDir:
             medium: Memory
       nodeSelector:
-        cloud.google.com/gke-accelerator: nvidia-l4
+        cloud.google.com/gke-accelerator: nvidia-a100-80gb
         cloud.google.com/gke-gpu-driver-version: latest
 ---
 apiVersion: v1
