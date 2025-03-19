@@ -1,0 +1,114 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_raytrain_dws_rayjob-dist]
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  labels:
+     kueue.x-k8s.io/queue-name: dws-local-queue
+  name: pytorch-mnist-job
+spec:
+  suspend: true
+  shutdownAfterJobFinishes: true
+  entrypoint: python ai-ml/gke-ray/raytrain/dws/train.py
+  runtimeEnvYAML: |
+    pip:
+      - torch
+      - torchvision
+    working_dir: "https://github.com/rick-c-goog/kubernetes-engine-samples/archive/main.zip"
+    env_vars:
+     NUM_WORKERS: "2"
+     CPUS_PER_WORKER: "1"
+     GPUS_PER_WORKER: "1"
+  rayClusterSpec:
+    rayVersion: '2.41.0'
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: rayproject/ray-ml:2.41.0.021baf-py39 #rayproject/ray:2.41.0
+              env:
+              - name: NUM_WORKERS
+                value: "2"
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: "8G"
+                  #nvidia.com/gpu: "1"
+                requests:
+                  cpu: "1"
+                  memory: "8G"
+                  #nvidia.com/gpu: "1"
+              volumeMounts:
+                - mountPath: /tmp/ray
+                  name: ray-logs
+          volumes:
+            - name: ray-logs
+              emptyDir: {}
+    workerGroupSpecs:
+      - replicas: 2
+        minReplicas: 2
+        maxReplicas: 4
+        groupName: gpu-group
+        rayStartParams:
+          dashboard-host: '0.0.0.0'
+        template:
+          #metadata:
+          #  annotations:
+          #    gke-gcsfuse/volumes: "true"
+          #    gke-gcsfuse/cpu-limit: "0"
+          #    gke-gcsfuse/memory-limit: 5Gi
+          #    gke-gcsfuse/ephemeral-storage-limit: 10Gi
+          spec:
+            #serviceAccountName: pytorch-distributed-training
+            nodeSelector:
+               cloud.google.com/gke-nodepool: dws-l4-pool #for dws
+            tolerations:
+            - key: "nvidia.com/gpu"
+              operator: "Exists"
+              effect: "NoSchedule"
+            containers:
+              - name: ray-worker
+                image: rayproject/ray-ml:2.41.0.021baf-py39 #rayproject/ray:2.41.0 #rayproject/ray-ml:2.41.0.021baf-py39
+                resources:
+                  limits:
+                    cpu: "2"
+                    memory: "8G"
+                    nvidia.com/gpu: "1"
+                  requests:
+                    cpu: "2"
+                    memory: "8G"
+                    nvidia.com/gpu: "1"
+                volumeMounts:
+                  - mountPath: /tmp/ray
+                    name: ray-logs
+                  #- mountPath: /mnt/cluster_storage
+                  #  name: cluster-storage
+            volumes:
+              - name: ray-logs
+                emptyDir: {}
+# [END gke_ai_ml_gke_ray_raytrain_dws_rayjob-dist]
+
+            
