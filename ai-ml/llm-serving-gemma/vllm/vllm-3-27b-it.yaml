@@ -35,15 +35,15 @@ spec:
         image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20250312_0916_RC01
         resources:
           requests:
-            cpu: "29"
-            memory: "116Gi"
-            ephemeral-storage: "120Gi"
-            nvidia.com/gpu: "8"
+            cpu: "72"
+            memory: "280Gi"
+            ephemeral-storage: "200Gi"
+            nvidia.com/gpu : "8"
           limits:
-            cpu: "29"
-            memory: "116Gi"
-            ephemeral-storage: "120Gi"
-            nvidia.com/gpu: "8"
+            cpu: "72"
+            memory: "280Gi"
+            ephemeral-storage: "200Gi"
+            nvidia.com/gpu : "8"
         command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --model=$(MODEL_ID)

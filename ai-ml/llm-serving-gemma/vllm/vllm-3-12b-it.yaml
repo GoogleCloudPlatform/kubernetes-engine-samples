@@ -50,7 +50,7 @@ spec:
         - --tensor-parallel-size=2
         - --host=0.0.0.0
         - --port=8000
-        - --max-model-len=32768
+        - --max-model-len=16384
         - --max-num-seqs=4
         env:
         - name: MODEL_ID
