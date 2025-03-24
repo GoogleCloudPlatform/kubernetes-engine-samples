@@ -14,7 +14,7 @@ spec:
    spec:
      containers:
      - name: sctp-container
-       image: "gcr.io/architkulkarni-gke-dev/sctp-socat:latest"
+       image: CONTAINER_IMAGE
        ports:
        - containerPort: 50000
          protocol: SCTP
