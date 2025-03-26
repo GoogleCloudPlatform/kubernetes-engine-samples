@@ -15,23 +15,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: sctp-app
+  name: sctp-app
 spec:
- replicas: 1
- selector:
-   matchLabels:
-     app: sctp-app
- template:
-   metadata:
-     labels:
-       app: sctp-app
-   spec:
-     containers:
-     - name: sctp-container
-       image: CONTAINER_IMAGE
-       ports:
-       - containerPort: 50000
-         protocol: SCTP
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sctp-app
+  template:
+    metadata:
+      labels:
+        app: sctp-app
+    spec:
+      containers:
+        - name: sctp-container
+          image: CONTAINER_IMAGE
+          ports:
+            - containerPort: PORT
+              protocol: SCTP
 ---
 apiVersion: v1
 kind: Service
@@ -41,7 +41,7 @@ spec:
   selector:
     app: sctp-app
   ports:
-  - protocol: SCTP
-    port: 50000
-    targetPort: 50000
+    - protocol: SCTP
+      port: PORT
+      targetPort: PORT
   type: ClusterIP
