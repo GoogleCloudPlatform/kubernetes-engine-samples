@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python 3.12.5
         uses: actions/setup-python@v4
         with:
-          python-version: 3.12.5
+          python-version: 3.13.2
 
       - name: Build and run tests
         run: |
