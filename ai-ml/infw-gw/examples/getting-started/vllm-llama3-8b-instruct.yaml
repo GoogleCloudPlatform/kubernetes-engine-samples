@@ -446,3 +446,4 @@ apiVersion: apps/v1
             requestPath: /health
             port: 8000
 # [END gke_aiml_infw_gw_vllm_llama3_8b_instruct]
+
