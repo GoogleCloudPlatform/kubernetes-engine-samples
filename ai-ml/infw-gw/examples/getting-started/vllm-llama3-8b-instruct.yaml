@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_aiml_infw_gw_vllm-llama3-8b-instruct]
+# [START gke_aiml_infw_gw_vllm_llama3_8b_instruct]
 apiVersion: apps/v1
     kind: Deployment
     metadata:
@@ -242,4 +242,4 @@ apiVersion: apps/v1
         # Optional: Define logging for health check results
         # logConfig:
         #   enabled: true
-# [END gke_aiml_infw_gw_vllm-llama3-8b-instruct]
+# [END gke_aiml_infw_gw_vllm_llama3_8b_instruct]
