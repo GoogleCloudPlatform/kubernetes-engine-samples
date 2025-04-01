@@ -1,0 +1,150 @@
+---
+# Deployment for home_app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: home-app
+  template:
+    metadata:
+      labels:
+        app: home-app
+    spec:
+      containers:
+      - name: home-app
+        image: REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/home-app:v1 
+        ports:
+        - containerPort: 8080
+
+---
+# Service for home_app
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-app-service
+spec:
+  selector:
+    app: home-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+# Deployment for book_details_app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-details-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: book-details-app
+  template:
+    metadata:
+      labels:
+        app: book-details-app
+    spec:
+      containers:
+      - name: book-details-app
+        image: REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/book-details-app:v1 
+        ports:
+        - containerPort: 8080
+
+---
+# Service for book_details_app
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-details-service
+spec:
+  selector:
+    app: book-details-app
+  ports:
+    - protocol: TCP
+      port: 80 # External traffic on port 80
+      targetPort: 8080 # Targeting container port 8080
+  type: ClusterIP
+
+---
+# Deployment for book_reviews_app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-reviews-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: book-reviews-app
+  template:
+    metadata:
+      labels:
+        app: book-reviews-app
+    spec:
+      containers:
+      - name: book-reviews-app
+        image: REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/book-reviews-app:v1 
+        ports:
+        - containerPort: 8080
+
+---
+# Service for book_reviews_app
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-reviews-service
+spec:
+  selector:
+    app: book-reviews-app
+  ports:
+    - protocol: TCP
+      port: 80 # External traffic on port 80
+      targetPort: 8080 # Targeting container port 8080
+  type: ClusterIP
+
+---
+# Deployment for images_app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: images-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: images-app
+  template:
+    metadata:
+      labels:
+        app: images-app
+    spec:
+      containers:
+      - name: images-app
+        image: REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/images-app:v1 
+        ports:
+        - containerPort: 8080
+
+
+---
+# Service for images_service_app
+apiVersion: v1
+kind: Service
+metadata:
+  name: images-service
+spec:
+  selector:
+    app: images-app
+  ports:
+    - protocol: TCP
+      port: 80 # External traffic on port 80
+      targetPort: 8080 # Targeting container port 8080
+  type: ClusterIP
+
+
