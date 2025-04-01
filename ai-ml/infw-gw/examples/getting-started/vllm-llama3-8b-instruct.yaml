@@ -242,4 +242,4 @@ apiVersion: apps/v1
         # Optional: Define logging for health check results
         # logConfig:
         #   enabled: true
-# [START gke_aiml_infw_gw_vllm-llama3-8b-instruct]
+# [END gke_aiml_infw_gw_vllm-llama3-8b-instruct]
