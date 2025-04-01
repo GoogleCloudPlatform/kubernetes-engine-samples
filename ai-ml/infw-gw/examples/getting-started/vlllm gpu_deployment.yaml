@@ -77,3 +77,4 @@ subjects:
   namespace: gmp-system
   kind: ServiceAccount
 # [END gke_aiml_infw_gw_vlllm_gpu_deployment_variables]
+
