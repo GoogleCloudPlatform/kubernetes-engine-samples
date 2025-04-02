@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Review System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_for_home.css') }}">
+</head>
+<body>
+    <h1>Book Review System</h1>
+    <div class="book-container">
+    {% for book in books %}
+        <div class="book-item">
+            <h2>{{ book.title }}</h2>
+            <div class="book-image-container">
+                <div class="image-placeholder"></div>
+                <img src="{{ url_for('serve_image', filename=book.image_url) }}" alt="{{ book.title }}" class="book-image" style="display: none;">
+            </div>
+            <p><a href="{{ url_for('book_details', book_id=book.id) }}" class="button">View Details</a></p>
+        </div>
+    {% endfor %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const images = document.querySelectorAll('.book-image');
+            images.forEach(img => {
+                img.onload = function() {
+                    this.style.display = 'block';
+                    this.previousElementSibling.style.display = 'none';
+                }
+                img.onerror = function() {
+                    console.error('Failed to load image:', this.src);
+                    this.previousElementSibling.textContent = 'Image not found';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

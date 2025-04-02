@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }} - Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_for_details.css') }}">
+    <style>
+        .content-wrapper {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .reviews-section {
+            width: 60%;
+        }
+        .ai-summary-section {
+            width: 35%;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+        #reviews, #topLikes {
+            display: none;
+        }
+        #topLikesList {
+            white-space: pre-wrap;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('home') }}" class="button">Back to Home</a>
+    <div class="book-details">
+        <div class="book-image-container">
+            <div class="image-placeholder"></div>
+            <img src="{{ url_for('serve_image', filename=book.image_url) }}" alt="{{ book.title }}" class="book-image" style="display: none;">
+        </div>
+        <div class="book-info">
+            <h1>{{ book.title }}</h1>
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Year:</strong> {{ book.year }}</p>
+            <p><strong>Description:</strong> {{ book.description }}</p>
+            <button id="toggleReviews" class="button" onclick="toggleReviews()">Show Reviews</button>
+        </div>
+    </div>
+    <div class="content-wrapper">
+        <div class="reviews-section">
+            <div id="reviews"></div>
+        </div>
+        <div class="ai-summary-section">
+
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const img = document.querySelector('.book-image');
+            img.onload = function() {
+                this.style.display = 'block';
+                this.previousElementSibling.style.display = 'none';
+            }
+            img.onerror = function() {
+                console.error('Failed to load image:', this.src);
+                this.previousElementSibling.textContent = 'Image not found';
+            }
+        });
+
+        function toggleReviews() {
+            const reviewsDiv = document.getElementById('reviews');
+            const toggleButton = document.getElementById('toggleReviews');
+            if (reviewsDiv.style.display === 'none' || reviewsDiv.style.display === '') {
+                fetch('/book/{{ book.id }}/reviews')
+                    .then(response => response.json())
+                    .then(reviews => {
+                        const reviewsHtml = reviews.map((review, index) => `
+                            <div class="review">
+                                <h3>Review #${index + 1}</h3>
+                                <p><strong>Rating:</strong> ${review.rating}/5</p>
+                                <p>${review.content}</p>
+                            </div>
+                        `).join('');
+                        reviewsDiv.innerHTML = '<h2>Reviews</h2>' + reviewsHtml;
+                        reviewsDiv.style.display = 'block';
+                        toggleButton.textContent = 'Hide Reviews';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching reviews:', error);
+                        reviewsDiv.innerHTML = 'Error loading reviews.';
+                        reviewsDiv.style.display = 'block';
+                    });
+            } else {
+                reviewsDiv.style.display = 'none';
+                toggleButton.textContent = 'Show Reviews';
+            }
+        }
+
+    </script>
+</body>
+</html>
