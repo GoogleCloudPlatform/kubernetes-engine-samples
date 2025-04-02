@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.13-slim-bookworm
 
 ENV QDRANT_URL http://qdrant-qdrant:6333
 ENV COLLECTION_NAME training-docs
