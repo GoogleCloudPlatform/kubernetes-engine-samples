@@ -46,7 +46,7 @@ spec:
         - --port=8000
         - --tensor-parallel-size=8
         - --max-model-len=8192
-        - --model=meta-llama/Meta-Llama-3.1-70B
+        - --model=meta-llama/Llama-3.1-70B
         - --download-dir=/data
         env: 
         - name: HUGGING_FACE_HUB_TOKEN
