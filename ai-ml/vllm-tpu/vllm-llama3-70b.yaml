@@ -68,7 +68,7 @@ spec:
         readinessProbe:
           tcpSocket:
             port: 8000
-          initialDelaySeconds: 15
+          initialDelaySeconds: 900
           periodSeconds: 10
         volumeMounts:
         - name: gcs-fuse-csi-ephemeral
