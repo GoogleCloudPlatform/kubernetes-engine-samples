@@ -1,0 +1,138 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_infw_gw_infw_pool_variables]
+kind: InferencePool
+metadata:
+  labels:
+    app: ${APP_NAME:-vllm-llama3-8b-instruct}
+  name: ${APP_NAME:-vllm-llama3-8b-instruct}
+spec:
+  targetPortNumber: ${TARGET_PORT:-8000}
+  selector:
+    app: ${APP_NAME:-vllm-llama3-8b-instruct}
+  extensionRef:
+    name: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+  namespace: ${NAMESPACE:-default}
+  labels:
+    app: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+spec:
+  selector:
+    app: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+  ports:
+    - protocol: ${SERVICE_PROTOCOL:-TCP}
+      port: ${EXTENSION_GRPC_PORT:-9002}
+      targetPort: ${EXTENSION_GRPC_PORT:-9002}
+  type: ${SERVICE_TYPE:-ClusterIP}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+  namespace: ${NAMESPACE:-default}
+  labels:
+    app: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+spec:
+  replicas: ${REPLICAS:-1}
+  selector:
+    matchLabels:
+      app: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+  template:
+    metadata:
+      labels:
+        app: ${EXTENSION_NAME:-vllm-llama3-8b-instruct-epp}
+    spec:
+      containers:
+        - name: epp
+          image: ${EXTENSION_IMAGE:-us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/epp:main}
+          imagePullPolicy: ${IMAGE_PULL_POLICY:-Always}
+          args:
+            - -poolName
+            - "${APP_NAME:-vllm-llama3-8b-instruct}"
+            - -v
+            - "${LOG_LEVEL:-4}"
+            - --zap-encoder
+            - "${ZAP_ENCODER:-json}"
+            - -grpcPort
+            - "${EXTENSION_GRPC_PORT:-9002}"
+            - -grpcHealthPort
+            - "${EXTENSION_GRPC_HEALTH_PORT:-9003}"
+          env:
+            - name: USE_STREAMING
+              value: "${USE_STREAMING:-true}"
+          ports:
+            - containerPort: ${EXTENSION_GRPC_PORT:-9002}
+            - containerPort: ${EXTENSION_GRPC_HEALTH_PORT:-9003}
+            - name: metrics
+              containerPort: ${METRICS_PORT:-9090}
+          livenessProbe:
+            grpc:
+              port: ${EXTENSION_GRPC_HEALTH_PORT:-9003}
+              service: inference-extension
+            initialDelaySeconds: ${LIVENESS_INITIAL_DELAY:-5}
+            periodSeconds: ${LIVENESS_PERIOD:-10}
+          readinessProbe:
+            grpc:
+              port: ${EXTENSION_GRPC_HEALTH_PORT:-9003}
+              service: inference-extension
+            initialDelaySeconds: ${READINESS_INITIAL_DELAY:-5}
+            periodSeconds: ${READINESS_PERIOD:-10}
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${CLUSTER_ROLE_NAME:-pod-read}
+rules:
+  - apiGroups: ["inference.networking.x-k8s.io"]
+    resources: ["inferencemodels"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["inference.networking.x-k8s.io"]
+    resources: ["inferencepools"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${CLUSTER_ROLE_BINDING_NAME:-pod-read-binding}
+subjects:
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT_NAME:-default}
+    namespace: ${NAMESPACE:-default}
+roleRef:
+  kind: ClusterRole
+  name: ${CLUSTER_ROLE_NAME:-pod-read}
+# [END gke_aiml_infw_gw_infw_pool_variables]
