@@ -27,7 +27,6 @@ spec:
         app: llama-server
         ai.gke.io/model: Llama-4-Scout-17B-16E
         ai.gke.io/inference-server: vllm
-        examples.ai.gke.io/source: model-garden
     spec:
       containers:
       - name: inference-server
@@ -58,8 +57,6 @@ spec:
         env:
         - name: MODEL_ID
           value: 'meta-llama/Llama-4-Scout-17B-16E'
-        - name: DEPLOY_SOURCE
-          value: 'UI_NATIVE_MODEL'
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
