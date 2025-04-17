@@ -91,4 +91,4 @@ metadata:
   name: hf-secret
 type: Opaque
 stringData:
-  hf_ap
+  hf_api_token: {{HF_TOKEN}}
