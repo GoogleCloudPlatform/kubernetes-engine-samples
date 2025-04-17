@@ -24,9 +24,9 @@ spec:
         import_path: ai-ml.gke-ray.rayserve.stable-diffusion.stable_diffusion:entrypoint
         runtime_env:
           working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/main.zip"
-          pip: ["diffusers==0.12.1"]
+          pip: ["diffusers==0.12.1", "torch", "torchvision", "huggingface_hub==0.25.2", "transformers"]
   rayClusterConfig:
-    rayVersion: '2.9.0'
+    rayVersion: '2.37.0'
     headGroupSpec:
       rayStartParams:
         dashboard-host: '0.0.0.0'
@@ -34,7 +34,7 @@ spec:
         spec:
           containers:
           - name: ray-head
-            image: rayproject/ray-ml:2.9.0
+            image:  rayproject/ray:2.37.0
             ports:
             - containerPort: 6379
               name: gcs
@@ -47,10 +47,14 @@ spec:
             resources:
               limits:
                 cpu: "2"
+                ephemeral-storage: "15Gi"
                 memory: "8Gi"
               requests:
                 cpu: "2"
+                ephemeral-storage: "15Gi"
                 memory: "8Gi"
+          nodeSelector:
+            cloud.google.com/machine-family: c3d
     workerGroupSpecs:
     - replicas: 1
       minReplicas: 1
@@ -61,7 +65,7 @@ spec:
         spec:
           containers:
           - name: ray-worker
-            image: rayproject/ray-ml:2.9.0
+            image: rayproject/ray:2.37.0-gpu
             resources:
               limits:
                 cpu: 4

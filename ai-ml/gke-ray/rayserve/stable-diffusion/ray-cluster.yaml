@@ -18,7 +18,7 @@ kind: RayCluster
 metadata:
   name: stable-diffusion-cluster
 spec:
-  rayVersion: '2.9.0'
+  rayVersion: '2.37.0'
   headGroupSpec:
     rayStartParams:
       dashboard-host: '0.0.0.0'
@@ -27,7 +27,7 @@ spec:
       spec:
         containers:
         - name: ray-head
-          image: rayproject/ray-ml:2.9.0
+          image: rayproject/ray:2.37.0
           ports:
           - containerPort: 6379
             name: gcs
@@ -40,10 +40,14 @@ spec:
           resources:
             limits:
               cpu: "2"
+              ephemeral-storage: "15Gi"
               memory: "8Gi"
             requests:
               cpu: "2"
+              ephemeral-storage: "15Gi"
               memory: "8Gi"
+        nodeSelector:
+          cloud.google.com/machine-family: c3d
   workerGroupSpecs:
   - replicas: 1
     minReplicas: 1
@@ -54,7 +58,7 @@ spec:
       spec:
         containers:
         - name: ray-worker
-          image: rayproject/ray-ml:2.9.0
+          image: rayproject/ray:2.37.0-gpu
           resources:
             limits:
               cpu: 4

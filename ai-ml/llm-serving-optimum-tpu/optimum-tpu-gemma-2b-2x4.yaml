@@ -36,9 +36,10 @@ spec:
         args:
         - --model-id=google/gemma-2b
         - --max-concurrent-requests=4
-        - --max-input-length=32
-        - --max-total-tokens=64
-        - --max-batch-size=1
+        - --max-input-length=8191
+        - --max-total-tokens=8192
+        - --max-batch-prefill-tokens=32768
+        - --max-batch-size=16
         securityContext:
             privileged: true
         env:

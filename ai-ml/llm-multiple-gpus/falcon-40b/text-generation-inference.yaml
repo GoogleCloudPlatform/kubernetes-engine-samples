@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: llm
-        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu124.2-3.ubuntu2204.py311
+        image: us-docker.pkg.dev/deeplearning-platform-release/gcr.io/huggingface-text-generation-inference-cu121.1-4.ubuntu2204.py310
         resources:
           requests:
             cpu: "10"
@@ -51,6 +51,9 @@ spec:
         volumeMounts:
           - mountPath: /dev/shm
             name: dshm
+          # mountPath is set to /data as it's the path where the HUGGINGFACE_HUB_CACHE environment
+          # variable points to in the TGI container image i.e. where the downloaded model from the Hub will be
+          # stored
           - mountPath: /data
             name: ephemeral-volume
       volumes:

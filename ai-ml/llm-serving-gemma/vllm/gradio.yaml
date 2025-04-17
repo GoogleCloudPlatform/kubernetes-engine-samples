@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.3
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
         resources:
           requests:
             cpu: "250m"
@@ -41,17 +41,15 @@ spec:
             memory: "512Mi"
         env:
         - name: CONTEXT_PATH
-          value: "/generate"
+          value: "/v1/chat/completions"
         - name: HOST
           value: "http://llm-service:8000"
         - name: LLM_ENGINE
-          value: "vllm"
+          value: "openai-chat"
         - name: MODEL_ID
-          value: "gemma"
-        - name: USER_PROMPT
-          value: "<start_of_turn>user\nprompt<end_of_turn>\n"
-        - name: SYSTEM_PROMPT
-          value: "<start_of_turn>model\nprompt<end_of_turn>\n"
+          value: "google/gemma-2-9b-it"
+        - name: DISABLE_SYSTEM_MESSAGE
+          value: "true"
         ports:
         - containerPort: 7860
 ---
@@ -63,8 +61,9 @@ spec:
   selector:
     app: gradio
   ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 7860
+  - protocol: TCP
+    port: 8080
+    targetPort: 7860
   type: ClusterIP
+
 # [END gke_ai_ml_llm_serving_gemma_vllm_gradio_deployment]

@@ -1,0 +1,70 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_multihost_gpus_llama3_405b_job]
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: producer-job
+spec:
+  template:  # Template for the Pods the Job will create
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/machine-family
+                operator: In
+                values:
+                - "c3"
+            - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                - "ZONE"
+      containers:
+      - name: copy
+        resources:
+          requests:
+            cpu: "32"
+          limits:
+            cpu: "32"
+        image: python:3.11-alpine
+        command:
+        - sh
+        - -c
+        - "pip install 'huggingface_hub==0.24.6' && \
+          huggingface-cli download meta-llama/Meta-Llama-3.1-405B-Instruct --local-dir-use-symlinks=False --local-dir=/data/Meta-Llama-3.1-405B-Instruct --include *.safetensors *.json"
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+          - mountPath: "/data"
+            name: volume
+      restartPolicy: Never
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: producer-pvc
+  parallelism: 1         # Run 1 Pods concurrently
+  completions: 1         # Once 1 Pods complete successfully, the Job is done
+  backoffLimit: 4        # Max retries on failure
+
+
+# [END gke_ai_ml_llm_serving_multihost_gpus_llama3_405b_job]

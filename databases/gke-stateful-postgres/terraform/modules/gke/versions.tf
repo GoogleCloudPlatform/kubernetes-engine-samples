@@ -21,7 +21,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "< 5.45"
+      version = "< 5.46"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"

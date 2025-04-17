@@ -26,47 +26,59 @@ spec:
     metadata:
       labels:
         app: jetstream-pytorch-server
-      annotations:
-        gke-gcsfuse/volumes: "true"
     spec:
       nodeSelector:
         cloud.google.com/gke-tpu-topology: 2x4
         cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
       containers:
       - name: jetstream-pytorch-server
-        image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-pytorch-server:v0.2.3
+        image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-pytorch-server:v0.2.4
         args:
-        - --size=7b
-        - --model_name=gemma
-        - --batch_size=32
-        - --max_cache_length=2048
-        - --quantize_weights=False
-        - --quantize_kv_cache=False
-        - --tokenizer_path=/models/pytorch/gemma-7b-it/final/bf16/tokenizer.model
-        - --checkpoint_path=/models/pytorch/gemma-7b-it/final/bf16/model.safetensors
+        - --model_id=google/gemma-7b-it
+        - --override_batch_size=30
+        - --enable_model_warmup=True
+        volumeMounts:
+        - name: huggingface-credentials
+          mountPath: /huggingface
+          readOnly: true
         ports:
         - containerPort: 9000
-        volumeMounts:
-        - name: gcs-fuse-checkpoint
-          mountPath: /models
-          readOnly: true
         resources:
           requests:
             google.com/tpu: 8
           limits:
             google.com/tpu: 8
+        startupProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8000
+            scheme: HTTP
+          periodSeconds: 60
+          initialDelaySeconds: 90
+          failureThreshold: 50
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8000
+            scheme: HTTP
+          periodSeconds: 60
+          failureThreshold: 30
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8000
+            scheme: HTTP
+          periodSeconds: 60
+          failureThreshold: 30
       - name: jetstream-http
-        image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-http:v0.2.2
+        image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-http:v0.2.3
         ports:
         - containerPort: 8000
       volumes:
-      - name: gcs-fuse-checkpoint
-        csi:
-          driver: gcsfuse.csi.storage.gke.io
-          readOnly: true
-          volumeAttributes:
-            bucketName: BUCKET_NAME
-            mountOptions: "implicit-dirs"
+      - name: huggingface-credentials
+        secret:
+          defaultMode: 0400
+          secretName: huggingface-secret
 ---
 apiVersion: v1
 kind: Service
