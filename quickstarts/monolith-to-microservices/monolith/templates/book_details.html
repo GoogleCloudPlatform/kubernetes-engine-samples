@@ -1,0 +1,112 @@
+<!--
+Copyright 2025 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }} - Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_for_details.css') }}">
+</head>
+<body>
+    <a href="{{ url_for('home') }}" class="button">Back to Home</a>
+    <div class="book-details">
+        <div class="book-image-container">
+            <div class="image-placeholder"></div>
+            <img src="{{ url_for('serve_image', filename=book.image_url) }}" alt="{{ book.title }}" class="book-image" style="display: none;">
+        </div>
+        <div class="book-info">
+            <h1>{{ book.title }}</h1>
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Year:</strong> {{ book.year }}</p>
+            <p><strong>Description:</strong> {{ book.description }}</p>
+            <button id="toggleReviews" class="button" onclick="toggleReviews()">Show Reviews</button>
+        </div>
+    </div>
+    <div class="content-wrapper">
+        <div class="reviews-section">
+            <div id="reviews"></div>
+        </div>
+        <div class="ai-summary-section">
+            <!-- Reserved space for future content -->
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const img = document.querySelector('.book-image');
+            const placeholder = document.querySelector('.image-placeholder');
+            
+            function loadImage() {
+                img.style.display = 'none';
+                placeholder.style.display = 'block';
+                
+                img.onload = function() {
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                
+                img.onerror = function() {
+                    console.error('Failed to load image:', this.src);
+                    placeholder.textContent = 'Image not found';
+                }
+                
+                // Force reload of the image
+                img.src = img.src + '?' + new Date().getTime();
+            }
+            
+            // Initial load
+            loadImage();
+            
+            // Reload image if it's not displayed after a short delay
+            setTimeout(() => {
+                if (img.style.display === 'none') {
+                    loadImage();
+                }
+            }, 500);
+        });
+
+        function toggleReviews() {
+            const reviewsDiv = document.getElementById('reviews');
+            const toggleButton = document.getElementById('toggleReviews');
+            if (reviewsDiv.style.display === 'none' || reviewsDiv.style.display === '') {
+                fetch('/book/{{ book.id }}/reviews')
+                    .then(response => response.json())
+                    .then(reviews => {
+                        const reviewsHtml = reviews.map((review, index) => `
+                            <div class="review">
+                                <h3>Review #${index + 1}</h3>
+                                <p><strong>Rating:</strong> ${review.rating}/5</p>
+                                <p>${review.content}</p>
+                            </div>
+                        `).join('');
+                        reviewsDiv.innerHTML = '<h2>Reviews</h2>' + reviewsHtml;
+                        reviewsDiv.style.display = 'block';
+                        toggleButton.textContent = 'Hide Reviews';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching reviews:', error);
+                        reviewsDiv.innerHTML = 'Error loading reviews.';
+                        reviewsDiv.style.display = 'block';
+                    });
+            } else {
+                reviewsDiv.style.display = 'none';
+                toggleButton.textContent = 'Show Reviews';
+            }
+        }
+    </script>
+</body>
+</html>
