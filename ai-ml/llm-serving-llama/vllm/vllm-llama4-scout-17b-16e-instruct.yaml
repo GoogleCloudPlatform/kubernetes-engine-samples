@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_ai_ml_llm_serving_vllm_llama_scout_17b_16e_instruct_deployment]
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -92,3 +93,4 @@ metadata:
 type: Opaque
 stringData:
   hf_api_token: {{HF_TOKEN}}
+# [END gke_ai_ml_llm_serving_vllm_llama_scout_17b_16e_instruct_deployment]
