@@ -23,7 +23,7 @@ import streamlit as st
 import os
 
 # [START gke_databases_weaviate_docker_chat_model]
-vertexAI = ChatVertexAI(model_name="gemini-pro", streaming=True, convert_system_message_to_human=True)
+vertexAI = ChatVertexAI(model_name="gemini-2.5-flash-preview-04-17", streaming=True, convert_system_message_to_human=True)
 prompt_template = ChatPromptTemplate.from_messages(
     [
         ("system", "You are a helpful assistant who helps in finding answers to questions using the provided context."),
