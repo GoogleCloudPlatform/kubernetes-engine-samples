@@ -1,7 +1,7 @@
 # Monolith to Microservices on GKE
 
 
-This code accompanies a tutorial series (link will be added once published) that show how to take a monolith, modularize the code, containerize each module, and deploy the container images to a Google Kubernetes Engine (GKE) cluster.
+This code accompanies a tutorial series (https://cloud.google.com/kubernetes-engine/docs/learn/cymbal-books/overview) that shows you how to take a monolith, modularize the code, containerize each module, and deploy the container images to a Google Kubernetes Engine (GKE) cluster.
 
 ## Contents
 
