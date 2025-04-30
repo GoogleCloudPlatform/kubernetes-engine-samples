@@ -1,0 +1,200 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_tpus_jetstream_pathways_disagg_llama_2_70b_2_2x4]
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: jetstream-pathways
+  annotations:
+    leaderworkerset.sigs.k8s.io/subgroup-exclusive-topology: cloud.google.com/gke-nodepool
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    subGroupPolicy:
+      subGroupSize: 2
+    leaderTemplate:
+      metadata:
+        labels:
+          app: jetstream-pathways
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+          cloud.google.com/gke-tpu-topology: 2x4
+        tolerations:
+        - key: "google.com/tpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+        containers:
+        - name: pathways-proxy
+          image: us-docker.pkg.dev/cloud-tpu-v2-images/pathways/proxy_server:jax-0.5.3
+          args:
+          - --resource_manager_address=$(LWS_LEADER_ADDRESS):38677
+          - --server_port=38681
+          - --gcs_scratch_location=gs://cloud-pathways-staging/tmp
+          - --xla_jf_auto_cross_replica_sharding=false
+          - --xla_tpu_enable_windowed_einsum_for_reduce_scatter=false
+          - --xla_tpu_enable_windowed_einsum_for_all_gather=false
+          - --xla_tpu_prefer_latch_optimized_rhs_layouts=true
+          - --xla_tpu_enable_experimental_fusion_cost_model=false
+          - --xla_tpu_dot_dot_fusion_duplicated=false
+          - --xla_tpu_dot_dot_fusion=true
+          - --xla_jf_conv_input_fusion=true
+          - --xla_jf_conv_output_fusion=true
+          - --xla_tpu_rwb_fusion=false
+          - --xla_tpu_copy_fusion_pad_unpad_ratio=0
+          - --xla_tpu_licm_size_inflation_ratio=1
+          - --xla_tpu_copy_elision_analysis_allowance=150000
+          - --xla_tpu_copy_insertion_use_region_analysis_limit=10000
+          - --xla_tpu_order_dot_after_layout=true
+          - --xla_jf_rematerialization_percent_shared_memory_limit=100
+          - --xla_tpu_use_repeated_instance_for_preferred_prefetch_time=true
+          - --xla_tpu_enforce_prefetch_fifo_order=false
+          - --xla_tpu_prefetch_interval_picker_size_override=6000000
+          - --xla_tpu_async_copy_bandwidth_scaling_factor=1
+          - --xla_tpu_nd_short_transfer_max_chunks=-1
+          - --xla_tpu_enable_aggressive_broadcast_priority_update=true
+          - --xla_tpu_alternate_memory_benefit_scaling_factor_for_large_buffers=SQRT
+          - --xla_tpu_memory_bound_loop_optimizer_options=enabled:true
+          - --xla_tpu_enable_copy_fusion=true
+          - --xla_tpu_enable_cross_program_prefetch_freeing=false
+          - --xla_tpu_enable_dot_strength_reduction=true
+          - --xla_tpu_layout_use_dot_grouping=false
+          - --xla_tpu_msa_inefficient_use_to_copy_ratio=0.5
+          - --xla_tpu_reduce_loop_fusion_dup_with_unfusable_user=false
+          - --xla_tpu_vector_load_fusion_window=1024
+          - --xla_tpu_vector_store_fusion_window=256
+          - --xla_jf_conv_reshape_fusion=false
+          - --xla_tpu_input_conv_multi_users=false
+          - --xla_tpu_enable_multi_level_input_dot_dot_fusion=false
+          - --xla_tpu_enable_multi_level_output_dot_dot_fusion=false
+          - --xla_tpu_dot_dot_fusion_separable_convs_only=false
+          - --xla_tpu_enable_multi_level_nested_loop_fusion=true
+          - --xla_tpu_nested_dot_fusion=true
+          - --xla_tpu_enable_multi_level_nested_dot_fusion=false
+          - --xla_jf_enable_multi_output_fusion=true
+          - --xla_tpu_use_lp_llo_scheduler_for_dot_dot_fusions=false
+          - --xla_tpu_enable_flash_attention=true
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 38681
+        - name: pathways-rm
+          env:       
+          - name: HOST_ADDRESS
+            value: "$(LWS_LEADER_ADDRESS)"
+          - name: TPU_SKIP_MDS_QUERY
+            value: "true"
+          image: us-docker.pkg.dev/cloud-tpu-v2-images/pathways/server:jax-0.5.3
+          args:
+          - --server_port=38677
+          - --gcs_scratch_location=PATHWAYS_BUCKET
+          - --node_type=resource_manager
+          - --instance_count=2
+          - --instance_type=tpuv6e:2x4
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 38677
+        - name: jax-tpu
+          image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-pathways:v0.2.0
+          args:
+          - MaxText/configs/base.yml
+          - tokenizer_path=assets/tokenizer.llama2
+          - load_parameters_path=CHECKPOINT_PATH
+          - max_prefill_predict_length=1024
+          - max_target_length=2048
+          - model_name=llama2-70b
+          - ici_fsdp_parallelism=1
+          - ici_autoregressive_parallelism=1
+          - ici_tensor_parallelism=-1
+          - scan_layers=false
+          - weight_dtype=bfloat16
+          - per_device_batch_size=27
+          - checkpoint_is_quantized=true 
+          - quantization=int8
+          - quantize_kvcache=true
+          - compute_axis_order=0,2,1,3
+          - ar_cache_axis_order=0,2,1,3
+          - stack_prefill_result_cache=True
+          - inference_server=ExperimentalMaxtextDisaggregatedServer_8
+          - inference_benchmark_test=True
+          - enable_model_warmup=True
+          env:
+          - name: LOG_LEVEL
+            value: "INFO"
+          imagePullPolicy: Always
+          securityContext:
+            capabilities:
+              add: ["SYS_PTRACE", "NET_ADMIN", "SYS_TIME"]
+          ports: 
+          - containerPort: 9000
+          startupProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 1
+            initialDelaySeconds: 240
+            failureThreshold: 10000
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 60
+            failureThreshold: 100
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 60
+            failureThreshold: 100
+        - name: jetstream-http
+          image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-http:v0.2.3
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8000
+    size: 5
+    workerTemplate:
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+          cloud.google.com/gke-tpu-topology: 2x4
+        containers:
+        - name: worker
+          args:
+          - --server_port=38679
+          - --resource_manager_address=$(LWS_LEADER_ADDRESS):38677
+          - --gcs_scratch_location=PATHWAYS_BUCKET
+          image: us-docker.pkg.dev/cloud-tpu-v2-images/pathways/server:jax-0.5.3
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 38679
+          resources:
+            limits:
+              google.com/tpu: "4"
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: jetstream-svc
+spec:
+  selector:
+    app: jetstream-pathways
+  ports:
+  - protocol: TCP
+    name: jetstream-http
+    port: 8000
+    targetPort: 8000
+# [END gke_ai_ml_llm_serving_tpus_jetstream_pathways_disagg_llama_2_70b_2_2x4]
