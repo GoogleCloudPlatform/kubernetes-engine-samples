@@ -27,77 +27,79 @@ spec:
       - name: VLLMDeployment
         num_replicas: 1
         ray_actor_options:
-          num_cpus: 8
+          num_cpus: 2
           # NOTE: num_gpus is set automatically based on TENSOR_PARALLELISM
       runtime_env:
         working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/main.zip"
-        pip: ["vllm==0.4.3"]
+        pip: ["vllm==0.4.3","transformers[torch]==4.40.2"]
         env_vars:
           MODEL_ID: "meta-llama/Meta-Llama-3-8B-Instruct"
           TENSOR_PARALLELISM: "2"
   rayClusterConfig:
     headGroupSpec:
       rayStartParams:
-        dashboard-host: '0.0.0.0'
+        dashboard-host: "0.0.0.0"
       template:
         metadata:
           labels:
             ai.gke.io: rayserve
         spec:
           containers:
-          - name: ray-head
-            image: rayproject/ray-ml:2.9.0
-            resources:
-              limits:
-                cpu: "2"
-                memory: "8Gi"
-              requests:
-                cpu: "2"
-                memory: "8Gi"
-            ports:
-            - containerPort: 6379
-              name: gcs-server
-            - containerPort: 8265
-              name: dashboard
-            - containerPort: 10001
-              name: client
-            - containerPort: 8000
-              name: serve
-            env:
-            - name: HUGGING_FACE_HUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: hf-secret
-                  key: hf_api_token              
+            - name: ray-head
+              image: rayproject/ray-ml:2.9.0-py310
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: "8Gi"
+                  ephemeral-storage: "10Gi"
+                requests:
+                  cpu: "2"
+                  memory: "8Gi"
+                  ephemeral-storage: "10Gi"
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+                - containerPort: 8000
+                  name: serve
+              env:
+                - name: HUGGING_FACE_HUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hf-secret
+                      key: hf_api_token
     workerGroupSpecs:
-    - replicas: 1
-      minReplicas: 0
-      maxReplicas: 4
-      groupName: gpu-group
-      rayStartParams: {}
-      template:
-        metadata:
-          labels:
-            ai.gke.io: rayserve
-        spec:
-          containers:
-          - name: llm
-            image: rayproject/ray-ml:2.9.0
-            env:
-            - name: HUGGING_FACE_HUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: hf-secret
-                  key: hf_api_token
-            resources:
-              limits:
-                cpu: "8"
-                memory: "20Gi"
-                nvidia.com/gpu: "2"
-              requests:
-                cpu: "8"
-                memory: "20Gi"
-                nvidia.com/gpu: "2"
-          nodeSelector:
-            cloud.google.com/gke-accelerator: nvidia-l4
+      - replicas: 1
+        minReplicas: 0
+        maxReplicas: 4
+        groupName: gpu-group
+        rayStartParams: {}
+        template:
+          metadata:
+            labels:
+              ai.gke.io: rayserve
+          spec:
+            containers:
+              - name: llm
+                image: rayproject/ray-ml:2.9.0-py310
+                env:
+                  - name: HUGGING_FACE_HUB_TOKEN
+                    valueFrom:
+                      secretKeyRef:
+                        name: hf-secret
+                        key: hf_api_token
+                resources:
+                  limits:
+                    cpu: "8"
+                    memory: "20Gi"
+                    nvidia.com/gpu: "2"
+                  requests:
+                    cpu: "8"
+                    memory: "20Gi"
+                    nvidia.com/gpu: "2"
+            nodeSelector:
+              cloud.google.com/gke-accelerator: nvidia-l4
 # [END gke_ai_ml_gke_ray_rayserve_llm_llama_3_8b]
