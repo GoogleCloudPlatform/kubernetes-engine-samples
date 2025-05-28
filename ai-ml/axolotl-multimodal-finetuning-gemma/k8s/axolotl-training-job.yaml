@@ -81,3 +81,4 @@ spec:
           volumeAttributes:
             bucketName: "${GCS_BUCKET_NAME}"
             mountOptions: "implicit-dirs"
+

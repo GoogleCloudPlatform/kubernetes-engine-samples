@@ -168,3 +168,4 @@ fi
 print_status "Next steps:"
 echo "  1. Prepare your data using the DataPreparation notebook"
 echo "  2. Run ./scripts/deploy-training.sh to start training"
+

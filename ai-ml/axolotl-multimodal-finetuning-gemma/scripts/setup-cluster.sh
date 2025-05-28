@@ -155,3 +155,4 @@ print_status "Next steps:"
 echo "  1. Run ./scripts/setup-workload-identity.sh to configure Workload Identity"
 echo "  2. Prepare your data using the DataPreparation notebook"
 echo "  3. Run ./scripts/deploy-training.sh to start training"
+

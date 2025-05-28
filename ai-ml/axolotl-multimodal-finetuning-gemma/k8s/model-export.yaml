@@ -48,3 +48,4 @@ spec:
   - name: model-storage
     persistentVolumeClaim:
       claimName: model-storage
+
