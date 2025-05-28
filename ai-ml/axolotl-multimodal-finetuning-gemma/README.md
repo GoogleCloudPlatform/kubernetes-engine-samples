@@ -418,10 +418,6 @@ We welcome contributions! Please:
 - [Google Cloud Community](https://cloud.google.com/communities)
 - Open an issue in this repository
 
-## 📄 License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - Google Cloud team for infrastructure support
