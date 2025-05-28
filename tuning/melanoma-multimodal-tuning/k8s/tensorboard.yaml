@@ -1,0 +1,54 @@
+# tensorboard.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tensorboard
+  namespace: axolotl-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tensorboard
+  template:
+    metadata:
+      labels:
+        app: tensorboard
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: axolotl-training-sa
+      containers:
+      - name: tensorboard
+        image: tensorflow/tensorflow:2.14.0
+        command:
+        - tensorboard
+        args:
+        - --logdir=/outputs/gemma3-melanoma
+        - --host=0.0.0.0
+        - --port=6006
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 6006
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: model-storage
+          mountPath: /outputs
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorboard
+  namespace: axolotl-training
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 6006
+  selector:
+    app: tensorboard

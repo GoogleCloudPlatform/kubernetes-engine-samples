@@ -1,0 +1,58 @@
+# gemma3-melanoma.yaml
+# Base model configuration
+base_model: google/gemma-3-4b-it
+model_type: AutoModelForCausalLM
+tokenizer_type: GemmaTokenizer
+processor_type: AutoProcessor
+chat_template: gemma3
+
+# Enable Hugging Face authentication
+hf_use_auth_token: true
+
+# Dataset configuration
+datasets:
+  - path: /mnt/gcs/axolotl-data/siim_isic_train.jsonl
+    type: chat_template
+    ds_type: json
+    field_messages: messages
+    chat_template: gemma3
+
+# Efficient fine-tuning settings
+load_in_4bit: true
+adapter: qlora
+lora_r: 32
+lora_alpha: 16
+lora_dropout: 0.05
+lora_target_modules: 'language_model.model.layers.[\d]+.(mlp|cross_attn|self_attn).(up|down|gate|q|k|v|o)_proj'
+lora_mlp_kernel: true
+lora_qkv_kernel: true
+lora_o_kernel: true
+
+# Training parameters
+sequence_len: 4096
+optimizer: adamw_torch_fused
+lr_scheduler: cosine
+learning_rate: 2e-5
+weight_decay: 0.01
+max_steps: 1000
+warmup_steps: 100
+gradient_checkpointing: true
+gradient_accumulation_steps: 4
+micro_batch_size: 1
+save_strategy: epoch
+save_total_limit: 2
+flash_attention: true
+
+# Multimodal specific settings
+skip_prepare_dataset: true
+remove_unused_columns: false
+sample_packing: false
+image_size: 512
+image_resize_algorithm: bilinear
+
+# Enable TensorBoard logging
+use_tensorboard: true
+
+# Output and logging
+output_dir: "/outputs/gemma3-melanoma"
+logging_steps: 10

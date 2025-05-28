@@ -1,0 +1,36 @@
+# model-export.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: model-export
+  namespace: axolotl-training
+  annotations:
+    gke-gcsfuse/volumes: "true"
+spec:
+  serviceAccountName: axolotl-training-sa
+  restartPolicy: Never
+  containers:
+  - name: export
+    image: google/cloud-sdk:latest
+    command:
+    - bash
+    - -c
+    - |
+      echo "Checking if exported model exists"
+      ls -la /outputs/gemma3-melanoma/exported_model || mkdir -p /outputs/gemma3-melanoma/exported_model
+      
+      echo "Copying tuned model to GCS bucket..."
+      gsutil -m cp -r /outputs/gemma3-melanoma/* gs://${GCS_BUCKET_NAME}/tuned-models/
+      
+      echo "Verifying files in GCS..."
+      gsutil ls -l gs://${GCS_BUCKET_NAME}/tuned-models/
+    env:
+    - name: GCS_BUCKET_NAME
+      value: "${GCS_BUCKET_NAME}"
+    volumeMounts:
+    - name: model-storage
+      mountPath: /outputs
+  volumes:
+  - name: model-storage
+    persistentVolumeClaim:
+      claimName: model-storage

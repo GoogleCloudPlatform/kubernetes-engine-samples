@@ -1,0 +1,69 @@
+# axolotl-training-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gemma3-melanoma-training
+  namespace: axolotl-training
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: axolotl-training-sa
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-a100
+      restartPolicy: Never
+      containers:
+      - name: axolotl
+        image: axolotlai/axolotl:main-latest
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            # Create directory structure and symbolic link
+            # Using environment variable for bucket name
+            mkdir -p /mnt/gcs/${GCS_BUCKET_NAME}
+            ln -s /mnt/gcs/processed_images /mnt/gcs/${GCS_BUCKET_NAME}/processed_images
+            echo "Created symbolic link for image paths"
+            
+            # Now run the training
+            cd /workspace/axolotl && python -m axolotl.cli.train /workspace/configs/gemma3-melanoma.yaml
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: huggingface-credentials
+              key: token
+        - name: NCCL_DEBUG
+          value: "INFO"
+        - name: GCS_BUCKET_NAME
+          value: "${GCS_BUCKET_NAME}"
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            memory: "32Gi"
+            cpu: "8"
+            ephemeral-storage: "10Gi"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: config-volume
+          mountPath: /workspace/configs
+        - name: model-storage
+          mountPath: /outputs
+        - name: gcs-fuse-csi
+          mountPath: /mnt/gcs
+      volumes:
+      - name: config-volume
+        configMap:
+          name: axolotl-config
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage
+      - name: gcs-fuse-csi
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: "${GCS_BUCKET_NAME}"
+            mountOptions: "implicit-dirs"
