@@ -125,7 +125,7 @@ chmod +x scripts/*.sh
 
 ### Step 1: Data Preparation
 
-The SIIM-ISIC Melanoma Classification dataset requires specific formatting for multimodal fine-tuning. We use Google Cloud Storage Transfer Service for efficient data transfer.
+We use Google Cloud Storage Transfer Service for efficient data transfer.
 
 #### Transfer Dataset to Cloud Storage
 
