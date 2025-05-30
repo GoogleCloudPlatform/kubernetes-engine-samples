@@ -44,10 +44,17 @@ spec:
       - name: ctr
         image: ubuntu:22.04
         command: ["bash", "-c"]
-        args: ["while [ 1 ]; do date; echo $(/host/opt/nvidia/bin/nvidia-smi -L || echo Waiting...); sleep 30; done"]
+        args: ["while [ 1 ]; do date; /host/opt/nvidia/bin/nvidia-smi -L || echo Waiting...; sleep 30; done"]
         resources:
           claims:
           - name: gpu
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
       resourceClaims:
       - name: gpu
         resourceClaimTemplateName: all-gpus
