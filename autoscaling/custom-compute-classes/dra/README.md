@@ -64,12 +64,12 @@ allows the T4, L4, or P4 options, in that order of priority. We will make the P4
 option use spot VMs, to reduce costs.
 
 First, we need a GKE cluster with the DRA beta enabled.  This is available
-starting in GKE 1.32.
+starting in GKE 1.32. For this example, we will use 1.33:
 
 ```console
 CLUSTER_NAME=drabeta
-LOCATION=us-central1-c
-VERSION=1.32.0-gke.1358000
+LOCATION=us-west4
+VERSION=1.33
 gcloud container clusters create \
         --location ${LOCATION} \
         --release-channel rapid \
@@ -78,25 +78,30 @@ gcloud container clusters create \
         ${CLUSTER_NAME}
 ```
 
-We also need to deploy the [NVIDIA DRA
-Driver](https://github.com/NVIDIA/k8s-dra-driver), a pre-production open source
-component from NVIDIA. You can clone this repository and run the
-[install-dra-driver.sh](https://github.com/NVIDIA/k8s-dra-driver/blob/main/demo/clusters/gke/install-dra-driver.sh)
-script to install it on the new cluster. NOTE: This is not sufficient unless
-the following two pending PRs have merged:
-- [DRA driver update to 1.32](https://github.com/NVIDIA/k8s-dra-driver/pull/220)
-  (in particular the updated driver container image in `install-dra-driver.sh`)
-- [DRA driver toleration of compute class](https://github.com/NVIDIA/k8s-dra-driver/pull/221)
+When we create node pools in this example, we will use Ubuntu nodes and we will
+manually install the NVIDIA GPU drivers, the NVIDIA Container Toolkit, and the
+NVIDIA DRA Driver for GPUs.  These are all the components we need to use DRA.
 
-If those haven't merged, you'll need to make those changes manually to the
-script before running it.
-
-There are a few other things needed: installing the right GPU drivers, and
-reconfiguring the nodes to work for DRA. This is all done by three different
-DaemonSets, which you can apply like this:
+Installing the right NVIDIA drivers for Ubuntu nodes is described in the Google
+Cloud GPU
+[documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/gpus#ubuntu).
+For the GPUs we will use in this example, the following command is sufficient:
 
 ```console
-kubectl apply -f dra-daemonsets.yaml
+kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+```
+
+The container toolkit is installed via a DaemonSet:
+
+```console
+kubectl apply -f nvidia-container-toolkit-installer.yaml
+```
+
+The DRA driver is installed via a Helm chart, as described in the Google Cloud
+[documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/set-up-dra#install).
+
+```console
+kubectl apply -f nvidia-container-toolkit-installer.yaml
 ```
 
 Next, we need node pools representing each machine type. As of now, we cannot use
@@ -173,69 +178,22 @@ spec:
 ```
 
 Now, deploy a workload. We will start with a single replica, which will get
-scheduled to one of the nodes we already created above. The following Deployment
-can be applied with `kubectl apply -f deployment.yaml`:
+scheduled to one of the nodes we already created above. The example creates a
+ResourceClaimTemplate that asks for all GPUs on the node, and a Deployment with
+a Pod template references that ResourceClaimTemplate. For each Pod created by
+the Deployment, a new ResourceClaim will be created based on the
+ResourceClaimTemplate, and associated with that new Pod. This will allow
+scheduling of the Pod to any node with GPUs, and all the GPUs on that node will
+be assigned to the Pod and available to it. To illustrate this, the example uses
+`nvidia-smi` to print out all the GPUs it sees.
 
-```yaml
-apiVersion: resource.k8s.io/v1beta1
-kind: ResourceClaimTemplate
-metadata:
-  name: all-gpus
-spec:
-  spec:
-    devices:
-      requests:
-      - name: gpu
-        deviceClassName: gpu.nvidia.com
-        allocationMode: All
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ccc-gpu
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ccc-gpu
-  template:
-    metadata:
-      labels:
-        app: ccc-gpu
-    spec:
-      nodeSelector:
-        cloud.google.com/compute-class: inference-1x8x24
-      containers:
-      - name: ctr
-        image: ubuntu:22.04
-        command: ["bash", "-c"]
-        args: ["nvidia-smi -L; trap 'exit 0' TERM; sleep 9999 & wait"]
-        resources:
-          claims:
-          - name: gpu
-      resourceClaims:
-      - name: gpu
-        resourceClaimTemplateName: all-gpus
-      tolerations:
-      - key: "nvidia.com/gpu"
-        operator: "Exists"
-        effect: "NoSchedule"
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - ccc-gpu
-              topologyKey: "kubernetes.io/hostname"
-```
+You can apply this workload with `kubectl apply -f deployment.yaml`.
 
 Since at present CA does not understand the DRA resources, it won't trigger a
 scale up because of insufficient GPU resources. This is in development and will
 be resolved soon. Until then, we use an anti-affinity rule to force
-one-pod-per-node and trigger scaling.
+one-pod-per-node and trigger scaling; you will see this if you examine
+`deployment.yaml`.
 
 Results of scaling to 4 replicas:
 

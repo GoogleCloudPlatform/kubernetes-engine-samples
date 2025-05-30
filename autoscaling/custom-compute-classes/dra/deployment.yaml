@@ -44,7 +44,7 @@ spec:
       - name: ctr
         image: ubuntu:22.04
         command: ["bash", "-c"]
-        args: ["while [ 1 ]; do date; echo $(nvidia-smi -L || echo Waiting...); sleep 60; done"]
+        args: ["while [ 1 ]; do date; echo $(/host/opt/nvidia/bin/nvidia-smi -L || echo Waiting...); sleep 30; done"]
         resources:
           claims:
           - name: gpu
