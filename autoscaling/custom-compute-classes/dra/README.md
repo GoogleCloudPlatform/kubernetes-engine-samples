@@ -100,10 +100,6 @@ kubectl apply -f nvidia-container-toolkit-installer.yaml
 The DRA driver is installed via a Helm chart, as described in the Google Cloud
 [documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/set-up-dra#install).
 
-```console
-kubectl apply -f nvidia-container-toolkit-installer.yaml
-```
-
 Next, we need node pools representing each machine type. As of now, we cannot use
 the Node Autoprovisioning feature of CCC with DRA, because of the specialized
 labels needed to switch to the DRA driver. Let's create a node pool for each

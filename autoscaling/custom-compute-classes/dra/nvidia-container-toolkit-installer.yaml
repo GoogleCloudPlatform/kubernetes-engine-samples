@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc. All rights reserved.
+# Copyright 2025 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ spec:
       hostIPC: true
       nodeSelector:
         nvidia.com/gpu.present: "true"
+        cloud.google.com/gke-os-distribution: ubuntu
       containers:
       - image: ubuntu:22.04
         name: ctr
