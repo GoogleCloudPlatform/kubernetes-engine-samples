@@ -70,20 +70,22 @@ spec:
         env:
         - name: "EXPERIMENT"
           value: "finetune-experiment"
-        - name: "TRAINING_DATASET_BUCKET"
-          value: <TRAINING_BUCKET>
-        - name: "TRAINING_DATASET_PATH"
-          value: "training"
         - name: MODEL_NAME
-          value: "google/gemma-2-9b-it"
+          value: "google/gemma-2-2b"
         - name: NEW_MODEL
           value: "gemma-ft"
         - name: MODEL_PATH
           value: "/model-data/model-gemma2/experiment"
+        - name: DATASET_NAME
+          value: "b-mc2/sql-create-context"
+        - name: DATASET_LIMIT
+          value: "5000"
         - name: EPOCHS
           value: "1"
+        - name: GRADIENT_ACCUMULATION_STEPS
+          value: "2"
         - name: CHECKPOINT_SAVE_STEPS
-          value: "1"
+          value: "10"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:

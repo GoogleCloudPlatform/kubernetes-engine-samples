@@ -46,16 +46,15 @@ spec:
               name: serve
             resources:
               limits:
-              cpu: "2"
-              ephemeral-storage: "15Gi"
-              memory: "8Gi"
-            requests:
-              cpu: "2"
-              ephemeral-storage: "15Gi"
-              memory: "8Gi"
-        nodeSelector:
-          cloud.google.com/compute-class: Performance
-          cloud.google.com/machine-family: c3d
+                cpu: "2"
+                ephemeral-storage: "15Gi"
+                memory: "8Gi"
+              requests:
+                cpu: "2"
+                ephemeral-storage: "15Gi"
+                memory: "8Gi"
+          nodeSelector:
+            cloud.google.com/machine-family: c3d
     workerGroupSpecs:
     - replicas: 1
       minReplicas: 1

@@ -39,15 +39,17 @@ spec:
         cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
       containers:
       - name: vllm-tpu
-        image: IMAGE_NAME
+        image: docker.io/vllm/vllm-tpu:73aa7041bfee43581314e6f34e9a657137ecc092
         command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --host=0.0.0.0
         - --port=8000
         - --tensor-parallel-size=8
-        - --max-model-len=8192
-        - --model=meta-llama/Meta-Llama-3.1-70B
+        - --max-model-len=4096
+        - --model=meta-llama/Llama-3.1-70B
         - --download-dir=/data
+        - --max-num-batched-tokens=512
+        - --max-num-seqs=128
         env: 
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
@@ -56,6 +58,8 @@ spec:
               key: hf_api_token
         - name: VLLM_XLA_CACHE_PATH
           value: "/data"
+        - name: VLLM_USE_V1
+          value: "1"
         ports:
         - containerPort: 8000
         resources:

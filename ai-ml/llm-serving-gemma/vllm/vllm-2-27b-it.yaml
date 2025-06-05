@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: inference-server
-        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240930_0945_RC00
+        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20250310_0916_RC00
         resources:
           requests:
             cpu: "10"
@@ -44,10 +44,12 @@ spec:
             memory: "80Gi"
             ephemeral-storage: "80Gi"
             nvidia.com/gpu: "4"
-        command: ["python3", "-m", "vllm.entrypoints.api_server"]
+        command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --model=$(MODEL_ID)
         - --tensor-parallel-size=4
+        - --host=0.0.0.0
+        - --port=8000
         env:
         - name: MODEL_ID
           value: google/gemma-2-27b-it

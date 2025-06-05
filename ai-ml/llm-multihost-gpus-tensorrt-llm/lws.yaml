@@ -1,0 +1,104 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_multihost_gpus_tensorrt_llm_lws]
+
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: tensorrt
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2
+    leaderTemplate:
+      metadata:
+        labels:
+          role: leader
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-accelerator: nvidia-h100-80gb
+        serviceAccountName: tensorrt-sa
+        containers:
+          - name: leader
+            image: IMAGE_NAME
+            command:
+            - sh 
+            - -c
+            - "./install_model.sh; python3 ./server.py leader --stateful_set_group_key=${GROUP_KEY} --pp=8 --tp=2 --gpu_per_node=8 --triton_model_repo_dir=/data/tensorrtllm_backend/all_models/inflight_batcher_llm/"
+            env:
+            - name: GROUP_KEY
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['leaderworkerset.sigs.k8s.io/group-key']
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-secret
+                  key: hf_api_token
+            resources:
+              limits:
+                nvidia.com/gpu: "8"
+            ports:
+              - containerPort: 8000
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+    workerTemplate:
+      spec:
+        serviceAccountName: tensorrt-sa
+        containers:
+          - name: worker
+            image: IMAGE_NAME
+            command:
+            - sh 
+            - -c
+            - "./install_model.sh; python3 ./server.py worker --triton_model_repo_dir=/data/tensorrtllm_backend/all_models/inflight_batcher_llm/"
+            resources:
+              limits:
+                nvidia.com/gpu: "8"
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+            env:
+              - name: HUGGING_FACE_HUB_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: hf_api_token
+        volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorrt-service
+spec:
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  selector:
+    leaderworkerset.sigs.k8s.io/name: tensorrt
+    role: leader
+
+# [END gke_ai_ml_llm_serving_multihost_gpus_tensorrt_llm_lws]

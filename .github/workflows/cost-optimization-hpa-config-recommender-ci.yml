@@ -1,0 +1,42 @@
+name: cost-optimization-hpa-config-recommender-ci
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/cost-optimization-hpa-config-recommender-ci.yml'
+      - 'cost-optimization/hpa-config-recommender/**'
+  pull_request:
+    paths:
+      - '.github/workflows/cost-optimization-hpa-config-recommender-ci.yml'
+      - 'cost-optimization/hpa-config-recommender/**'
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate terraform
+        run: |
+          cd cost-optimization/hpa-config-recommender/deploy
+          ls
+          terraform init
+          terraform validate
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13.3
+
+      - name: Build and run tests
+        run: |
+          cd cost-optimization/hpa-config-recommender/
+          python3 -m venv venv
+          source venv/bin/activate
+          pip3 install build
+          pip3 install pytest
+          python3 -m build
+          pip3 install dist/hpaconfigrecommender-*.tar.gz
+          pytest  # Run pytest

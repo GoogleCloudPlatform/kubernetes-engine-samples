@@ -252,6 +252,21 @@ resource "google_cloudbuild_trigger" "workload-metrics" {
     }
 }
 
+resource "google_cloudbuild_trigger" "keda-cloud-pubsub" {
+    name = "kubernetes-engine-samples-keda-cloud-pubsub"
+    filename = "cost-optimization/gke-keda/cloud-pubsub/cloudbuild.yaml"
+    included_files = ["cost-optimization/gke-keda/cloud-pubsub/**"]
+    description = local.trigger_description
+
+    github {
+        owner = "GoogleCloudPlatform"
+        name = "kubernetes-engine-samples"
+        push {
+            branch = "^main$"
+        }
+    }
+}
+
 resource "google_cloudbuild_trigger" "metrics-exporter" {
     name = "kubernetes-engine-samples-metrics-exporter"
     filename = "cost-optimization/gke-vpa-recommendations/metrics-exporter/cloudbuild.yaml"

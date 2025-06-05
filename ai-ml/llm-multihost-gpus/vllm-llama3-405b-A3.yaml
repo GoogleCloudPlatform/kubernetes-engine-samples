@@ -32,7 +32,7 @@ spec:
           cloud.google.com/gke-accelerator: nvidia-h100-80gb
         containers:
           - name: vllm-leader
-            image: IMAGE_NAME
+            image: docker.io/vllm/vllm-openai:latest
             env:
               - name: HUGGING_FACE_HUB_TOKEN
                 valueFrom:
@@ -42,7 +42,7 @@ spec:
             command:
               - sh
               - -c
-              - "/workspace/vllm/examples/ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE); 
+              - "bash /vllm-workspace/examples/online_serving/multi-node-serving.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
                 python3 -m vllm.entrypoints.openai.api_server --port 8080 --model meta-llama/Meta-Llama-3.1-405B-Instruct --tensor-parallel-size 8 --pipeline-parallel-size 2"
             resources:
               limits:
@@ -68,11 +68,11 @@ spec:
           cloud.google.com/gke-accelerator: nvidia-h100-80gb
         containers:
           - name: vllm-worker
-            image: IMAGE_NAME
+            image: docker.io/vllm/vllm-openai:latest
             command:
               - sh
               - -c
-              - "/workspace/vllm/examples/ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)"
+              - "bash /vllm-workspace/examples/online_serving/multi-node-serving.sh worker --ray_address=$(LWS_LEADER_ADDRESS)"
             resources:
               limits:
                 nvidia.com/gpu: "8"
