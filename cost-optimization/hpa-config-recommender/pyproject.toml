@@ -27,7 +27,7 @@ dependencies = [
     "aiohttp>=3.8.0",
     "httpx>=0.28.1",
     "asyncio==3.4.3",
-    "requests==2.32.3",
+    "requests==2.32.4",
     "google-api-core==2.22.0",
     "google-cloud-asset==3.27.0",
     "google_cloud_bigquery==3.29.0"

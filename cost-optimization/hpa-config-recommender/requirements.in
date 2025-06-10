@@ -23,7 +23,7 @@ pyasn1_modules==0.4.1
 python-dateutil==2.9.0.post0
 pyarrow==19.0.0
 pytz==2024.2
-requests==2.32.3
+requests==2.32.4
 rsa==4.9
 six==1.16.0
 tzdata==2024.2

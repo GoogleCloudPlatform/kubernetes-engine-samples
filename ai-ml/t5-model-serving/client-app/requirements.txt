@@ -1,3 +1,3 @@
 fast-dash==0.2.9
-requests==2.32.3
+requests==2.32.4
 gunicorn==23.0.0
