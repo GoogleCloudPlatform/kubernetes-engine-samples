@@ -32,7 +32,6 @@ spec:
         ai.gke.io/inference-server: text-generation-inference
         examples.ai.gke.io/source: user-guide
         kueue.x-k8s.io/queue-name: lq
-        kueue-job: "true"
     spec:
       priorityClassName: high-priority-preempting
       containers:
