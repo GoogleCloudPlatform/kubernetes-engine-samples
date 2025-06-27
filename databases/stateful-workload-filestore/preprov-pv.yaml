@@ -30,8 +30,8 @@ spec:
   csi:
     driver: filestore.csi.storage.gke.io
     # Modify this to use the zone, filestore instance and share name.
-    volumeHandle: "modeInstance/<FILESTORE_ZONE>/<INSTANCE_NAME>/<FILESTORE_SHARE_NAME>"
+    volumeHandle: "modeInstance/<LOCATION>/<INSTANCE_NAME>/<FILE_SHARE_NAME>"
     volumeAttributes:
       ip: <IP_ADDRESS> # Modify this to Pre-provisioned Filestore instance IP
-      volume: <FILESTORE_SHARE_NAME> # Modify this to Pre-provisioned Filestore instance share name
+      volume: <FILE_SHARE_NAME> # Modify this to Pre-provisioned Filestore instance share name
 # [END gke_stateful_filestore_preprov_pv]

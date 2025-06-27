@@ -22,6 +22,9 @@ terraform {
       version = "~> 5.0"
     }
   }
+  provider_meta "google" {
+      module_name = "cloud-solutions/gke-vpa-recommendations-v1.1"
+  }
 }
 
 provider "google" {

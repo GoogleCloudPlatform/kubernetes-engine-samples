@@ -103,12 +103,12 @@ spec:
               limits:
                 cpu: "100"
                 google.com/tpu: "8"
-                ephemeral-storage: 80G
+                ephemeral-storage: 40G
                 memory: 200G
               requests:
                 cpu: "100"
                 google.com/tpu: "8"
-                ephemeral-storage: 80G
+                ephemeral-storage: 40G
                 memory: 200G
             env:
               - name: VLLM_XLA_CACHE_PATH

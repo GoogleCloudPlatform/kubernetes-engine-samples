@@ -1,0 +1,150 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_tpus_jetstream_pathways_llama_3_1_405b_4x4]
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: jetstream-pathways
+  annotations:
+    leaderworkerset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    leaderTemplate:
+      metadata:
+        labels:
+          app: jetstream-pathways
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+          cloud.google.com/gke-tpu-topology: 4x4
+        tolerations:
+        - key: "google.com/tpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+        containers:
+        - name: pathways-proxy
+          image: us-docker.pkg.dev/cloud-tpu-v2-images/pathways/proxy_server:jax-0.5.3
+          args:
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 38681
+        - name: pathways-rm
+          env:
+          - name: HOST_ADDRESS
+            value: "$(LWS_LEADER_ADDRESS)"
+          - name: TPU_SKIP_MDS_QUERY
+            value: "true"
+          image: us-docker.pkg.dev/cloud-tpu-v2-images/pathways/server:jax-0.5.3
+          args:
+          - --server_port=38677
+          - --gcs_scratch_location=PATHWAYS_BUCKET
+          - --node_type=resource_manager
+          - --instance_count=1
+          - --instance_type=tpuv6e:4x4
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 38677
+        - name: jax-tpu
+          image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-pathways:v0.2.0
+          env:
+          - name: LOG_LEVEL
+            value: "INFO"
+          args:
+          - MaxText/configs/v5e/inference/llama3_405b_v5e-64.yml
+          - model_name=llama3.1-405b
+          - load_parameters_path=CHECKPOINT_PATH
+          - max_prefill_predict_length=1024
+          - max_target_length=2048
+          - async_checkpointing=false
+          - steps=1
+          - ici_fsdp_parallelism=1
+          - ici_autoregressive_parallelism=2
+          - ici_tensor_parallelism=8
+          - scan_layers=false
+          - weight_dtype=bfloat16
+          - per_device_batch_size=6
+          - enable_single_controller=true
+          - quantization=int8
+          - quantize_kvcache=true
+          - checkpoint_is_quantized=true
+          - enable_model_warmup=true
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 9000
+          startupProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 1
+            initialDelaySeconds: 600
+            failureThreshold: 10000
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 60
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 60
+            failureThreshold: 10
+        - name: jetstream-http
+          image: us-docker.pkg.dev/cloud-tpu-images/inference/jetstream-http:v0.2.3
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8000
+    size: 5
+    workerTemplate:
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+          cloud.google.com/gke-tpu-topology: 4x4
+        tolerations:
+        - key: "google.com/tpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+        containers:
+        - name: worker
+          args:
+          - --server_port=38679
+          - --resource_manager_address=$(LWS_LEADER_ADDRESS):38677
+          - --gcs_scratch_location=PATHWAYS_BUCKET
+          image: us-docker.pkg.dev/cloud-tpu-v2-images/pathways/server:jax-0.5.3
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 38679
+          resources:
+            limits:
+              google.com/tpu: "4"
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: jetstream-svc
+spec:
+  selector:
+    app: jetstream-pathways
+  ports:
+  - protocol: TCP
+    name: jetstream-http
+    port: 8000
+    targetPort: 8000
+# [END gke_ai_ml_llm_serving_tpus_jetstream_pathways_llama_3_1_405b_4x4]

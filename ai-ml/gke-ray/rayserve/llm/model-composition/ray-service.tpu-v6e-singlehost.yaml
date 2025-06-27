@@ -65,11 +65,13 @@ spec:
             - containerPort: 8000
               name: serve
             env:
-            - name: HUGGING_FACE_HUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: hf-secret
-                  key: hf_api_token
+              - name: HUGGING_FACE_HUB_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: hf_api_token
+              - name: VLLM_XLA_CACHE_PATH
+                value: "/data"
             volumeMounts:
             - name: gcs-fuse-csi-ephemeral
               mountPath: /data
@@ -108,22 +110,24 @@ spec:
           - name: llm
             image: $VLLM_IMAGE
             env:
-            - name: HUGGING_FACE_HUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: hf-secret
-                  key: hf_api_token
+              - name: HUGGING_FACE_HUB_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: hf_api_token
+              - name: VLLM_XLA_CACHE_PATH
+                value: "/data"
             resources:
               limits:
                 cpu: "100"
                 google.com/tpu: "8"
-                ephemeral-storage: 50Gi
-                memory: 100G
+                ephemeral-storage: 40G
+                memory: 200G
               requests:
                 cpu: "100"
                 google.com/tpu: "8"
-                ephemeral-storage: 50Gi
-                memory: 100G
+                ephemeral-storage: 40G
+                memory: 200G
             volumeMounts:
             - name: gcs-fuse-csi-ephemeral
               mountPath: /data

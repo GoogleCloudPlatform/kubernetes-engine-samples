@@ -1,0 +1,449 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_infw_gw_vllm_llama3_8b_instruct]
+apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: vllm-llama3-8b-instruct
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: vllm-llama3-8b-instruct
+      template:
+        metadata:
+          labels:
+            app: vllm-llama3-8b-instruct
+        spec:
+          containers:
+            - name: vllm
+              image: "vllm/vllm-openai:latest"
+              imagePullPolicy: Always
+              command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+              args:
+              - "--model"
+              - "meta-llama/Llama-3.1-8B-Instruct"
+              - "--tensor-parallel-size"
+              - "1"
+              - "--port"
+              - "8000"
+              - "--enable-lora"
+              - "--max-loras"
+              - "2"
+              - "--max-cpu-loras"
+              - "12"
+              env:
+                # Enabling LoRA support temporarily disables automatic v1, we want to force it on
+                # until 0.8.3 vLLM is released.
+                - name: VLLM_USE_V1
+                  value: "1"
+                - name: PORT
+                  value: "8000"
+                - name: HUGGING_FACE_HUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hf-token
+                      key: token
+                - name: VLLM_ALLOW_RUNTIME_LORA_UPDATING
+                  value: "true"
+              ports:
+                - containerPort: 8000
+                  name: http
+                  protocol: TCP
+              lifecycle:
+                preStop:
+                  # vLLM stops accepting connections when it receives SIGTERM, so we need to sleep
+                  # to give upstream gateways a chance to take us out of rotation. The time we wait
+                  # is dependent on the time it takes for all upstreams to completely remove us from
+                  # rotation. Older or simpler load balancers might take upwards of 30s, but we expect
+                  # our deployment to run behind a modern gateway like Envoy which is designed to
+                  # probe for readiness aggressively.
+                  sleep:
+                    # Upstream gateway probers for health should be set on a low period, such as 5s,
+                    # and the shorter we can tighten that bound the faster that we release
+                    # accelerators during controlled shutdowns. However, we should expect variance,
+                    # as load balancers may have internal delays, and we don't want to drop requests
+                    # normally, so we're often aiming to set this value to a p99 propagation latency
+                    # of readiness -> load balancer taking backend out of rotation, not the average.
+                    #
+                    # This value is generally stable and must often be experimentally determined on
+                    # for a given load balancer and health check period. We set the value here to
+                    # the highest value we observe on a supported load balancer, and we recommend
+                    # tuning this value down and verifying no requests are dropped.
+                    #
+                    # If this value is updated, be sure to update terminationGracePeriodSeconds.
+                    #
+                    seconds: 30
+                  #
+                  # IMPORTANT: preStop.sleep is beta as of Kubernetes 1.30 - for older versions
+                  # replace with this exec action.
+                  #exec:
+                  #  command:
+                  #  - /usr/bin/sleep
+                  #  - 30
+              livenessProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                # vLLM's health check is simple, so we can more aggressively probe it.  Liveness
+                # check endpoints should always be suitable for aggressive probing.
+                periodSeconds: 1
+                successThreshold: 1
+                # vLLM has a very simple health implementation, which means that any failure is
+                # likely significant. However, any liveness triggered restart requires the very
+                # large core model to be reloaded, and so we should bias towards ensuring the
+                # server is definitely unhealthy vs immediately restarting. Use 5 attempts as
+                # evidence of a serious problem.
+                failureThreshold: 5
+                timeoutSeconds: 1
+              readinessProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                # vLLM's health check is simple, so we can more aggressively probe it.  Readiness
+                # check endpoints should always be suitable for aggressive probing, but may be
+                # slightly more expensive than readiness probes.
+                periodSeconds: 1
+                successThreshold: 1
+                # vLLM has a very simple health implementation, which means that any failure is
+                # likely significant,
+                failureThreshold: 1
+                timeoutSeconds: 1
+              # We set a startup probe so that we don't begin directing traffic or checking
+              # liveness to this instance until the model is loaded.
+              startupProbe:
+                # Failure threshold is when we believe startup will not happen at all, and is set
+                # to the maximum possible time we believe loading a model will take. In our
+                # default configuration we are downloading a model from HuggingFace, which may
+                # take a long time, then the model must load into the accelerator. We choose
+                # 10 minutes as a reasonable maximum startup time before giving up and attempting
+                # to restart the pod.
+                #
+                # IMPORTANT: If the core model takes more than 10 minutes to load, pods will crash
+                # loop forever. Be sure to set this appropriately.
+                failureThreshold: 600
+                # Set delay to start low so that if the base model changes to something smaller
+                # or an optimization is deployed, we don't wait unnecessarily.
+                initialDelaySeconds: 2
+                # As a startup probe, this stops running and so we can more aggressively probe
+                # even a moderately complex startup - this is a very important workload.
+                periodSeconds: 1
+                httpGet:
+                  # vLLM does not start the OpenAI server (and hence make /health available)
+                  # until models are loaded. This may not be true for all model servers.
+                  path: /health
+                  port: http
+                  scheme: HTTP
+
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+                requests:
+                  nvidia.com/gpu: 1
+              volumeMounts:
+                - mountPath: /data
+                  name: data
+                - mountPath: /dev/shm
+                  name: shm
+                - name: adapters
+                  mountPath: "/adapters"
+                # VolumeMount for the initContainer to access the ConfigMap
+                - name: config-volume
+                  mountPath: /config
+          initContainers:
+            - name: lora-adapter-syncer
+              tty: true
+              stdin: true
+              image: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/lora-syncer:main
+              restartPolicy: Always
+              imagePullPolicy: Always
+              env:
+                - name: DYNAMIC_LORA_ROLLOUT_CONFIG
+                  value: "/config/configmap.yaml"
+              volumeMounts: # DO NOT USE subPath, dynamic configmap updates don't work on subPaths
+              - name: config-volume
+                mountPath: /config
+          restartPolicy: Always
+
+          # vLLM allows VLLM_PORT to be specified as an environment variable, but a user might
+          # create a 'vllm' service in their namespace. That auto-injects VLLM_PORT in docker
+          # compatible form as `tcp://<IP>:<PORT>` instead of the numeric value vLLM accepts
+          # causing CrashLoopBackoff. Set service environment injection off by default.
+          enableServiceLinks: false
+
+          # Generally, the termination grace period needs to last longer than the slowest request
+          # we expect to serve plus any extra time spent waiting for load balancers to take the
+          # model server out of rotation.
+          # ... (rest of terminationGracePeriodSeconds comments from original) ...
+          terminationGracePeriodSeconds: 130
+
+          volumes:
+            - name: data
+              emptyDir: {}
+            - name: shm
+              emptyDir:
+                medium: Memory
+            - name: adapters
+              emptyDir: {}
+            # Volume definition linking 'config-volume' to the ConfigMap
+            - name: config-volume
+              configMap:
+                name: vllm-llama3-8b-adapters # Name of the ConfigMap defined below
+    ---
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: vllm-llama3-8b-adapters
+    data:
+      configmap.yaml: |
+        vLLMLoRAConfig:
+          name: vllm-llama3.1-8b-instruct
+          port: 8000
+          defaultBaseModel: meta-llama/Llama-3.1-8B-Instruct
+          ensureExist:
+            models:
+            - id: food-review
+              source: Kawon/llama3.1-food-finetune_v14_r8
+            - id: cad-fabricator
+              source: redcathode/fabricator
+    ---
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: vllm-llama3-8b-instruct
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: vllm-llama3-8b-instruct
+      template:
+        metadata:
+          labels:
+            app: vllm-llama3-8b-instruct
+        spec:
+          containers:
+            - name: vllm
+              image: "vllm/vllm-openai:latest"
+              imagePullPolicy: Always
+              command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+              args:
+              - "--model"
+              - "meta-llama/Llama-3.1-8B-Instruct"
+              - "--tensor-parallel-size"
+              - "1"
+              - "--port"
+              - "8000"
+              - "--enable-lora"
+              - "--max-loras"
+              - "2"
+              - "--max-cpu-loras"
+              - "12"
+              env:
+                # Enabling LoRA support temporarily disables automatic v1, we want to force it on
+                # until 0.8.3 vLLM is released.
+                - name: VLLM_USE_V1
+                  value: "1"
+                - name: PORT
+                  value: "8000"
+                - name: HUGGING_FACE_HUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hf-token
+                      key: token
+                - name: VLLM_ALLOW_RUNTIME_LORA_UPDATING
+                  value: "true"
+              ports:
+                - containerPort: 8000
+                  name: http
+                  protocol: TCP
+              lifecycle:
+                preStop:
+                  # vLLM stops accepting connections when it receives SIGTERM, so we need to sleep
+                  # to give upstream gateways a chance to take us out of rotation. The time we wait
+                  # is dependent on the time it takes for all upstreams to completely remove us from
+                  # rotation. Older or simpler load balancers might take upwards of 30s, but we expect
+                  # our deployment to run behind a modern gateway like Envoy which is designed to
+                  # probe for readiness aggressively.
+                  sleep:
+                    # Upstream gateway probers for health should be set on a low period, such as 5s,
+                    # and the shorter we can tighten that bound the faster that we release
+                    # accelerators during controlled shutdowns. However, we should expect variance,
+                    # as load balancers may have internal delays, and we don't want to drop requests
+                    # normally, so we're often aiming to set this value to a p99 propagation latency
+                    # of readiness -> load balancer taking backend out of rotation, not the average.
+                    #
+                    # This value is generally stable and must often be experimentally determined on
+                    # for a given load balancer and health check period. We set the value here to
+                    # the highest value we observe on a supported load balancer, and we recommend
+                    # tuning this value down and verifying no requests are dropped.
+                    #
+                    # If this value is updated, be sure to update terminationGracePeriodSeconds.
+                    #
+                    seconds: 30
+                  #
+                  # IMPORTANT: preStop.sleep is beta as of Kubernetes 1.30 - for older versions
+                  # replace with this exec action.
+                  #exec:
+                  #  command:
+                  #  - /usr/bin/sleep
+                  #  - 30
+              livenessProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                # vLLM's health check is simple, so we can more aggressively probe it.  Liveness
+                # check endpoints should always be suitable for aggressive probing.
+                periodSeconds: 1
+                successThreshold: 1
+                # vLLM has a very simple health implementation, which means that any failure is
+                # likely significant. However, any liveness triggered restart requires the very
+                # large core model to be reloaded, and so we should bias towards ensuring the
+                # server is definitely unhealthy vs immediately restarting. Use 5 attempts as
+                # evidence of a serious problem.
+                failureThreshold: 5
+                timeoutSeconds: 1
+              readinessProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                # vLLM's health check is simple, so we can more aggressively probe it.  Readiness
+                # check endpoints should always be suitable for aggressive probing, but may be
+                # slightly more expensive than readiness probes.
+                periodSeconds: 1
+                successThreshold: 1
+                # vLLM has a very simple health implementation, which means that any failure is
+                # likely significant,
+                failureThreshold: 1
+                timeoutSeconds: 1
+              # We set a startup probe so that we don't begin directing traffic or checking
+              # liveness to this instance until the model is loaded.
+              startupProbe:
+                # Failure threshold is when we believe startup will not happen at all, and is set
+                # to the maximum possible time we believe loading a model will take. In our
+                # default configuration we are downloading a model from HuggingFace, which may
+                # take a long time, then the model must load into the accelerator. We choose
+                # 10 minutes as a reasonable maximum startup time before giving up and attempting
+                # to restart the pod.
+                #
+                # IMPORTANT: If the core model takes more than 10 minutes to load, pods will crash
+                # loop forever. Be sure to set this appropriately.
+                failureThreshold: 600
+                # Set delay to start low so that if the base model changes to something smaller
+                # or an optimization is deployed, we don't wait unnecessarily.
+                initialDelaySeconds: 2
+                # As a startup probe, this stops running and so we can more aggressively probe
+                # even a moderately complex startup - this is a very important workload.
+                periodSeconds: 1
+                httpGet:
+                  # vLLM does not start the OpenAI server (and hence make /health available)
+                  # until models are loaded. This may not be true for all model servers.
+                  path: /health
+                  port: http
+                  scheme: HTTP
+
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+                requests:
+                  nvidia.com/gpu: 1
+              volumeMounts:
+                - mountPath: /data
+                  name: data
+                - mountPath: /dev/shm
+                  name: shm
+                - name: adapters
+                  mountPath: "/adapters"
+                # VolumeMount for the initContainer to access the ConfigMap
+                - name: config-volume
+                  mountPath: /config
+          initContainers:
+            - name: lora-adapter-syncer
+              tty: true
+              stdin: true
+              image: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/lora-syncer:main
+              restartPolicy: Always
+              imagePullPolicy: Always
+              env:
+                - name: DYNAMIC_LORA_ROLLOUT_CONFIG
+                  value: "/config/configmap.yaml"
+              volumeMounts: # DO NOT USE subPath, dynamic configmap updates don't work on subPaths
+              - name: config-volume
+                mountPath: /config
+          restartPolicy: Always
+
+          # vLLM allows VLLM_PORT to be specified as an environment variable, but a user might
+          # create a 'vllm' service in their namespace. That auto-injects VLLM_PORT in docker
+          # compatible form as `tcp://<IP>:<PORT>` instead of the numeric value vLLM accepts
+          # causing CrashLoopBackoff. Set service environment injection off by default.
+          enableServiceLinks: false
+
+          # Generally, the termination grace period needs to last longer than the slowest request
+          # we expect to serve plus any extra time spent waiting for load balancers to take the
+          # model server out of rotation.
+          # ... (rest of terminationGracePeriodSeconds comments) ...
+          terminationGracePeriodSeconds: 130
+
+          volumes:
+            - name: data
+              emptyDir: {}
+            - name: shm
+              emptyDir:
+                medium: Memory
+            - name: adapters
+              emptyDir: {}
+            # Volume definition linking 'config-volume' to the ConfigMap
+            - name: config-volume
+              configMap:
+                name: vllm-llama3-8b-adapters # Name of the ConfigMap defined below
+    ---
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: vllm-llama3-8b-adapters
+    data:
+      configmap.yaml: |
+        vLLMLoRAConfig:
+          name: vllm-llama3.1-8b-instruct
+          port: 8000
+          defaultBaseModel: meta-llama/Llama-3.1-8B-Instruct
+          ensureExist:
+            models:
+            - id: food-review
+              source: Kawon/llama3.1-food-finetune_v14_r8
+            - id: cad-fabricator
+              source: redcathode/fabricator
+    ---
+    kind: HealthCheckPolicy
+    apiVersion: networking.gke.io/v1
+    metadata:
+      name: health-check-policy
+      namespace: default
+    spec:
+      targetRef:
+        group: "inference.networking.x-k8s.io"
+        kind: InferencePool
+        name: vllm-llama2-7b # Note: This targetRef name differs from the Deployment/ConfigMap names
+      default:
+        config:
+          type: HTTP
+          httpHealthCheck:
+            requestPath: /health
+            port: 8000
+# [END gke_aiml_infw_gw_vllm_llama3_8b_instruct]
+

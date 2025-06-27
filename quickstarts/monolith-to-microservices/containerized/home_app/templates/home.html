@@ -1,0 +1,55 @@
+<!--
+Copyright 2025 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Review System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_for_home.css') }}">
+</head>
+<body>
+    <h1>Book Review System</h1>
+    <div class="book-container">
+    {% for book in books %}
+        <div class="book-item">
+            <h2>{{ book.title }}</h2>
+            <div class="book-image-container">
+                <div class="image-placeholder"></div>
+                <img src="{{ url_for('serve_image', filename=book.image_url) }}" alt="{{ book.title }}" class="book-image" style="display: none;">
+            </div>
+            <p><a href="{{ url_for('book_details', book_id=book.id) }}" class="button">View Details</a></p>
+        </div>
+    {% endfor %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const images = document.querySelectorAll('.book-image');
+            images.forEach(img => {
+                img.onload = function() {
+                    this.style.display = 'block';
+                    this.previousElementSibling.style.display = 'none';
+                }
+                img.onerror = function() {
+                    console.error('Failed to load image:', this.src);
+                    this.previousElementSibling.textContent = 'Image not found';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

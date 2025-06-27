@@ -1,0 +1,96 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_llm_serving_vllm_llama_scout_17b_128e_instruct_fp8_deployment]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llama-server
+  template:
+    metadata:
+      labels:
+        app: llama-server
+        ai.gke.io/model: Llama-4-Maverick-17B-128E-Instruct-FP8
+        ai.gke.io/inference-server: vllm
+    spec:
+      containers:
+      - name: inference-server
+        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20250405_1205_RC01
+        resources:
+          requests:
+            cpu: 146
+            memory: 1311Gi
+            ephemeral-storage: 600Gi
+            nvidia.com/gpu : 8
+          limits:
+            cpu: 146
+            memory: 1311Gi
+            ephemeral-storage: 600Gi
+            nvidia.com/gpu : 8
+        args:
+        - python3
+        - -m
+        - vllm.entrypoints.api_server
+        - --host=0.0.0.0
+        - --port=7080
+        - --swap-space=16
+        - --max-model-len=524288
+        - --gpu-memory-utilization=0.90
+        - --disable-log-stats
+        - --model=meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+        - --tensor-parallel-size=8
+        env:
+        - name: MODEL_ID
+          value: 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-h100-80gb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-service
+spec:
+  selector:
+    app: llama-server
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 7080
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hf-secret
+type: Opaque
+stringData:
+  hf_api_token: {{HF_TOKEN}}
+# [END gke_ai_ml_llm_serving_vllm_llama_scout_17b_128e_instruct_fp8_deployment]
