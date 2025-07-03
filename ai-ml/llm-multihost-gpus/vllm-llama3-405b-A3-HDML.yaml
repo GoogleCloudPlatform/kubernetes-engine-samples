@@ -31,7 +31,7 @@ spec:
       spec:
         containers:
           - name: vllm-leader
-            image: docker.io/vllm/vllm-openai:latest
+            image: vllm/vllm-openai:v0.8.5
             env:
               - name: HUGGING_FACE_HUB_TOKEN
                 valueFrom:
@@ -69,7 +69,7 @@ spec:
       spec:
         containers:
           - name: vllm-worker
-            image: docker.io/vllm/vllm-openai:latest
+            image: vllm/vllm-openai:v0.8.5
             command:
               - sh
               - -c
