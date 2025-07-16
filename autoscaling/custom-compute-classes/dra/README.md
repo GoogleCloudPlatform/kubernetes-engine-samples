@@ -68,7 +68,9 @@ starting in GKE 1.32. For this example, we will use 1.33:
 
 ```console
 CLUSTER_NAME=drabeta
-LOCATION=us-west4
+LOCATION=us-central1
+# l4, t4, p4 must be available in these zones
+NODE_LOCATIONS=${LOCATION}-a,${LOCATION}-c
 VERSION=1.33
 gcloud container clusters create \
         --location ${LOCATION} \
@@ -112,6 +114,7 @@ COMPUTE_CLASS=inference-1x8x24
 gcloud container node-pools create "n1-standard-4-2xt4" \
         --cluster "${CLUSTER_NAME}" \
         --location "${LOCATION}" \
+        --node-locations ${NODE_LOCATIONS} \
         --node-version "${VERSION}" \
         --machine-type "n1-standard-4" \
         --accelerator "type=nvidia-tesla-t4,count=2,gpu-driver-version=disabled" \
@@ -127,6 +130,7 @@ gcloud container node-pools create "n1-standard-4-2xt4" \
 gcloud container node-pools create "g2-standard-4" \
         --cluster "${CLUSTER_NAME}" \
         --location "${LOCATION}" \
+        --node-locations ${NODE_LOCATIONS} \
         --node-version "${VERSION}" \
         --machine-type "g2-standard-4" \
         --accelerator "type=nvidia-l4,gpu-driver-version=disabled" \
@@ -142,6 +146,7 @@ gcloud container node-pools create "g2-standard-4" \
 gcloud container node-pools create "n1-standard-4-4xp4" \
         --cluster "${CLUSTER_NAME}" \
         --location "${LOCATION}" \
+        --node-locations ${NODE_LOCATIONS} \
         --node-version "${VERSION}" \
         --machine-type "n1-standard-4" \
         --accelerator "type=nvidia-tesla-p4,count=4,gpu-driver-version=disabled" \
