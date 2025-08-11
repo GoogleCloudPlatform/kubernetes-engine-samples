@@ -282,7 +282,7 @@ resource "kubernetes_deployment" "wordpress" {
 
         container {
           name  = "cloud-sql-proxy"
-          image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.17.1"
+          image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.18.0"
           args  = ["--structured-logs", "--port=3306", google_sql_database_instance.main.connection_name]
 
           security_context {
