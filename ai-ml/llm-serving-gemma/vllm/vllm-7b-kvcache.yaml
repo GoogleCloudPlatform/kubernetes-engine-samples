@@ -35,11 +35,10 @@ spec:
         - --tensor-parallel-size=1
         - --kv-cache-dtype=fp8_e5m2
         - --max-model-len=1200
-        command:
-        - python3
-        - -m
-        - vllm.entrypoints.api_server
+        command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         env:
+        - name: LD_LIBRARY_PATH
+          value: ${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64        
         - name: MODEL_ID
           value: google/gemma-7b
         - name: HUGGING_FACE_HUB_TOKEN
@@ -47,17 +46,17 @@ spec:
             secretKeyRef:
               key: hf_api_token
               name: hf-secret
-        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240220_0936_RC01
+        image: docker.io/vllm/vllm-openai:v0.10.0
         name: inference-server
         resources:
           limits:
             cpu: "2"
-            ephemeral-storage: 25Gi
+            ephemeral-storage: 30Gi
             memory: 25Gi
             nvidia.com/gpu: 1
           requests:
             cpu: "2"
-            ephemeral-storage: 25Gi
+            ephemeral-storage: 30Gi
             memory: 25Gi
             nvidia.com/gpu: 1
         volumeMounts:

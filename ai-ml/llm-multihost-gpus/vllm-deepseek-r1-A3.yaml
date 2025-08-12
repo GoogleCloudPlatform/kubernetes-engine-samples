@@ -32,7 +32,7 @@ spec:
           cloud.google.com/gke-accelerator: nvidia-h100-80gb
         containers:
           - name: vllm-leader
-            image: docker.io/vllm/vllm-openai:latest
+            image: vllm/vllm-openai:v0.8.5
             env:
               - name: HUGGING_FACE_HUB_TOKEN
                 valueFrom:
@@ -68,7 +68,7 @@ spec:
           cloud.google.com/gke-accelerator: nvidia-h100-80gb
         containers:
           - name: vllm-worker
-            image: docker.io/vllm/vllm-openai:latest
+            image: vllm/vllm-openai:v0.8.5
             command:
               - sh
               - -c
