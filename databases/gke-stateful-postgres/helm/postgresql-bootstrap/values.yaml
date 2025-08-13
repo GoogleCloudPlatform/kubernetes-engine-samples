@@ -61,7 +61,7 @@ postgresql-ha:
   pgpool:
     image:
       repository: bitnami/pgpool
-      tag: 4.6.2-debian-12-r3
+      tag: 4.6.2-debian-12-r6
     replicaCount: 1
     tolerations:
     - key: "app.stateful/component"
