@@ -4,7 +4,7 @@ langchain==0.2.17
 langchain-community==0.2.19
 langchain-google-vertexai==1.0.10
 qdrant-client==1.11.1
-pypdf==3.17.4
+pypdf==6.0.0
 click==8.1.7
 Flask==2.3.3
 itsdangerous==2.2.0
