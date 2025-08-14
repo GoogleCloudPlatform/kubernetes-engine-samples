@@ -87,7 +87,7 @@ postgresql-ha:
     enabled: true
     image:
       repository: bitnami/postgres-exporter
-      tag: 0.17.1-debian-12-r11
+      tag: 0.17.1-debian-12-r14
     resources:
       requests: 
         cpu: "500m"
