@@ -82,7 +82,7 @@ apiKey: true
 
 sidecarContainers:
   - name: metrics
-    image: nginx:1.28
+    image: nginx:1.29
     resources:
       requests:
         memory: "128Mi"

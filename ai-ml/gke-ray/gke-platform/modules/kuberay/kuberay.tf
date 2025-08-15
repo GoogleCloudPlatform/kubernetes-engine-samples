@@ -23,6 +23,6 @@ resource "helm_release" "kuberay-operator" {
   repository = "https://ray-project.github.io/kuberay-helm/"
   chart      = "kuberay-operator"
   values     = var.enable_autopilot ? [file("${path.module}/kuberay-operator-autopilot-values.yaml")] : [file("${path.module}/kuberay-operator-values.yaml")]
-  version    = "1.4.0"
+  version    = "1.4.2"
   namespace  = "${kubernetes_namespace.ray_namespace.metadata[0].name}"
 }
