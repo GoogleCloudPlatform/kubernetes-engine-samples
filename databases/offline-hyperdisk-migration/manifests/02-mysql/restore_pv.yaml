@@ -37,7 +37,7 @@ metadata:
   namespace: default
   name: hyperdisk-recovery
 spec:
-  storageClassName: hyperdisk-recovery
+  storageClassName: balanced-storage
   accessModes:
     - ReadWriteOnce
   resources:
