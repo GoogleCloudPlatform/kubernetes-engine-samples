@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_networking_dpv2_observability_hubble_ui_128]
+# [START gke_networking_dpv2_observability_hubble_ui_132]
 apiVersion: v1
 kind: ServiceAccount
 metadata:
