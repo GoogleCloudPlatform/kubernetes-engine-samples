@@ -1,6 +1,6 @@
 # This GitHub Action workflow checks to ensure that all required source files
 # have the appropriate Apache 2.0 license header.
-name: Apache 2,0 License Header Check
+name: Apache 2.0 License Header Check
 
 on:
   push:
