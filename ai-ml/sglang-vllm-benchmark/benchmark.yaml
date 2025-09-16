@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - command: [ "/bin/sh", "-c", "sleep 36000" ]
-        image: docker.io/lmsysorg/sglang:v0.5.2-cu129-gb200
+        image: docker.io/lmsysorg/sglang:v0.5.2
         name: benchmark
         resources:
           limits:
@@ -38,5 +38,12 @@ spec:
           requests:
             cpu: '8'
             memory: 16Gi
+      tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Equal
+        value: present
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-h100-80gb
 
 

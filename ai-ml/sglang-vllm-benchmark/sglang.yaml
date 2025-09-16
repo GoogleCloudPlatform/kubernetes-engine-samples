@@ -32,7 +32,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: sglang
-        image: docker.io/lmsysorg/sglang:v0.5.2-cu129-gb200
+        image: docker.io/lmsysorg/sglang:v0.5.2
         imagePullPolicy: Always
         env:
         - name: AWS_ACCESS_KEY_ID
@@ -51,8 +51,9 @@ spec:
           value: "0"
         ports:
         - containerPort: 30000
-        command: ["python3", "-m", "sglang.launch_server"]
-        args: ["--model-path", "s3://epam-team-llama-3-70b/Llama-3.3-70B-Instruct", "--host", "0.0.0.0", "--port", "30000", "--tp", "2"]
+        command: [ "/bin/sh", "-c", "sleep 36000" ]
+          #command: ["python3", "-m", "sglang.launch_server"]
+          #args: ["--model-path", "s3://epam-team-llama-3-70b/Llama-3.3-70B-Instruct", "--load-format", "remote", "--host", "0.0.0.0", "--port", "30000", "--tp", "2", "--context-length",  "8192"]
         resources:
           limits:
             cpu: '40'
