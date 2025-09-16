@@ -30,7 +30,7 @@ spec:
       containers:
         #- command: [ "/bin/sh", "-c", "sleep 36000" ]
       - command: [ "/bin/sh", "-c" ]
-        args: [ "vllm serve s3://epam-team-llama-3-70b/Llama-3.3-70B-Instruct --load-format runai_streamer --max-model-len 8192 --gpu-memory-utilization=0.95 --served-model-name llama --tensor-parallel-size=2" ]
+        args: [ "vllm serve s3://epam-team-llama-3-70b/Llama-3.3-70B-Instruct --load-format runai_streamer --max-model-len 8192 --gpu-memory-utilization=0.95 --served-model-name unsloth/Llama-3.3-70B-Instruct --tensor-parallel-size=2" ]
         image: dganochenko/vllm:v0.10.2
         name: inference-server
         env:
