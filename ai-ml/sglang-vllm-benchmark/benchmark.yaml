@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - command: [ "/bin/sh", "-c", "sleep 36000" ]
-        image: docker.io/lmsysorg/sglang:v0.5.2
+        image: dganochenko/sglang:v0.5.2
         name: benchmark
         resources:
           limits:
