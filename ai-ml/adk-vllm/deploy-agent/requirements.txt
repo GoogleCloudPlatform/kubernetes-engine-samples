@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# @TODO: replace all placeholders
-# @TODO: file name should be <category>-<sample-title>-ci.yml
-# @TODO: see examples in the workflows/ directory for inspiration.)
-
 google_adk==1.2.1
 fastapi==0.115.0
 litellm==1.68.0

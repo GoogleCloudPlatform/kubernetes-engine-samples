@@ -11,7 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# @TODO: replace all placeholders
-# @TODO: file name should be <category>-<sample-title>-ci.yml
-# @TODO: see examples in the workflows/ directory for inspiration.)
