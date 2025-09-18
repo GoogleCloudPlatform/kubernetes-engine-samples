@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adk-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adk-agent
+  template:
+    metadata:
+      labels:
+        app: adk-agent
+    spec:
+      containers:
+      - name: adk-agent
+        imagePullPolicy: Always
+        image: us-central1-docker.pkg.dev/<PROJECT_ID>/adk-repo/adk-agent:latest
+        resources:
+          limits:
+            memory: "2048Mi"
+            cpu: "1000m"
+            ephemeral-storage: "2048Mi"
+          requests:
+            memory: "2048Mi"
+            cpu: "1000m"
+            ephemeral-storage: "2048Mi"
+        ports:
+        - containerPort: 8080
+        env:
+          - name: PORT
+            value: "8080"
+          - name: LLM_BASE_URL
+            value: http://vllm-llama3-service:8000/v1
+          - name: MODEL_NAME
+            value: hosted_vllm/meta-llama/Llama-3.1-8B-Instruct
+        readinessProbe:
+          httpGet:
+            path: /dev-ui/
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+          successThreshold: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adk-agent
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: adk-agent
