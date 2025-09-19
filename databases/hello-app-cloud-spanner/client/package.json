@@ -8,7 +8,7 @@
     "@fontsource/roboto": "^5.0.0",
     "@mui/material": "^5.11.13",
     "@mui/x-date-pickers": "^6.0.2",
-    "axios": "^1.11.0",
+    "axios": "^1.12.0",
     "dayjs": "^1.11.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
