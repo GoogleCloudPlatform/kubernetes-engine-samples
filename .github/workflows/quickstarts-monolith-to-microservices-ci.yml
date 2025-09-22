@@ -1,0 +1,35 @@
+name: quickstarts-monolith-to-microservices-ci
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/quickstarts-monolith-to-microservices-ci.yml'
+      - 'quickstarts/monolith-to-microservices/**'
+  pull_request:
+    paths:
+      - '.github/workflows/quickstarts-monolith-to-microservices-ci.yml'
+      - 'quickstarts/monolith-to-microservices/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build home-app container
+        run: |
+          docker build -t home-app quickstarts/monolith-to-microservices/containerized/home_app
+
+      - name: Build book-details-app container
+        run: |
+          docker build -t book-details-app quickstarts/monolith-to-microservices/containerized/book_details_app
+
+      - name: Build book-reviews-app container
+        run: |
+          docker build -t book-reviews-app quickstarts/monolith-to-microservices/containerized/book_reviews_app
+
+      - name: Build images-app container
+        run: |
+          docker build -t images-app quickstarts/monolith-to-microservices/containerized/images_app

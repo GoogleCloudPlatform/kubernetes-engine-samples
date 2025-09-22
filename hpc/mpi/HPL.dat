@@ -1,0 +1,32 @@
+HPLinpack benchmark input file
+Innovative Computing Laboratory, University of Tennessee
+HPL.out       output file name (if any)
+6             device out (6=stdout,7=stderr,file)
+1             # of problems sizes (N)
+569088        Ns (= 79% of total available memory)
+1             # of NBs
+456           NBs
+0             PMAP process mapping (0=Row-,1=Column-major)
+1             # of Grids, process grids (P x Q)
+24            Ps
+32            Qs
+16.0          threshold
+1             # of PFACTs, panel fact
+1             PFACT Values (0=left, 1=Crout, 2=Right)
+1             # of NBMINs, recursive stopping criteria
+4             NBMINs (>= 1)
+1             # of NDIVs, panels in recursion
+2             NDIVs
+1             # of RFACTS, recursive panel fact.
+1             RFACTs (0=left, 1=Crout, 2=Right)
+1             # of BCASTs, broadcast
+6             BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM,6=MKL BPUSH,7=AMD Hybrid Panel)
+1             # of DEPTHs, lookahead depth
+0             DEPTHs (>=0)
+2             SWAP (0=bin-exch,1=long,2=mix)
+64            swapping threshold
+0             L1 in (0=transposed,1=no-transposed) form
+0             U  in (0=transposed,1=no-transposed) form
+1             Equilibration (0=no,1=yes)
+8             memory alignment in double (> 0)
+##### This line (no. 32) is ignored (it serves as a separator). ######

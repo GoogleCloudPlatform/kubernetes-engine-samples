@@ -49,11 +49,10 @@ spec:
           value: "weaviate-grpc.weaviate" 
         - name: STREAMLIT_SERVER_PORT
           value: "80"
+        - name: VERTEX_AI_MODEL_NAME
+          value: "gemini-2.5-flash-preview-04-17"
         ports:
         - containerPort: 80
-        resources:
-          requests:
-            cpu: 200m
 ---
 apiVersion: v1
 kind: Service

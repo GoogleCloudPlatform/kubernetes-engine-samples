@@ -1,0 +1,27 @@
+modular/
+├── book_details.py
+├── book_reviews.py
+├── details_data
+│   ├── book-1.json
+│   ├── book-2.json
+│   └── book-3.json
+├── home.py
+├── images
+│   ├── fungi_frontier.jpg
+│   ├── melodic_mechanics.jpg
+│   └── zephyrs_timepiece.jpg
+├── images.py
+├── requirements.txt
+├── reviews_data
+│   ├── reviews-1.json
+│   ├── reviews-2.json
+│   └── reviews-3.json
+├── start_services.sh
+├── static
+│   ├── styles_for_details.css
+│   └── styles_for_home.css
+└── templates
+    ├── book_details.html
+    └── home.html
+
+6 directories, 19 files

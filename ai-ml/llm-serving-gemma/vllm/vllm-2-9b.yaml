@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: inference-server
-        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240930_0945_RC00
+        image: docker.io/vllm/vllm-openai:v0.10.0
         resources:
           requests:
             cpu: "4"
@@ -44,11 +44,13 @@ spec:
             memory: "30Gi"
             ephemeral-storage: "45Gi"
             nvidia.com/gpu: "2"
-        command: ["python3", "-m", "vllm.entrypoints.api_server"]
+        command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
         args:
         - --model=$(MODEL_ID)
         - --tensor-parallel-size=2
         env:
+        - name: LD_LIBRARY_PATH
+          value: ${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64
         - name: MODEL_ID
           value: google/gemma-2-9b
         - name: HUGGING_FACE_HUB_TOKEN

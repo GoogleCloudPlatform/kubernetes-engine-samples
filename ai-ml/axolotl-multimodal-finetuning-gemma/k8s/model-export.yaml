@@ -1,0 +1,51 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# model-export.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: model-export
+  namespace: axolotl-training
+  annotations:
+    gke-gcsfuse/volumes: "true"
+spec:
+  serviceAccountName: axolotl-training-sa
+  restartPolicy: Never
+  containers:
+  - name: export
+    image: google/cloud-sdk:latest
+    command:
+    - bash
+    - -c
+    - |
+      echo "Checking if exported model exists"
+      ls -la /outputs/gemma3-melanoma/exported_model || mkdir -p /outputs/gemma3-melanoma/exported_model
+      
+      echo "Copying tuned model to GCS bucket..."
+      gsutil -m cp -r /outputs/gemma3-melanoma/* gs://${GCS_BUCKET_NAME}/tuned-models/
+      
+      echo "Verifying files in GCS..."
+      gsutil ls -l gs://${GCS_BUCKET_NAME}/tuned-models/
+    env:
+    - name: GCS_BUCKET_NAME
+      value: "${GCS_BUCKET_NAME}"
+    volumeMounts:
+    - name: model-storage
+      mountPath: /outputs
+  volumes:
+  - name: model-storage
+    persistentVolumeClaim:
+      claimName: model-storage
+
