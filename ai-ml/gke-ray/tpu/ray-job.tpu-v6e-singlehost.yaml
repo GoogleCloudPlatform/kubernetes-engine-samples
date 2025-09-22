@@ -20,7 +20,7 @@ metadata:
 spec:
   entrypoint: python ai-ml/gke-ray/tpu/tpu_list_devices.py
   runtimeEnvYAML: |
-    working_dir: "https://github.com/ryanaoleary/kubernetes-engine-samples/archive/refs/heads/add-v6e-sample.zip"
+    working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/refs/heads/main.zip"
     pip:
       - jax[tpu]==0.4.33
       - -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
