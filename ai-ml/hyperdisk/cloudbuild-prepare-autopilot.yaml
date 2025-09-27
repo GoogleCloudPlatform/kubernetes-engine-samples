@@ -1,0 +1,70 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+# Build step where a Cloud Storage bucket to store the execution logs of gke-disk-image-builder is created
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: "/bin/bash"
+  args:
+    - "-c"
+    - |
+      gcloud storage buckets create gs://${_BUCKET_NAME} --location=${_REGION} --uniform-bucket-level-access
+
+# Build step where the repo with gke-disk-image-builder is cloned
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/GoogleCloudPlatform/ai-on-gke.git']
+
+# Build step where gke-disk-image-builder is run with required parameters
+- name: 'gcr.io/cloud-builders/go:1.21'
+  env: ['GOPATH=./ai-on-gke/tools/gke-disk-image-builder']
+  dir: './ai-on-gke/tools/gke-disk-image-builder'
+  args:
+    - 'run'
+    - './cli'
+    - --project-name=${_PROJECT_ID}
+    - --image-name=${_DISK_IMAGE}
+    - --zone=${_ZONE_A}
+    - --gcs-path=gs://${_BUCKET_NAME}
+    - --disk-size-gb=100
+    - --timeout=120m
+    - --container-image=${_CONTAINER_IMAGE}
+    - --image-pull-auth=ServiceAccountToken
+
+# Build step where the GKE cluster with GCS Fuse addon enabled is created
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: "/bin/bash"
+  args:
+    - "-c"
+    - |
+      gcloud container clusters create-auto ${_CLUSTER_NAME} \
+        --project=${_PROJECT_ID} \
+        --region=${_REGION} \
+        --release-channel=rapid
+
+# Build step enables GKE to create nodes with secondary boot disks using all disk images in the project
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+        gcloud container clusters get-credentials ${_CLUSTER_NAME} --region ${_REGION}
+        kubectl apply -f - << EOF
+        apiVersion: "node.gke.io/v1"
+        kind: GCPResourceAllowlist
+        metadata:
+          name: gke-secondary-boot-disk-allowlist
+        spec:
+          allowedResourcePatterns:
+          - "projects/${_PROJECT_ID}/global/images/.*"
+        EOF
