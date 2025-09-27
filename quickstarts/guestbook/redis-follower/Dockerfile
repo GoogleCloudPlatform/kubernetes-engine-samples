@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM redis:6.2.17
+FROM redis:6.2.19
 
 ADD run.sh /run.sh
 
