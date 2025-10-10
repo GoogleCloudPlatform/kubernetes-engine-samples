@@ -1,0 +1,163 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata: 
+  name: hpl-demo
+spec:
+  slotsPerWorker: 192 # number of cores used by worker pods
+  launcherCreationPolicy: WaitForWorkersReady # ensures workers are fully set up before mpi job is run on them
+  runPolicy:
+    cleanPodPolicy: Running
+  sshAuthMountPath: /root/.ssh # specify directory where ssh keys mounted
+  mpiImplementation: Intel # if not openMPI, need to specify the implementation
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1 # creates launcher (controller node) for the workers
+      template:
+        spec:
+          hostPID: true
+          hostIPC: true
+          dnsPolicy: ClusterFirstWithHostNet
+          tolerations:
+          - key: "node-type"
+            operator: "Equal"
+            value: "h4d"
+            effect: "NoSchedule"
+          volumes:
+          - name: shared-memory # mount shared memory (required for intelMPI)
+            emptyDir:
+              medium: Memory
+              sizeLimit: 683Gi
+          - name: mypvc
+            persistentVolumeClaim:
+              claimName: sharefilespvc
+          containers:
+          - image: $IMAGE # replace with your launcher image
+            imagePullPolicy: Always # makes sure to pull image any time there's a new version
+            name: mpi-launcher # prefix of launcher pod
+            volumeMounts:
+            - name: shared-memory # mount shared memory (needed by intelMPI)
+              mountPath: /dev/shm
+            - name: mypvc
+              mountPath: /mnt/h4d-filestore
+            command: ["bash", "-c"] # bash script for image
+            securityContext:
+              privileged: true
+            args:
+            - |
+              set -ex
+
+              # set environment variables
+              export OMP_NUM_THREADS=1
+              export FI_VERBS_INLINE_SIZE=39
+              #export FI_LOG_LEVEL=warn
+              export I_MPI_HYDRA_BRANCH_COUNT=0
+              #export I_MPI_DEBUG=6
+              export I_MPI_HYDRA_BOOTSTRAP=ssh
+              export I_MPI_FABRICS="shm:ofi"
+              
+              export FI_PROVIDER=$FI_PROVIDER
+              export I_MPI_OFI_PROVIDER=$FI_PROVIDER   
+
+              # set Intel MPI environment variables
+              source /opt/software/linux-broadwell/intel-oneapi-mpi-2021.13.1-*/setvars.sh   
+              
+              # run mpijob
+              cd /opt/software/linux-broadwell/hpl-2.3-*/bin && mpirun -n $(($NUM_WORKERS * 192)) -ppn 192 ./xhpl  >> /mnt/h4d-filestore/hpl.log
+              #mpirun -np 2 -ppn 1 IMB-MPI1 PingPong
+    Worker:
+      replicas: $NUM_WORKERS # number of workers (compute nodes) needed
+      template:
+        metadata:
+          labels:
+            unique-label: hpl-demo-worker
+          annotations:
+            # add networking for RDMA
+            networking.gke.io/default-interface: 'eth0'
+            # remove {"interfaceName":"eth1","network":"rdma-0"} if using TCP
+            networking.gke.io/interfaces: |
+              [
+                {"interfaceName":"eth0","network":"default"},
+                {"interfaceName":"eth1","network":"rdma-0"}
+              ]
+        spec:
+          # prevent multiple pods being scheduled on the same underlying GCE node
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: unique-label
+                    operator: In
+                    values:
+                    - hpl-demo-worker
+                topologyKey: "kubernetes.io/hostname"
+          tolerations:
+          - key: "node-type"
+            operator: "Equal"
+            value: "h4d"
+            effect: "NoSchedule"
+          volumes:
+          - name: shared-memory
+            emptyDir:
+              medium: Memory
+              sizeLimit: 683Gi
+          - name: mypvc
+            persistentVolumeClaim:
+              claimName: sharefilespvc
+          containers:
+          - image: $IMAGE # replace with worker pod user image
+            imagePullPolicy: Always
+            name: mpi-worker # prefix for worker pods
+            volumeMounts:
+            - name: shared-memory
+              mountPath: /dev/shm
+            - name: mypvc
+              mountPath: /mnt/h4d-filestore
+            securityContext:
+              privileged: true
+            command: ["bash", "-c"]
+            args: 
+            - |
+              # set environment variables
+              export OMP_NUM_THREADS=1
+              #export FI_LOG_LEVEL=Warn
+              export I_MPI_HYDRA_BRANCH_COUNT=0
+              #export I_MPI_DEBUG=6
+              export I_MPI_HYDRA_BOOTSTRAP=ssh
+              export I_MPI_FABRICS="shm:ofi"
+              
+              export FI_PROVIDER=$FI_PROVIDER
+              export I_MPI_OFI_PROVIDER=$FI_PROVIDER
+
+              # set Intel MPI environment variables
+              source /opt/software/linux-broadwell/intel-oneapi-mpi-2021.13.1-*/setvars.sh
+              
+              set -x
+              /usr/sbin/sshd -De -p 22 # setting for SSH daemon
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sharefilespvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 1Ti
