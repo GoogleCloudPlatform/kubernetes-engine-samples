@@ -1,0 +1,65 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: modify-mount
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: modify-mount
+  template:
+    metadata:
+      labels:
+        app: modify-mount
+    spec:
+      containers:
+      - name: modify-mount
+        image: busybox
+        command: ["/bin/sh"]
+        args:
+          - "-c"
+          - |
+            while true; do
+              cat << 'EOF' > /rootfs/bin/mount
+            #!/bin/bash
+            
+            echo "MOUNT_WRAPPER: starting rpcbind"
+            service rpcbind start
+            
+            RPCBIND_PID=$(pidof -s /sbin/rpcbind)
+            if [ -n "$RPCBIND_PID" ]; then
+              if [ "$(readlink /proc/$RPCBIND_PID/ns/pid)" != "$(readlink /proc/self/ns/pid)" ]; then
+                echo "Detected /sbin/rpcbind in a different namespace; starting it in the host namespace"
+                /sbin/rpcbind -w
+              fi
+            fi
+            
+            exec /bin/mount.orig "$@"
+            EOF
+              sleep 5
+            done
+        volumeMounts:
+        - name: mounter-root
+          mountPath: /rootfs
+          readOnly: false
+        securityContext:
+          privileged: true
+      volumes:
+      - name: mounter-root
+        hostPath:
+          path: /home/kubernetes/containerized_mounter/rootfs
+      terminationGracePeriodSeconds: 30
