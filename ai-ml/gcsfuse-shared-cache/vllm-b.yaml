@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-b
+  template:
+    metadata:
+      labels:
+        app: vllm-b
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: bucket-sa
+      containers:
+      - command: [ "/bin/sh", "-c" ]
+        args: [ "vllm serve /data/Llama-3.1-8B-Instruct --max-model-len 8192 --gpu-memory-utilization=0.95 --served-model-name unsloth/Llama-3.1-8B-Instruct" ]
+        image: us-central1-docker.pkg.dev/psch-joonix/vllm-runai/vllm-runai-gcs:v0.10.2-fix
+        name: inference-server
+        resources:
+          limits:
+            cpu: '4'
+            memory: 25Gi
+            nvidia.com/gpu: '1'
+          requests:
+            cpu: '4'
+            memory: 25Gi
+            nvidia.com/gpu: '1'
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /data
+          readOnly: true
+      tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Equal
+        value: present
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          readOnly: true
+          volumeAttributes:
+            bucketName: "epam-team-gpu-benchmark"
+            mountOptions: "implicit-dirs,file-cache:enable-parallel-downloads:true,file-cache:cache-file-for-range-read:false,file-cache:download-chunk-size-mb:32,file-cache:max-size-mb:-1,metadata-cache:stat-cache-max-size-mb:32,metadata-cache:ttl-secs:3600,metadata-cache:type-cache-max-size-mb:4" 
+              #- name: gke-gcsfuse-cache
+              # persistentVolumeClaim:
+              #claimName: local-raid-pvc       
+
+
