@@ -42,7 +42,7 @@ spec:
             
             RPCBIND_PID=$(pidof -s /sbin/rpcbind)
             if [ -n "$RPCBIND_PID" ]; then
-              if [ "$(readlink /proc/$RPCBIND_PID/ns/pid)" != "$(readlink /proc/self/ns/pid)" ]; then
+              if [ "$(readlink /proc/$RPCBIND_PID/ns/net)" != "$(readlink /proc/self/ns/net)" ]; then
                 echo "Detected /sbin/rpcbind in a different namespace; starting it in the host namespace"
                 /sbin/rpcbind -w
               fi
