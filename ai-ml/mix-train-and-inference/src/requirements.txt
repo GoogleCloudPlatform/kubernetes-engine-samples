@@ -8,6 +8,6 @@ peft==v0.13.2
 psutil==6.1.0
 pynvml==11.5.3
 thejsonlogger==0.0.3
-torch==2.7.1
+torch==2.8.0
 transformers==v4.46.1
 trl==v0.11.4
