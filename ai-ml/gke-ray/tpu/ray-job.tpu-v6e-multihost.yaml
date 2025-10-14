@@ -1,0 +1,88 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_tpu_ray_job_tpu_v6e_multihost]
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: v6e-16-job
+spec:
+  entrypoint: python ai-ml/gke-ray/tpu/tpu_list_devices.py
+  runtimeEnvYAML: |
+    working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/refs/heads/main.zip"
+    pip:
+      - jax[tpu]==0.4.33
+      - -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+  rayClusterSpec:
+    rayVersion: '2.43.0'
+    headGroupSpec:
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+          -   name: ray-head
+              image: rayproject/ray:2.43.0-py310
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+              resources:
+                limits:
+                  cpu: "8"
+                  memory: 40G
+                requests:
+                  cpu: "8"
+                  memory: 40G
+    workerGroupSpecs:
+      - replicas: 1
+        minReplicas: 1
+        maxReplicas: 1
+        numOfHosts: 4
+        groupName: tpu-group
+        rayStartParams: {}
+        template:
+          spec:
+            containers:
+              - name: ray-worker
+                image: rayproject/ray:2.43.0-py310
+                resources:
+                  limits:
+                    cpu: "24"
+                    google.com/tpu: "4"
+                    memory: 200G
+                  requests:
+                    cpu: "24"
+                    google.com/tpu: "4"
+                    memory: 200G
+                env:
+                - name: NODE_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.hostIP
+                - name: VBAR_CONTROL_SERVICE_URL
+                  value: $(NODE_IP):8353
+                - name: JAX_PLATFORMS
+                  value: tpu,cpu
+                - name: ENABLE_PJRT_COMPATIBILITY
+                  value: "true"
+                ports:
+                - containerPort: 8081
+                  name: mxla
+            nodeSelector:
+              cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+              cloud.google.com/gke-tpu-topology: 4x4
+# [END gke_ai_ml_gke_ray_tpu_ray_job_tpu_v6e_multihost]
