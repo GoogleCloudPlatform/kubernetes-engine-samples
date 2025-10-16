@@ -1,0 +1,22 @@
+transformationRules:
+- description: Change the StorageClass on PVCs from premium-rwo to balanced-storage
+  resourceFilter:
+    namespaces: ["namespace-a","namespace-b"]
+    groupKinds:
+    - resourceGroup: ""
+      resourceKind: PersistentVolumeClaim
+  fieldActions:
+  - op: REPLACE
+    path: "/spec/storageClassName"
+    value: "balanced-storage"
+- description: Change node type from n2-standard-4 to n4-standard-4
+  resourceFilter:
+    namespaces: ["namespace-a","namespace-b"]
+    jsonPath: ".metadata[?(@.name == 'existing-mysql')]"
+    groupKinds:
+    - resourceGroup: apps
+      resourceKind: Deployment
+  fieldActions:
+  - op: REPLACE
+    path: "/spec/template/spec/affinity/nodeAffinity/preferredDuringSchedulingIgnoredDuringExecution/0/preference/matchExpressions/0/values/0"
+    value: "n4-standard-4"
