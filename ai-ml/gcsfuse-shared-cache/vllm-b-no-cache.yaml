@@ -53,8 +53,4 @@ spec:
           volumeAttributes:
             bucketName: "epam-team-gpu-benchmark"
             mountOptions: "implicit-dirs,file-cache:enable-parallel-downloads:true,file-cache:cache-file-for-range-read:false,file-cache:download-chunk-size-mb:32,file-cache:max-size-mb:-1,metadata-cache:stat-cache-max-size-mb:32,metadata-cache:ttl-secs:3600,metadata-cache:type-cache-max-size-mb:4" 
-              #- name: gke-gcsfuse-cache
-              # persistentVolumeClaim:
-              #claimName: local-raid-pvc       
-
 
