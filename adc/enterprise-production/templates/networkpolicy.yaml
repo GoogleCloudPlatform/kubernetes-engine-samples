@@ -1,0 +1,23 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: {{ include "enterprise_app.networkPolicy.apiVersion" . }}
+kind: NetworkPolicy
+metadata:
+  name: {{ include "enterprise_app.fullname" . }}
+  labels:
+    {{- include "enterprise_app.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "enterprise_app.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+              app.kubernetes.io/instance: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+{{- end }}

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gemma.fullname" . }}
+  labels:
+    {{- include "gemma.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gemma.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "gemma.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - --model=$(MODEL_ID)
+        - --disable-log-requests
+        - --tensor-parallel-size={{ .Values.tensorParallelSize }}
+        - --max-num-seq=512
+        - --gpu-memory-utilization=0.95
+        - --num-scheduler-steps=8
+        - --max-model-len={{ .Values.maxModelLen }}
+        command:
+        - python3
+        - -m
+        - vllm.entrypoints.openai.api_server
+        env:
+        - name: MODEL_ID
+          value: {{ .Values.model.id }}
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: hf_api_token
+              name: {{ .Values.model.hfSecret }}
+        ports:
+        - containerPort: 8000
+          name: metrics
+        readinessProbe:
+          failureThreshold: 6000
+          httpGet:
+            path: /health
+            port: 8000
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: dshm

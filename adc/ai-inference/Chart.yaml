@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gemma
+description: A Helm chart for deploying the Gemma 2 27B model for inference
+type: application
+version: 0.1.0
+appVersion: "1.0"

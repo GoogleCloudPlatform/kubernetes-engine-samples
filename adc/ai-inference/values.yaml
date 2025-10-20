@@ -1,0 +1,43 @@
+# Default values for gemma chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  tag: v0.7.2
+  pullPolicy: IfNotPresent
+
+model:
+  id: google/gemma-7b-it
+  hfSecret: hf-secret
+
+resources:
+  limits:
+    nvidia.com/gpu: "1"
+  requests:
+    nvidia.com/gpu: "1"
+
+nodeSelector:
+  cloud.google.com/gke-accelerator: nvidia-l4
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+# -- Number of GPUs to distribute the model across
+tensorParallelSize: 1
+
+# -- Maximum sequence length for the model
+maxModelLen: 512
+
+service:
+  type: ClusterIP
+  port: 80
+
+pdb:
+  enabled: true
+  minAvailable: 1

@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "enterprise_app.fullname" . }}
+  labels:
+    {{- include "enterprise_app.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "enterprise_app.selectorLabels" . | nindent 6 }}
