@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm-b
+  name: vllm-b-no-cache
 spec:
   replicas: 1
   selector:
