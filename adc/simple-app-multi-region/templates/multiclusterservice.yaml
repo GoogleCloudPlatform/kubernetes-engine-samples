@@ -15,14 +15,14 @@
 apiVersion: networking.gke.io/v1
 kind: MultiClusterService
 metadata:
-  name: {{ include "multi-region-app.fullname" . }}
+  name: {{ include "multi_region_app.fullname" . }}
   labels:
-    {{- include "multi-region-app.labels" . | nindent 4 }}
+    {{- include "multi_region_app.labels" . | nindent 4 }}
 spec:
   template:
     spec:
       selector:
-        app: {{ include "multi-region-app.name" . }}
+        app: {{ include "multi_region_app.name" . }}
       ports:
         - name: http
           protocol: TCP

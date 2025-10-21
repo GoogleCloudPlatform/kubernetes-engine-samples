@@ -16,13 +16,13 @@
 apiVersion: networking.gke.io/v1
 kind: MultiClusterIngress
 metadata:
-  name: {{ include "multi-region-app.fullname" . }}
+  name: {{ include "multi_region_app.fullname" . }}
   labels:
-    {{- include "multi-region-app.labels" . | nindent 4 }}
+    {{- include "multi_region_app.labels" . | nindent 4 }}
 spec:
   template:
     spec:
       backend:
-        serviceName: {{ include "multi-region-app.fullname" . }}
+        serviceName: {{ include "multi_region_app.fullname" . }}
         servicePort: 8080
 {{- end }}
