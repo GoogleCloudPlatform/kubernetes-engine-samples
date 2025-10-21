@@ -17,6 +17,7 @@ name: adc-ci
   push:
     branches:
     - main
+    - jb-test
     paths:
     - .github/workflows/adc-ci.yml
     - adc/**
