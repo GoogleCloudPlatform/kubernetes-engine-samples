@@ -48,3 +48,9 @@ jobs:
       run: |
         helm lint adc/simple-app-single-region
         helm template adc/simple-app-single-region
+    - name: Lint and template adc/ai-inference
+      run: |
+        which helm
+        echo "PATH is: $PATH"
+        helm lint adc/ai-inference
+        helm template adc/ai-inference
