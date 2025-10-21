@@ -6,6 +6,7 @@
 * @GoogleCloudPlatform/cloud-samples-infra @yoshi-approver
 
 # Directory-specific owners
+/adc/ @GoogleCloudPlatform/cloud-samples-infra @yoshi-approver
 /ai-ml/ @alizaidis @moficodes @kenthua @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /batch/ @alizaidis @moficodes @kenthua @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /cost-optimization/gke-vpa-recommendations/ @aburhan @yoshi-approver @GoogleCloudPlatform/dee-platform-ops

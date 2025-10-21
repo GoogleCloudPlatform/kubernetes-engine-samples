@@ -1,0 +1,49 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: adc-ci
+"on":
+  push:
+    branches:
+    - main
+    paths:
+    - .github/workflows/adc-ci.yml
+    - adc/**
+  pull_request:
+    paths:
+    - .github/workflows/adc-ci.yml
+    - adc/**
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+    - name: Lint and template adc/ai-inference
+      run: |
+        helm lint adc/ai-inference
+        helm template adc/ai-inference
+    - name: Lint and template adc/enterprise-production
+      run: |
+        helm lint adc/enterprise-production
+        helm template adc/enterprise-production
+    - name: Lint and template adc/simple-app-multi-region
+      run: |
+        helm lint adc/simple-app-multi-region
+        helm template adc/simple-app-multi-region
+    - name: Lint and template adc/simple-app-single-region
+      run: |
+        helm lint adc/simple-app-single-region
+        helm template adc/simple-app-single-region
