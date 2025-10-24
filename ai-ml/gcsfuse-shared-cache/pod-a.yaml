@@ -1,11 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+<<<<<<< HEAD
 <<<<<<< HEAD:ai-ml/gcsfuse-shared-cache/vllm-b-no-cache.yaml
   name: vllm-b-no-cache
 =======
   name: pod-a
 >>>>>>> bb3f1029 (update the guide):ai-ml/gcsfuse-shared-cache/pod-a.yaml
+=======
+  name: pod-a
+>>>>>>> bb3f1029 (update the guide)
 spec:
   replicas: 1
   selector:
