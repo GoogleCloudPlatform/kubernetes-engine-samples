@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod-b
+  template:
+    metadata:
+      labels:
+        app: pod-b
+    spec:
+      containers:
+      - name: ubuntu
+        command: [ "/bin/sh", "-c" ]
+        args: [ "cd /data/; md5sum */* */*/* 2>/dev/null; sleep 3600s" ]
+        image: ubuntu:22.04
+        resources:
+          limits:
+            cpu: '2'
+            memory: 4Gi
+          requests:
+            cpu: '1'
+            memory: 4Gi
+        volumeMounts:
+        - name: gke-gcsfuse-cache
+          mountPath: /data
+          subPath: .volumes/gcs-fuse-csi-ephemeral/gcsfuse-file-cache
+          readOnly: true
+      nodeSelector:
+        cloud.google.com/gke-local-nvme-ssd: "true"
+        node.kubernetes.io/instance-type: "c4-standard-4-lssd"
+      volumes:
+      - name: gke-gcsfuse-cache
+        persistentVolumeClaim:
+          claimName: local-raid-pvc       
+
+

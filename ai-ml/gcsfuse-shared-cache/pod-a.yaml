@@ -1,51 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm-b
+<<<<<<< HEAD:ai-ml/gcsfuse-shared-cache/vllm-b-no-cache.yaml
+  name: vllm-b-no-cache
+=======
+  name: pod-a
+>>>>>>> bb3f1029 (update the guide):ai-ml/gcsfuse-shared-cache/pod-a.yaml
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vllm-b
+      app: pod-a
   template:
     metadata:
       labels:
-        app: vllm-b
+        app: pod-a
       annotations:
         gke-gcsfuse/volumes: "true"
     spec:
       serviceAccountName: bucket-sa
       containers:
-      - command: [ "/bin/sh", "-c" ]
-        args: [ "vllm serve /data/Llama-3.1-8B-Instruct --max-model-len 8192 --gpu-memory-utilization=0.95 --served-model-name unsloth/Llama-3.1-8B-Instruct" ]
-        image: us-central1-docker.pkg.dev/psch-joonix/vllm-runai/vllm-runai-gcs:v0.10.2-fix
-        name: inference-server
+      - name: ubuntu
+        command: [ "/bin/sh", "-c" ]
+        args: [ "cd /data/; md5sum * */* 2>/dev/null; sleep 3600s" ]
+        image: ubuntu:22.04
         resources:
           limits:
-            cpu: '4'
-            memory: 25Gi
-            nvidia.com/gpu: '1'
+            cpu: '2'
+            memory: 4Gi
           requests:
-            cpu: '4'
-            memory: 25Gi
-            nvidia.com/gpu: '1'
+            cpu: '1'
+            memory: 4Gi
         volumeMounts:
-        - mountPath: /dev/shm
-          name: dshm
         - name: gcs-fuse-csi-ephemeral
           mountPath: /data
           readOnly: true
-      tolerations:
-      - effect: NoSchedule
-        key: nvidia.com/gpu
-        operator: Equal
-        value: present
       nodeSelector:
-        cloud.google.com/gke-accelerator: nvidia-l4
+        cloud.google.com/gke-local-nvme-ssd: "true"
+        node.kubernetes.io/instance-type: "c4-standard-4-lssd"
       volumes:
-      - name: dshm
-        emptyDir:
-          medium: Memory
       - name: gcs-fuse-csi-ephemeral
         csi:
           driver: gcsfuse.csi.storage.gke.io

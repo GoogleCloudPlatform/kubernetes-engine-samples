@@ -15,14 +15,9 @@ spec:
       labels:
         name: gke-raid-disks
     spec:
-      tolerations:
-      - effect: NoSchedule
-        key: nvidia.com/gpu
-        operator: Equal
-        value: present
       nodeSelector:
         cloud.google.com/gke-local-nvme-ssd: "true"
-        cloud.google.com/gke-accelerator: "nvidia-l4"
+        node.kubernetes.io/instance-type: "c4-standard-4-lssd"
       hostPID: true
       containers:
       - name: startup-script

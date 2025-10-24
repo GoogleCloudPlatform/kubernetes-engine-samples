@@ -32,10 +32,10 @@ spec:
               operator: In
               values:
                 - "true"
-            - key: cloud.google.com/gke-accelerator
+            - key: node.kubernetes.io/instance-type
               operator: In
               values:
-                - "nvidia-l4"
+                - "c4-standard-4-lssd"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
