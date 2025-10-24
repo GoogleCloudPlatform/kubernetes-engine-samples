@@ -1,0 +1,103 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: maxtext-tpu-cluster
+spec:
+  headGroupSpec:
+    rayStartParams: {}
+    template:
+      metadata:
+        annotations:
+          gke-gcsfuse/volumes: "true"
+          gke-gcsfuse/cpu-limit: "0"
+          gke-gcsfuse/memory-limit: "0"
+          gke-gcsfuse/ephemeral-storage-limit: "0"
+      spec:
+        serviceAccountName: ${KSA_NAME}
+        containers:
+          - name: ray-head
+            image: ${DOCKER_IMAGE}
+            imagePullPolicy: IfNotPresent
+            ports:
+            - containerPort: 6379
+              name: gcs-server
+            - containerPort: 8265
+              name: dashboard
+            - containerPort: 10001
+              name: client
+            resources:
+              limits:
+                memory: "16Gi"
+              requests:
+                cpu: "8"
+                memory: "16Gi"
+            volumeMounts:
+            - name: gcs-fuse-csi-ephemeral
+              mountPath: /data
+            - name: dshm
+              mountPath: /dev/shm
+        volumes:
+        - name: gcs-fuse-cache
+          emptyDir:
+            medium: Memory
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: gcs-fuse-csi-ephemeral
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: ${GS_BUCKET}
+              mountOptions: "implicit-dirs"
+  workerGroupSpecs:
+    - replicas: 1
+      numOfHosts: 4
+      groupName: tpu-group
+      rayStartParams: {}
+      template:
+        metadata:
+          annotations:
+            gke-gcsfuse/volumes: "true"
+            gke-gcsfuse/cpu-limit: "0"
+            gke-gcsfuse/memory-limit: "0"
+            gke-gcsfuse/ephemeral-storage-limit: "0"
+        spec:
+          serviceAccountName: ${KSA_NAME}
+          containers:
+            - name: ray-worker
+              image: ${DOCKER_IMAGE}
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  memory: 200G
+                  google.com/tpu: "4"
+                requests:
+                  cpu: "8"
+                  memory: 200G
+                  google.com/tpu: "4"
+              env:
+                - name: JAX_PLATFORMS
+                  value: tpu
+                - name: ENABLE_PJRT_COMPATIBILITY
+                  value: "true"
+              volumeMounts:
+              - name: gcs-fuse-csi-ephemeral
+                mountPath: /data
+              - name: dshm
+                mountPath: /dev/shm
+          volumes:
+          - name: gcs-fuse-cache
+            emptyDir:
+              medium: Memory
+          - name: dshm
+            emptyDir:
+              medium: Memory
+          - name: gcs-fuse-csi-ephemeral
+            csi:
+              driver: gcsfuse.csi.storage.gke.io
+              volumeAttributes:
+                bucketName: ${GS_BUCKET}
+                mountOptions: "implicit-dirs"
+          nodeSelector:
+            cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+            cloud.google.com/gke-tpu-topology: 4x4
