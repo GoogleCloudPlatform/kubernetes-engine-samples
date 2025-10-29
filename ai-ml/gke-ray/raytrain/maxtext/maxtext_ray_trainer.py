@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_ai_ml_gke_ray_ray_train_maxtext_ray_trainer]
 import os
 from absl import app
 import logging
@@ -57,3 +58,4 @@ def main(argv: Sequence[str]):
 
 if __name__ == "__main__":
     app.run(main)
+# [END gke_ai_ml_gke_ray_ray_train_maxtext_ray_trainer]
