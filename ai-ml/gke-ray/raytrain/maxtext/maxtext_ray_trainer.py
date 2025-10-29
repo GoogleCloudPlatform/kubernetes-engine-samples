@@ -19,23 +19,17 @@ from typing import Sequence
 import ray
 from ray.train.v2.api.config import ScalingConfig, RunConfig
 from ray.train.v2.jax import JaxTrainer
-from MaxText.train import main as maxtext_main
 
 def train_loop_per_worker(config):
+    from MaxText.train import main as maxtext_main
+
     argv = config["argv"]
     maxtext_main(argv)
 
 def main(argv: Sequence[str]):
-    ray.init()
-    absolute_argv = list(argv)
-    for i, arg in enumerate(absolute_argv):
-        if arg.endswith(".yml"):
-            absolute_argv[i] = os.path.abspath(arg)
-            break
-
     trainer = JaxTrainer(
         train_loop_per_worker=train_loop_per_worker,
-        train_loop_config={"argv": absolute_argv},
+        train_loop_config={"argv": argv},
         scaling_config=ScalingConfig(
             use_tpu=True,
             num_workers=4,
