@@ -21,6 +21,8 @@ metadata:
   name: helloweb
   labels:
     app: hello
+  annotations:
+    networking.gke.io/load-balancer-ip-addresses: "helloweb-ip"
 spec:
   selector:
     app: hello
@@ -29,7 +31,6 @@ spec:
   - port: 80
     targetPort: 8080
   type: LoadBalancer
-  loadBalancerIP: "YOUR.IP.ADDRESS.HERE"
 # [END container_helloapp_service]
 # [END gke_manifests_helloweb_service_static_ip_service_helloweb]
 ---
