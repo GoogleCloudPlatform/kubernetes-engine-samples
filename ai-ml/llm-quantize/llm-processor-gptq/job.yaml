@@ -1,0 +1,39 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: quantize
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-h100-80gb
+      containers:
+      - name: llm-compressor
+        image: us-docker.pkg.dev/gke-aishared-dev/llm/llmcompressor-gptq:v0.0.6
+        command: ["python", "main.py"]
+        resources:
+          limits:
+            nvidia.com/gpu: "1"
+            cpu: "12"
+            memory: "80Gi"
+            ephemeral-storage: "80Gi"
+        env:
+        - name: LD_LIBRARY_PATH
+          value: ${LD_LIBRARY_PATH}:/usr/local/nvidia/lib64
+        - name: MODEL_ID
+          value: meta-llama/Meta-Llama-3-8B-Instruct
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret-quant
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+      volumes:
+      - name: dshm
+        emptyDir:
+            medium: Memory
+      restartPolicy: Never
