@@ -1,0 +1,243 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_networking_dpv2_observability_hubble_ui_132]
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hubble-ui
+  namespace: gke-managed-dpv2-observability
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: hubble-ui
+  labels:
+    app.kubernetes.io/part-of: cilium
+rules:
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - componentstatuses
+      - endpoints
+      - namespaces
+      - nodes
+      - pods
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - cilium.io
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: hubble-ui
+  labels:
+    app.kubernetes.io/part-of: cilium
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hubble-ui
+subjects:
+  - kind: ServiceAccount
+    name: hubble-ui
+    namespace: gke-managed-dpv2-observability
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hubble-ui-nginx
+  namespace: gke-managed-dpv2-observability
+data:
+  nginx.conf: |
+    server {
+        listen       8081;
+        # uncomment for IPv6
+        # listen       [::]:8081;
+        server_name  localhost;
+        root /app;
+        index index.html;
+        client_max_body_size 1G;
+        location / {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            # CORS
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, HEAD, DELETE, OPTIONS";
+            add_header Access-Control-Allow-Origin *;
+            add_header Access-Control-Max-Age 1728000;
+            add_header Access-Control-Expose-Headers content-length,grpc-status,grpc-message;
+            add_header Access-Control-Allow-Headers range,keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout;
+            if ($request_method = OPTIONS) {
+                return 204;
+            }
+            # /CORS
+            location /api {
+                proxy_http_version 1.1;
+                proxy_pass_request_headers on;
+                proxy_hide_header Access-Control-Allow-Origin;
+                proxy_pass http://127.0.0.1:8090;
+            }
+            location / {
+                # double `/index.html` is required here
+                try_files $uri $uri/ /index.html /index.html;
+            }
+        }
+    }
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: hubble-ui
+  namespace: gke-managed-dpv2-observability
+  labels:
+    k8s-app: hubble-ui
+    app.kubernetes.io/name: hubble-ui
+    app.kubernetes.io/part-of: cilium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: hubble-ui
+  template:
+    metadata:
+      labels:
+        k8s-app: hubble-ui
+        app.kubernetes.io/name: hubble-ui
+        app.kubernetes.io/part-of: cilium
+    spec:
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: hubble-ui
+      serviceAccountName: hubble-ui
+      containers:
+        - name: frontend
+          image: quay.io/cilium/hubble-ui:v0.13.2
+          ports:
+            - name: http
+              containerPort: 8081
+          volumeMounts:
+            - name: hubble-ui-nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: nginx.conf
+            - name: tmp-dir
+              mountPath: /tmp
+          terminationMessagePolicy: FallbackToLogsOnError
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop:
+                - all
+        - name: backend
+          image: quay.io/cilium/hubble-ui-backend:v0.13.2
+          env:
+            - name: EVENTS_SERVER_PORT
+              value: "8090"
+            - name: FLOWS_API_ADDR
+              value: "hubble-relay.gke-managed-dpv2-observability.svc:443"
+            - name: TLS_TO_RELAY_ENABLED
+              value: "true"
+            - name: TLS_RELAY_SERVER_NAME
+              value: relay.gke-managed-dpv2-observability.svc.cluster.local
+            - name: TLS_RELAY_CA_CERT_FILES
+              value: /var/lib/hubble-ui/certs/hubble-relay-ca.crt
+            - name: TLS_RELAY_CLIENT_CERT_FILE
+              value: /var/lib/hubble-ui/certs/client.crt
+            - name: TLS_RELAY_CLIENT_KEY_FILE
+              value: /var/lib/hubble-ui/certs/client.key
+          ports:
+            - name: grpc
+              containerPort: 8090
+          volumeMounts:
+            - name: hubble-ui-client-certs
+              mountPath: /var/lib/hubble-ui/certs
+              readOnly: true
+          terminationMessagePolicy: FallbackToLogsOnError
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop:
+                - all
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: hubble-ui-nginx
+          name: hubble-ui-nginx-conf
+        - emptyDir: {}
+          name: tmp-dir
+        - name: hubble-ui-client-certs
+          projected:
+            # note: the leading zero means this number is in octal representation: do not remove it
+            defaultMode: 0400
+            sources:
+              - secret:
+                  name: hubble-relay-client-certs
+                  items:
+                    - key: ca.crt
+                      path: hubble-relay-ca.crt
+                    - key: tls.crt
+                      path: client.crt
+                    - key: tls.key
+                      path: client.key
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hubble-ui
+  namespace: gke-managed-dpv2-observability
+  labels:
+    k8s-app: hubble-ui
+    app.kubernetes.io/name: hubble-ui
+    app.kubernetes.io/part-of: cilium
+spec:
+  type: ClusterIP
+  selector:
+    k8s-app: hubble-ui
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8081
+# [END gke_networking_dpv2_observability_hubble_ui_132]
