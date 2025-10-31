@@ -35,4 +35,4 @@ transformationRules:
   - op: REPLACE
     path: "/spec/template/spec/affinity/nodeAffinity/preferredDuringSchedulingIgnoredDuringExecution/0/preference/matchExpressions/0/values/0"
     value: "n4-standard-4"
-# [START gke_databases_backup_migration_03_transformation_rules]
+# [END gke_databases_backup_migration_03_transformation_rules]
