@@ -15,15 +15,15 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
-  name: restrict-ccc-toleration
+  name: restrict-toleration
 spec:
   failurePolicy: Fail
   paramKind:
     apiVersion: v1
     kind: ConfigMap
   matchConstraints:
-    # GKE will mutate any pod specifying a CCC label in a nodeSelector
-    # or in a nodeAffinity with a toleration for the CCC node label.
+    # GKE will mutate any pod specifying a CC label in a nodeSelector
+    # or in a nodeAffinity with a toleration for the CC node label.
     # Mutation hooks will always mutate the K8s object before validating
     # the admission request.  
     # Pods created by Jobs, CronJobs, Deployments, etc. will also be validated.
@@ -50,9 +50,9 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
 metadata:
-  name: restrict-ccc-toleration-binding
+  name: restrict-toleration-binding
 spec:
-  policyName: restrict-ccc-toleration
+  policyName: restrict-toleration
   validationActions: ["Deny"]
   paramRef:
     name: allowed-ccc-namespaces
@@ -70,8 +70,9 @@ data:
     foo
     bar
     baz
-  # Compute classes to monitor with this validation policy.
-  # The 'autopilot' and 'autopilot-spot' CCs are present on all NAP Standard clusters.
+  # ComputeClass names to monitor with this validation policy.
+  # The 'autopilot' and 'autopilot-spot' CCs are present on
+  # all NAP Standard and Autopilot clusters.
   computeClasses: |
     MY_COMPUTE_CLASS
     autopilot
