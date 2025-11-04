@@ -35,8 +35,12 @@ spec:
       resources:   ["pods"]
   matchConditions:
     - name: 'match-tolerations'
-      # Validate only if compute class toleration exists.
-      expression: "object.spec.tolerations.exists(t, has(t.key) && t.key == 'cloud.google.com/compute-class' && params.data.computeClasses.split('\\n').exists(cc, cc == t.value)')"
+      # Validate only if compute class toleration exists
+      # and the CC label tolerated is listed in the configmap.
+      expression: > 
+        object.spec.tolerations.exists(t, has(t.key) &&
+        t.key == 'cloud.google.com/compute-class' &&
+        params.data.computeClasses.split('\\n').exists(cc, cc == t.value))
   validations:
     # ConfigMap with permitted namespace list referenced via `params`.
     - expression: "params.data.namespaces.split('\\n').exists(ns, ns == object.metadata.namespace)"
