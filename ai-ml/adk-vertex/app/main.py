@@ -34,6 +34,7 @@ app: FastAPI = get_fast_api_app(
     session_service_uri=SESSION_SERVICE_URI,
     allow_origins=ALLOWED_ORIGINS,
     web=SERVE_WEB_INTERFACE,
+    otel_to_cloud=True,
 )
 
 # You can add more FastAPI routes or configurations below if needed
