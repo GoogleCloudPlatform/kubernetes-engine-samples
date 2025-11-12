@@ -3,10 +3,10 @@ module custom-metric-extporter
 go 1.23.0
 
 require (
-	cloud.google.com/go/compute/metadata v0.3.0
-	cloud.google.com/go/monitoring v1.19.0
+	cloud.google.com/go/compute/metadata v0.9.0
+	cloud.google.com/go/monitoring v1.24.3
 	google.golang.org/genproto/googleapis/api v0.0.0-20240617180043-68d350f18fd4
-	google.golang.org/protobuf v1.34.2
+	google.golang.org/protobuf v1.36.10
 )
 
 require (
