@@ -3,7 +3,7 @@ module wi-secrets
 go 1.23.0
 
 require (
-	cloud.google.com/go/secretmanager v1.13.1
+	cloud.google.com/go/secretmanager v1.16.0
 	google.golang.org/genproto v0.0.0-20240617180043-68d350f18fd4
 )
 
