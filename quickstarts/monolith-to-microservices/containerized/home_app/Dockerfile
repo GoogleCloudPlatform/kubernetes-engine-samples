@@ -1,5 +1,5 @@
 # Dockerfile for home_app
-FROM python:3.13-alpine
+FROM python:3.14-alpine
 
 WORKDIR /app
 
