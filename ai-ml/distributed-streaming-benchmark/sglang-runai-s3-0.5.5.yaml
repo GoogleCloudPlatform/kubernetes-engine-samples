@@ -16,24 +16,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm
+  name: sglang
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: vllm
+      app: sglang
   template:
     metadata:
       labels:
-        app: vllm
+        app: sglang
     spec:
-      serviceAccountName: bucket-sa
+      restartPolicy: Always
       containers:
-        #- command: [ "/bin/sh", "-c", "sleep 36000" ]
-      - command: [ "/bin/sh", "-c" ]
-        args: [ "vllm serve gs://epam-team-llama-3-70b/Llama-3.3-70B-Instruct --load-format runai_streamer --max-model-len 8192 --max-num-seqs 2 --gpu-memory-utilization=0.95 --served-model-name unsloth/Llama-3.3-70B-Instruct --tensor-parallel-size=8" ]
-        image: vllm/vllm-openai:nightly
-        name: inference-server
+      - name: sglang
+        image: dganochenko/sglang:v0.5.5
+        imagePullPolicy: Always
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: ""
+        - name: AWS_SECRET_ACCESS_KEY
+          value: ""
+        ports:
+        - containerPort: 30000
+        command: ["python3", "-m", "sglang.launch_server"]
+        args: ["--model-path", "gs://epam-team-llama-3-70b/Llama-3.3-70B-Instruct", "--served-model-name", "unsloth/Llama-3.3-70B-Instruct", "--load-format", "remote", "--host", "0.0.0.0", "--port", "30000", "--tp-size", "8", "--context-length",  "8192"]
         resources:
           limits:
             nvidia.com/gpu: '8'
@@ -53,16 +62,5 @@ spec:
       - name: dshm
         emptyDir:
           medium: Memory
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm-endpoint
-spec:
-  selector:
-    app: vllm
-  type: ClusterIP
-  ports:
-    - protocol: TCP
-      port: 8000
-      targetPort: 8000
+
+
