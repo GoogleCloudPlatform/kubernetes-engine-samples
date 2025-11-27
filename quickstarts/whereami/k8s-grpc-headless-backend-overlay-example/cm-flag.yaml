@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_k8s_grpc_backend_overlay_example_service_type_service_whereami_grpc]
+# [START gke_k8s_grpc_headless_backend_overlay_example_cm_flag_configmap_whereami_grpc_configmap]
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
   name: whereami-grpc
-spec:
-  type: ClusterIP
-# [END gke_k8s_grpc_backend_overlay_example_service_type_service_whereami_grpc]
+data:
+  BACKEND_ENABLED: "False"
+  # when defining the BACKEND_SERVICE using an HTTP protocol, indicate HTTP or HTTPS; if using gRPC, use the host name only
+  BACKEND_SERVICE: "whereami-grpc-backend:9090" # substitute with corresponding service name - this example assumes both services are in the same namespace; make sure to include the port
+  METADATA: "grpc-backend"
+  GRPC_ENABLED: "True"
+# [END gke_k8s_grpc_headless_backend_overlay_example_cm_flag_configmap_whereami_grpc_configmap]
 ---
