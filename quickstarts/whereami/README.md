@@ -432,7 +432,7 @@ deployment.apps/whereami-grpc-backend created
 
 This backend will listen for gRPC requests from the frontend service deployed in the following step.
 
-> Note: use the headless service example for more efficient gRPC load balancing if you're not using something like a service mesh
+> Note: use the [headless service example](k8s-grpc-headless-backend-overlay-example) for more efficient gRPC load balancing if you're not using something like a service mesh
 
 #### Step 2 - Deploy the whereami-grpc frontend
 
