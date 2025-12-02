@@ -10,5 +10,5 @@ Flask==2.3.3
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==2.1.5
-Werkzeug==3.0.6
+Werkzeug==3.1.4
 kubernetes==28.1.0
