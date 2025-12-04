@@ -37,8 +37,6 @@ spec:
               containerPort: 8080
               protocol: TCP
           resources:
-            requests:
-              memory: "128Mi"
             limits:
               memory: "128Mi"
             {{- toYaml .Values.resources | nindent 12 }}
