@@ -1,5 +1,4 @@
-
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_k8s_grpc_backend_overlay_example_service_type_service_whereami_grpc]
-apiVersion: v1
-kind: Service
-metadata:
-  name: whereami-grpc
-spec:
-  type: ClusterIP
-# [END gke_k8s_grpc_backend_overlay_example_service_type_service_whereami_grpc]
----
+# [START gke_k8s_grpc_clusterip_backend_overlay_example_kustomization]
+nameSuffix: "-backend"
+labels:
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    app: whereami-grpc-backend
+resources:
+- ../k8s-grpc
+patches:
+- path: cm-flag.yaml
+  target:
+    kind: ConfigMap
+- path: service-type.yaml
+  target:
+    kind: Service
+# [END gke_k8s_grpc_clusterip_backend_overlay_example_kustomization]
