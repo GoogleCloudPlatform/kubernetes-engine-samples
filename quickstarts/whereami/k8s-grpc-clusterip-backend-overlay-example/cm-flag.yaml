@@ -1,5 +1,4 @@
-
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_k8s_grpc_backend_overlay_example_cm_flag_configmap_whereami_grpc_configmap]
+# [START gke_k8s_grpc_clusterip_backend_overlay_example_cm_flag_configmap_whereami_grpc_configmap]
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,5 +23,5 @@ data:
   BACKEND_SERVICE: "whereami-grpc-backend:9090" # substitute with corresponding service name - this example assumes both services are in the same namespace; make sure to include the port
   METADATA: "grpc-backend"
   GRPC_ENABLED: "True"
-# [END gke_k8s_grpc_backend_overlay_example_cm_flag_configmap_whereami_grpc_configmap]
+# [END gke_k8s_grpc_clusterip_backend_overlay_example_cm_flag_configmap_whereami_grpc_configmap]
 ---

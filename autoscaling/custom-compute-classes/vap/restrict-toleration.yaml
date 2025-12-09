@@ -1,0 +1,80 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-toleration
+spec:
+  failurePolicy: Fail
+  paramKind:
+    apiVersion: v1
+    kind: ConfigMap
+  matchConstraints:
+    # GKE will mutate any pod specifying a CC label in a nodeSelector
+    # or in a nodeAffinity with a toleration for the CC node label.
+    # Mutation hooks will always mutate the K8s object before validating
+    # the admission request.  
+    # Pods created by Jobs, CronJobs, Deployments, etc. will also be validated.
+    # See https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#admission-control-phases for details
+    resourceRules:
+    - apiGroups:   [""]
+      apiVersions: ["v1"]
+      operations:  ["CREATE", "UPDATE"]
+      resources:   ["pods"]
+  matchConditions:
+    - name: 'match-tolerations'
+      # Validate only if compute class toleration exists
+      # and the CC label tolerated is listed in the configmap.
+      expression: > 
+        object.spec.tolerations.exists(t, has(t.key) &&
+        t.key == 'cloud.google.com/compute-class' &&
+        params.data.computeClasses.split('\\n').exists(cc, cc == t.value))
+  validations:
+    # ConfigMap with permitted namespace list referenced via `params`.
+    - expression: "params.data.namespaces.split('\\n').exists(ns, ns == object.metadata.namespace)"
+      messageExpression: "'Compute class toleration not permitted on workloads in namespace ' + object.metadata.namespace"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-toleration-binding
+spec:
+  policyName: restrict-toleration
+  validationActions: ["Deny"]
+  paramRef:
+    name: allowed-ccc-namespaces
+    namespace: default
+    parameterNotFoundAction: Deny
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: allowed-ccc-namespaces
+  namespace: default
+data:
+  # Replace example namespaces in line-separated list below.
+  namespaces: |
+    foo
+    bar
+    baz
+  # ComputeClass names to monitor with this validation policy.
+  # The 'autopilot' and 'autopilot-spot' CCs are present on
+  # all NAP Standard and Autopilot clusters.
+  computeClasses: |
+    MY_COMPUTE_CLASS
+    autopilot
+    autopilot-spot
+

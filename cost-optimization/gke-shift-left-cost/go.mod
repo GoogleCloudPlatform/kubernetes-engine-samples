@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.5.2
 	github.com/leekchan/accounting v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.8.3
 	google.golang.org/api v0.35.0
 	google.golang.org/genproto v0.0.0-20201109203340-2640f1f9cdfb
 	gopkg.in/yaml.v2 v2.2.8

@@ -420,10 +420,10 @@ If gRPC is enabled for a given pod, that `whereami` pod will not respond to HTTP
 
 #### Step 1 - Deploy the whereami-grpc backend
 
-Deploy the `whereami-grpc` backend using the manifests from [k8s-grpc-backend-overlay-example](k8s-grpc-backend-overlay-example):
+Deploy the `whereami-grpc` backend using the manifests from [k8s-grpc-clusterip-backend-overlay-example](k8s-grpc-clusterip-backend-overlay-example):
 
 ```bash
-$ kubectl apply -k k8s-grpc-backend-overlay-example
+$ kubectl apply -k k8s-grpc-clusterip-backend-overlay-example
 serviceaccount/whereami-grpc-backend created
 configmap/whereami-grpc-backend created
 service/whereami-grpc-backend created
@@ -431,6 +431,8 @@ deployment.apps/whereami-grpc-backend created
 ```
 
 This backend will listen for gRPC requests from the frontend service deployed in the following step.
+
+> Note: use the [headless service example](k8s-grpc-headless-backend-overlay-example) for more efficient gRPC load balancing if you're not using something like a service mesh
 
 #### Step 2 - Deploy the whereami-grpc frontend
 

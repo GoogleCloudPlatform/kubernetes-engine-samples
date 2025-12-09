@@ -1,0 +1,49 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-wildcard-toleration
+spec:
+  failurePolicy: Fail
+  variables:
+    # This variable identifies tolerations that could match any taint key or any existing taint.
+    - name: hasWildcardToleration
+      expression: >-
+        has(object.spec.tolerations) &&
+        object.spec.tolerations.exists(t,
+          (t.operator == 'Exists' && !(has(t.key) && t.key != ''))
+        )
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: "!variables.hasWildcardToleration"
+      message: "Pods in this namespace cannot use wildcard tolerations."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-wildcard-toleration-binding
+spec:
+  policyName: restrict-wildcard-toleration
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: FORBIDDEN_NAMESPACE
