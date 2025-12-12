@@ -27,7 +27,7 @@ requests==2.32.4
 rsa==4.9
 six==1.16.0
 tzdata==2024.2
-urllib3==2.5.0
+urllib3==2.6.0
 aiohttp>=3.8.0
 asyncio==3.4.3
 google_cloud_bigquery==3.29.0

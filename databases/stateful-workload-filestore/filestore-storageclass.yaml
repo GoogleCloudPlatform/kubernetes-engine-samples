@@ -18,7 +18,7 @@ kind: StorageClass
 metadata:
   name: filestore-sc
 provisioner: filestore.csi.storage.gke.io
-volumeBindingMode: Immediate
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
   tier: standard
