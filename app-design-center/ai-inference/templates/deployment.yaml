@@ -42,19 +42,53 @@ spec:
         - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
+        command:
+        - "/bin/bash"
+        - "-c"
+        - |
+          set -e
+          echo "Starting Ollama server in background..."
+          /bin/ollama serve &
+          OLLAMA_PID=$!
+          
+          MAX_RETRIES=50
+          RETRY_INTERVAL=2
+          retries=0
+          
+          echo "Waiting for Ollama to be ready on port 8000..."
+          until [[ "$retries" -ge "$MAX_RETRIES" ]] || curl -s --fail http://localhost:8000; do
+            echo "Attempt $retries: Waiting for Ollama to be ready..."
+            sleep "$RETRY_INTERVAL"
+            retries=$((retries + 1))
+          done
+          
+          if [[ "$retries" -ge "$MAX_RETRIES" ]]; then
+            echo "Ollama did not become ready within the timeout period. Exiting."
+            exit 1
+          fi
+          
+          echo "Ollama is ready."
+          # echo "Starting app server in foreground..."
+          # /app/server &
+          # APP_PID=$!
+          
+          # wait -n $OLLAMA_PID $APP_PID
+          trap "echo 'Caught SIGTERM, shutting down...'; kill $OLLAMA_PID; wait $OLLAMA_PID" SIGTERM SIGINT
+          wait $OLLAMA_PID
+
         volumeMounts:
         - name: dshm
           mountPath: /dev/shm
         readinessProbe:
           httpGet:
-            path: /health
+            path: /
             port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 20
         livenessProbe:
           httpGet:
-            path: /health
+            path: /
             port: 8000
           initialDelaySeconds: 60
           periodSeconds: 15
