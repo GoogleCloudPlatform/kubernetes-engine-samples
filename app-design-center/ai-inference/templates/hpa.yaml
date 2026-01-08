@@ -12,26 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{{- if .Values.hpa.enabled }}
+{{- if .Values.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "gemma.fullname" . }}
+  name: {{ include "gemma-inference.fullname" . }}
   labels:
-    {{- include "gemma.labels" . | nindent 4 }}
+    {{- include "gemma-inference.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "gemma.fullname" . }}
-  minReplicas: {{ .Values.hpa.minReplicas }}
-  maxReplicas: {{ .Values.hpa.maxReplicas }}
+    name: {{ include "gemma-inference.fullname" . }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
-  - pods:
-      metric:
-        name: prometheus.googleapis.com|vllm:gpu_cache_usage_perc|gauge
+  - type: ContainerResource
+    containerResource:
+      name: nvidia.com/gpu
+      container: inference-server
       target:
-        averageValue: 504m
-        type: AverageValue
-    type: Pods
+        type: Utilization
+        averageUtilization: {{ .Values.autoscaling.targetGPUUtilization }}
 {{- end }}

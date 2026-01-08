@@ -15,60 +15,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "gemma.fullname" . }}
+  name: {{ include "gemma-inference.fullname" . }}
   labels:
-    {{- include "gemma.labels" . | nindent 4 }}
+    {{- include "gemma-inference.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "gemma.selectorLabels" . | nindent 6 }}
+      {{- include "gemma-inference.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "gemma.selectorLabels" . | nindent 8 }}
+        {{- include "gemma-inference.selectorLabels" . | nindent 8 }}
+        app: gemma-server
     spec:
       containers:
-      - name: {{ .Chart.Name }}
+      - name: inference-server
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        args:
-        - --model=$(MODEL_ID)
-        - --disable-log-requests
-        - --tensor-parallel-size={{ .Values.tensorParallelSize }}
-        - --max-num-seq=512
-        - --gpu-memory-utilization=0.95
-        - --num-scheduler-steps=8
-        - --max-model-len={{ .Values.maxModelLen }}
-        command:
-        - python3
-        - -m
-        - vllm.entrypoints.openai.api_server
-        env:
-        - name: MODEL_ID
-          value: {{ .Values.model.id }}
-        - name: HUGGING_FACE_HUB_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: hf_api_token
-              name: {{ .Values.model.hfSecret }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
         ports:
         - containerPort: 8000
-          name: metrics
+        env:
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        volumeMounts:
+        - name: dshm
+          mountPath: /dev/shm
         readinessProbe:
-          failureThreshold: 6000
           httpGet:
             path: /health
             port: 8000
+          initialDelaySeconds: 30
           periodSeconds: 10
-        resources:
-          {{- toYaml .Values.resources | nindent 12 }}
-        volumeMounts:
-        - mountPath: /dev/shm
-          name: dshm
+          failureThreshold: 20
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 15
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
-      volumes:
-      - emptyDir:
-          medium: Memory
-        name: dshm
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
