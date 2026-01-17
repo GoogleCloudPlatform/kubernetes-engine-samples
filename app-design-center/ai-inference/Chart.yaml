@@ -14,7 +14,7 @@
 
 apiVersion: v2
 name: gemma
-description: A Helm chart for deploying the Gemma 2 27B model for inference
+description: A Helm chart for deploying Gemma inference on GKE
 type: application
-version: 0.1.0
-appVersion: "1.0"
+version: 0.2.1
+appVersion: "1.0.0"
