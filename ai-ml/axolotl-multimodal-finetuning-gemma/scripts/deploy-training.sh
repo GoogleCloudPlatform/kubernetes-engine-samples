@@ -92,7 +92,7 @@ done
 
 # Check if data exists in GCS
 print_status "Checking if training data exists in GCS..."
-if gsutil ls gs://${GCS_BUCKET_NAME}/axolotl-data/siim_isic_train.jsonl &>/dev/null; then
+if gcloud storage ls gs://${GCS_BUCKET_NAME}/axolotl-data/siim_isic_train.jsonl &>/dev/null; then
     print_status "Training data found in GCS"
 else
     print_warning "Training data not found at gs://${GCS_BUCKET_NAME}/axolotl-data/siim_isic_train.jsonl"
@@ -220,4 +220,3 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 print_status "Deployment complete!"
-

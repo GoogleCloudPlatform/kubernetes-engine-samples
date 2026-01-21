@@ -34,10 +34,10 @@ spec:
       ls -la /outputs/gemma3-melanoma/exported_model || mkdir -p /outputs/gemma3-melanoma/exported_model
       
       echo "Copying tuned model to GCS bucket..."
-      gsutil -m cp -r /outputs/gemma3-melanoma/* gs://${GCS_BUCKET_NAME}/tuned-models/
+      gcloud storage cp --recursive /outputs/gemma3-melanoma/* gs://${GCS_BUCKET_NAME}/tuned-models/
       
       echo "Verifying files in GCS..."
-      gsutil ls -l gs://${GCS_BUCKET_NAME}/tuned-models/
+      gcloud storage ls --long gs://${GCS_BUCKET_NAME}/tuned-models/
     env:
     - name: GCS_BUCKET_NAME
       value: "${GCS_BUCKET_NAME}"
@@ -48,4 +48,3 @@ spec:
   - name: model-storage
     persistentVolumeClaim:
       claimName: model-storage
-

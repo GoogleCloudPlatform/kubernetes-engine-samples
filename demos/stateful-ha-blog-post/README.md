@@ -51,7 +51,7 @@ VERSION=0.1.5
 REPO="gke-release"
 mkdir /tmp/ha-operator
 cd /tmp/ha-operator
-gsutil cp gs://$REPO/ha-controller/$VERSION/ha-controller-helm.tar.gz .
+gcloud storage cp gs://$REPO/ha-controller/$VERSION/ha-controller-helm.tar.gz .
 tar xvf ha-controller-helm.tar.gz
 helm upgrade -i ha-operator helm-chart \
   --namespace ha-operator \
@@ -136,7 +136,7 @@ VERSION=0.1.5
 REPO="gke-release"
 mkdir /tmp/ha-operator
 cd /tmp/ha-operator
-gsutil cp gs://$REPO/ha-controller/$VERSION/ha-controller-helm.tar.gz .
+gcloud storage cp gs://$REPO/ha-controller/$VERSION/ha-controller-helm.tar.gz .
 tar xvf ha-controller-helm.tar.gz
 helm upgrade -i ha-operator helm-chart \
   --namespace ha-operator \
