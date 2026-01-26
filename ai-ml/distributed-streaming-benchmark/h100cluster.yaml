@@ -1,0 +1,40 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: p5-gpu-cluster
+  # p5.48xlarge instances are available in limited regions.
+  # Verify availability in your desired region, e.g., us-east-1 or us-west-2.
+  region: ap-northeast-1
+  version: "1.29"
+
+iam:
+  serviceRolePermissionsBoundary: "arn:aws:iam::571600867902:policy/eo_role_boundary"
+
+managedNodeGroups:
+  - name: common-workers
+    instanceType: m5.large
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    amiFamily: AmazonLinux2
+    labels: { role: "common" }
+    tags:
+      nodegroup-type: "common-workers"
+    iam:
+      instanceRolePermissionsBoundary: "arn:aws:iam::571600867902:policy/eo_role_boundary"
+
+  - name: p5-gpu-workers
+    # WARNING: p5.48xlarge instances are very expensive.
+    # Please check AWS pricing before creating this nodegroup.
+    instanceType: p5.48xlarge
+    desiredCapacity: 1
+    minSize: 1
+    maxSize: 2
+    # Use a GPU-optimized AMI family.
+    amiFamily: Bottlerocket
+    labels: { role: "gpu" }
+    tags:
+      nodegroup-type: "p5-gpu-workers"
+    iam:
+      instanceRolePermissionsBoundary: "arn:aws:iam::571600867902:policy/eo_role_boundary"
