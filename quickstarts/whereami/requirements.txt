@@ -1,6 +1,6 @@
 flask
 requests
-emoji==2.14.1
+emoji==2.15.0
 flask-cors
 grpcio
 grpcio-reflection
