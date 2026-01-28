@@ -1,7 +1,7 @@
 streamlit==1.38.0
 google-cloud-aiplatform==1.65.0
 langchain==0.2.17
-langchain-community==0.2.19
+langchain-community==0.3.27
 langchain-google-vertexai==1.0.10
 elasticsearch==8.15.0
 arxiv==2.1.3
