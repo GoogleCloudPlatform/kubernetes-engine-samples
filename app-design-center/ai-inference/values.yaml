@@ -12,46 +12,69 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Default values for gemma chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
+# Default values for gemma-inference.
 replicaCount: 1
 
 image:
-  repository: vllm/vllm-openai
-  tag: v0.7.2
+  repository: us-docker.pkg.dev/cloudrun/container/gemma/gemma3-4b
+  tag: latest
   pullPolicy: IfNotPresent
 
-model:
-  id: google/gemma-7b-it
-  hfSecret: hf-secret
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: LoadBalancer
+  port: 8000
+  targetPort: 8000
+  annotations: {}
 
 resources:
   limits:
-    nvidia.com/gpu: "1"
+    nvidia.com/gpu: 1
+    memory: "16Gi"
+    cpu: "8"
   requests:
-    nvidia.com/gpu: "1"
+    nvidia.com/gpu: 1
+    memory: "16Gi"
+    cpu: "8"
 
 nodeSelector:
   cloud.google.com/gke-accelerator: nvidia-l4
 
-hpa:
+tolerations:
+- key: "nvidia.com/gpu"
+  operator: "Exists"
+  effect: "NoSchedule"
+
+autoscaling:
   enabled: true
   minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
+  maxReplicas: 3
+  targetGPUUtilization: 80
 
-# -- Number of GPUs to distribute the model across
-tensorParallelSize: 1
-
-# -- Maximum sequence length for the model
-maxModelLen: 512
-
-service:
-  type: ClusterIP
-  port: 80
-
-pdb:
+podMonitoring:
   enabled: true
-  minAvailable: 1
+  interval: 60s
+
+env:
+  OLLAMA_HOST: "0.0.0.0:8000"
+  OLLAMA_MAX_LOADED_MODELS: "1"
+  OLLAMA_KEEP_ALIVE: "-1"
