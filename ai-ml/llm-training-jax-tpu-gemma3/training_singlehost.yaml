@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jax-gemma3-train-singlehost
+spec:
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: jaxserviceaccout
+      containers:
+      - name: training-container
+        image: us-east5-docker.pkg.dev/gemle-gke-dev/pulasthi-eastus5/jax-gemma3-training:latest
+        imagePullPolicy: "Always"
+        command: ["python", "Gemma3LLMTrain.py", "--maxlen", "256", "--batch_size", "64", "--datacount", "355120"]
+        resources:
+          limits:
+            google.com/tpu: 1
+        volumeMounts:
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /data
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+        cloud.google.com/gke-tpu-topology: 1x1
+      restartPolicy: Never
+      volumes:
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          volumeAttributes:
+            bucketName: pulasthi-hf-tiny-stories
+            mountOptions: "implicit-dirs,file-cache:enable-parallel-downloads:true,file-cache:parallel-downloads-per-file:100,file-cache:max-parallel-downloads:-1,file-cache:download-chunk-size-mb:10,file-cache:max-size-mb:-1"
+  backoffLimit: 1
