@@ -380,13 +380,13 @@ kubectl run -it --rm debug \
     --image=google/cloud-sdk:slim \
     --serviceaccount=${KSA_NAME} \
     -n ${NAMESPACE} \
-    -- gsutil ls gs://${GCS_BUCKET_NAME}/
+    -- gcloud storage ls gs://${GCS_BUCKET_NAME}/
 ```
 
 #### 4. Missing Adapter Files
 ```bash
 # List model files in GCS
-gsutil ls -l gs://${GCS_BUCKET_NAME}/tuned-models/
+gcloud storage ls --long gs://${GCS_BUCKET_NAME}/tuned-models/
 
 # Ensure adapter_config.json and adapter_model.safetensors exist
 ```
