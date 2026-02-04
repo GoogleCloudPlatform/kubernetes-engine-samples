@@ -1,0 +1,28 @@
+steps:
+  # Build step 1 where a Cloud Storage bucket to store the execution logs of gke-disk-image-builder is created
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: "/bin/bash"
+  args:
+    - "-c"
+    - |
+      gcloud storage buckets list | grep "${_BUCKET_NAME}" || gcloud storage buckets create ${_BUCKET_NAME} --location=${_REGION} --uniform-bucket-level-access
+
+  # Build step 2 where the repo with gke-disk-image-builder is cloned
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/GoogleCloudPlatform/ai-on-gke.git']
+
+  # Build step 3 where gke-disk-image-builder is run with required parameters
+- name: 'gcr.io/cloud-builders/go:1.21'
+  env: ['GOPATH=./ai-on-gke/tools/gke-disk-image-builder']
+  dir: './ai-on-gke/tools/gke-disk-image-builder'
+  args:
+    - 'run'
+    - './cli'
+    - --project-name=$PROJECT_ID
+    - --image-name=${_DISK_IMAGE}
+    - --zone=${_ZONE}
+    - --gcs-path=${_BUCKET_NAME}
+    - --disk-size-gb=100
+    - --timeout=120m
+    - --container-image=${_CONTAINER_IMAGE}
+    - --image-pull-auth=ServiceAccountToken
