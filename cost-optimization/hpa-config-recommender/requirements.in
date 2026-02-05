@@ -17,7 +17,7 @@ idna==3.10
 numpy==1.26.4
 pandas==2.2.2
 proto-plus==1.25.0
-protobuf==5.29.5
+protobuf==5.29.6
 pyasn1==0.6.2
 pyasn1_modules==0.4.1
 python-dateutil==2.9.0.post0
