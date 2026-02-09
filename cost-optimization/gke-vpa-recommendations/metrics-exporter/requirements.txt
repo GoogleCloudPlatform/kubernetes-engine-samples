@@ -1,5 +1,5 @@
 google-cloud-bigquery
 google-cloud-bigquery-storage
 google-cloud-monitoring
-protobuf~=4.25.0
+protobuf~=5.29.6
 stackdriver_log_formatter
