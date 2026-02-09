@@ -23,21 +23,21 @@ steps:
     - '-t'
     - 'gcr.io/google-samples/whereami:v1'
     - '-t'
-    - 'gcr.io/google-samples/whereami:v1.2.25'
+    - 'gcr.io/google-samples/whereami:v1.2.26'
     - '-t'
-    - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.25-${SHORT_SHA}'
+    - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.26-${SHORT_SHA}'
     - '-t'
     - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.25'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.26'
     - '-t'
-    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.25-${SHORT_SHA}'
+    - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.26-${SHORT_SHA}'
     - '-t'
     - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1'
     - '-t'
-    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.25'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.26'
     - '-t'
-    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.25-${SHORT_SHA}'
+    - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.26-${SHORT_SHA}'
     - '.'
   dir: 'quickstarts/whereami'
 - name: ubuntu
@@ -47,15 +47,15 @@ steps:
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     cd quickstarts/whereami/helm-chart
     helm package . # This creates a file similar to whereami-X.Y.Z.tgz
-    helm push whereami-1.2.25.tgz oci://us-docker.pkg.dev/google-samples/charts
+    helm push whereami-1.2.26.tgz oci://us-docker.pkg.dev/google-samples/charts
 
 images:
   - 'gcr.io/google-samples/whereami:v1'
-  - 'gcr.io/google-samples/whereami:v1.2.25'
-  - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.25-${SHORT_SHA}'
+  - 'gcr.io/google-samples/whereami:v1.2.26'
+  - 'gcr.io/google-samples/whereami:sample-public-image-v1.2.26-${SHORT_SHA}'
   - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.25'
-  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.25-${SHORT_SHA}'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.26'
+  - 'us-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.26-${SHORT_SHA}'
   - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1'
-  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.25'
-  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.25-${SHORT_SHA}'
+  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.26'
+  - 'europe-docker.pkg.dev/google-samples/containers/gke/whereami:sample-public-image-v1.2.26-${SHORT_SHA}'
