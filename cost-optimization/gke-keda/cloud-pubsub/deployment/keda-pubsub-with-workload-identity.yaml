@@ -41,6 +41,8 @@ spec:
     spec:
       serviceAccountName: keda-pubsub-sa
       containers:
+      # Note: Set the GOOGLE_CLOUD_PROJECT environment variable if the Pub/Sub topic
+      # is not in the same Google Cloud project as this Kubernetes cluster.
       - name: subscriber
         image: us-docker.pkg.dev/google-samples/containers/gke/keda-pubsub-sample:v1
 # [END gke_deployment_keda_pubsub_with_workflow_identity_deployment_pubsub]

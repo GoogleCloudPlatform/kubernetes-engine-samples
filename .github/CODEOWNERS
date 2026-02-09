@@ -6,8 +6,8 @@
 * @GoogleCloudPlatform/cloud-samples-infra @yoshi-approver
 
 # Directory-specific owners
-/ai-ml/ @alizaidis @moficodes @kenthua @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
-/batch/ @alizaidis @moficodes @kenthua @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/ai-ml/ @alizaidis @moficodes @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/batch/ @alizaidis @moficodes @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /cost-optimization/gke-vpa-recommendations/ @aburhan @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /cost-optimization/hpa-config-recommender/ @aburhan @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /databases/hello-app-cloud-spanner/ @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
@@ -15,4 +15,4 @@
 /quickstarts/whereami/ @theemadnes @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /security/language-vulns/ @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
 /streaming/ @aburhan @pwschuurman @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
-/windows/ @ibabou @yoshi-approver @GoogleCloudPlatform/dee-platform-ops
+/windows/ @yoshi-approver @GoogleCloudPlatform/dee-platform-ops

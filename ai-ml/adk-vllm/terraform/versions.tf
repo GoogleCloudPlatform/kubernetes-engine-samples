@@ -1,11 +1,10 @@
-
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,12 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_k8s_grpc_backend_overlay_example_service_type_service_whereami_grpc]
-apiVersion: v1
-kind: Service
-metadata:
-  name: whereami-grpc
-spec:
-  type: ClusterIP
-# [END gke_k8s_grpc_backend_overlay_example_service_type_service_whereami_grpc]
----
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+    }
+    google-beta = {
+      source = "hashicorp/google-beta"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.8.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "2.18.1"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "0.13.1"
+    }
+  }
+}

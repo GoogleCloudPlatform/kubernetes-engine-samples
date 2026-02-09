@@ -23,7 +23,7 @@ def get_capital_city(country: str) -> str:
 
 
 capital_agent = LlmAgent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="capital_agent",
     description="Answers user questions about the capital city of a given country.",
     instruction="""You are an agent that provides the capital city of a country.

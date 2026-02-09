@@ -3,7 +3,7 @@ bitsandbytes==0.44.1
 datasets==3.1.0
 einops==0.8.0
 gcsfs==2024.9.0
-mlflow==3.1.0
+mlflow==3.5.0
 peft==v0.13.2
 psutil==6.1.0
 pynvml==11.5.3
