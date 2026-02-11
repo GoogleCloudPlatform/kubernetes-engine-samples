@@ -146,7 +146,7 @@ kubectl run -it --rm workload-identity-test \
         if gcloud auth list 2>/dev/null | grep -q ${GSA_NAME}; then
             echo 'SUCCESS: Authenticated as ${GSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com'
             echo 'Testing GCS access...'
-            if gsutil ls gs://${GCS_BUCKET_NAME}/ >/dev/null 2>&1; then
+            if gcloud storage ls gs://${GCS_BUCKET_NAME}/ >/dev/null 2>&1; then
                 echo 'SUCCESS: Can access GCS bucket'
             else
                 echo 'ERROR: Cannot access GCS bucket'
@@ -168,4 +168,3 @@ fi
 print_status "Next steps:"
 echo "  1. Prepare your data using the DataPreparation notebook"
 echo "  2. Run ./scripts/deploy-training.sh to start training"
-
