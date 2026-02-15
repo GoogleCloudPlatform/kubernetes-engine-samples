@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.13.5-alpine
+FROM python:3.14.3-alpine
 
 ARG PORT=8050
 ENV PORT=${PORT}
