@@ -1,0 +1,52 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_gke_model_armor_model_armor_extension]
+apiVersion: networking.gke.io/v1
+kind: GCPTrafficExtension
+metadata:
+  name: model-armor-extension
+  namespace: default
+spec:
+      targetRefs:
+      -   group: "gateway.networking.k8s.io"
+        kind: Gateway
+        name: llm-gateway
+      extensionChains:
+      -   name: model-armor-chain
+        matchCondition:
+          celExpressions:
+          -   celMatcher: 'request.path == "/v1/chat/completions"'
+        extensions:
+        -   name: model-armor-callout
+          googleAPIServiceName: modelarmor.us-central1.rep.googleapis.com
+          timeout: "500ms"
+          supportedEvents:
+          -   RequestHeaders
+          -   RequestBody
+          -   ResponseHeaders
+          -   ResponseBody
+          -   RequestTrailers
+          -   ResponseTrailers
+          metadata:
+            model_armor_settings: |
+              [
+                {
+                  "model": "default",
+                  "user_prompt_template_id": "projects/PROJECT_ID/locations/LOCATION/templates/MODEL_ARMOR_TEMPLATE_NAME",
+                  "model_response_template_id": "projects/PROJECT_ID/locations/LOCATION/templates/MODEL_ARMOR_TEMPLATE_NAME"
+                }
+              ]
+          failOpen: false
+# [END gke_aiml_gke_model_armor_model_armor_extension]
