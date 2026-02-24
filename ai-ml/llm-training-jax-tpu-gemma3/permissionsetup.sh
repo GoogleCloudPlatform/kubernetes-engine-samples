@@ -17,7 +17,7 @@
 # --- Configuration Variables ---
 # Kubernetes Service Account details
 export KSA_NAME="jaxserviceaccout"
-export NAMESPACE="<NAMESPACE>"
+export NAMESPACE="default"
 
 # Google Cloud IAM Service Account details
 export GSA_NAME="<GSA_NAME>"
