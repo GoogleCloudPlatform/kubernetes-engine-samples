@@ -4,9 +4,9 @@
 #
 #    pip-compile requirements.in
 #
-joblib==1.4.2
+joblib==1.5.3
     # via scikit-learn
-numpy==2.1.1
+numpy==2.4.2
     # via
     #   pandas
     #   scikit-learn
@@ -15,17 +15,17 @@ pandas==2.2.2
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via pandas
-pytz==2024.2
+pytz==2025.2
     # via pandas
 redis==5.0.8
     # via -r requirements.in
 scikit-learn==1.5.1
     # via -r requirements.in
-scipy==1.14.1
+scipy==1.17.1
     # via scikit-learn
-six==1.16.0
+six==1.17.0
     # via python-dateutil
-threadpoolctl==3.5.0
+threadpoolctl==3.6.0
     # via scikit-learn
-tzdata==2024.1
+tzdata==2025.3
     # via pandas
