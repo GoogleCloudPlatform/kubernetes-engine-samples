@@ -8,4 +8,4 @@ The sample includes configurations for:
 *   Deploying a GKE Gateway for regional external load balancing.
 *   Implementing a security checkpoint using GKE Service Extensions to filter prompts and responses with Model Armor policies.
 
-Visit [https://clouddocs.devsite.corp.google.com/kubernetes-engine/docs/tutorials/integrate-model-armor-guardrails](https://clouddocs.devsite.corp.google.com/kubernetes-engine/docs/tutorials/integrate-model-armor-guardrails) to follow the full tutorial.
+Visit [cloud.google.com/kubernetes-engine/docs/tutorials/integrate-model-armor-guardrails](cloud.google.com/kubernetes-engine/docs/tutorials/integrate-model-armor-guardrails) to follow the full tutorial.
