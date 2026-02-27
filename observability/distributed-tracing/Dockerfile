@@ -9,7 +9,7 @@
 #See the License for the specific language governing permissions and
 #limitations under the License.
 
-FROM golang:1.24.3 as builder
+FROM golang:1.25.6 as builder
 WORKDIR /crud
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /http-app

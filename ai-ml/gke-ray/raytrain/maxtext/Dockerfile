@@ -15,7 +15,7 @@
 # [START gke_ai_ml_gke_ray_ray_train_maxtext_dockerfile]
 # Start from a Ray base image which includes JaxTrainer API.
 # Maxtext with TPU requires Python 3.12.
-FROM rayproject/ray:2.49.1-py312
+FROM rayproject/ray:2.54.0-py312
 
 USER root
 RUN groupadd -r ray 2>/dev/null || true && usermod -g ray ray

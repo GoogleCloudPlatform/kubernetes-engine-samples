@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM pytorch/pytorch:2.8.0-cuda12.6-cudnn9-runtime
+FROM pytorch/pytorch:2.10.0-cuda12.6-cudnn9-runtime
 
 COPY requirements.txt ./
 

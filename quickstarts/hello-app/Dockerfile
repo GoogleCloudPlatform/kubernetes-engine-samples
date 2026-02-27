@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # [START gke_quickstarts_hello_app_dockerfile]
-FROM golang:1.24.3 AS builder
+FROM golang:1.25.6 AS builder
 WORKDIR /app
 RUN go mod init hello-app
 COPY *.go ./
