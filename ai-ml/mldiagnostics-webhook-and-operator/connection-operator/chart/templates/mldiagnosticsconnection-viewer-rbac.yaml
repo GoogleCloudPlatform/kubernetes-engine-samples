@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "chart.fullname" . }}-mldiagnosticsconnection-viewer-role
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - diagon.gke.io
+  resources:
+  - mldiagnosticsconnections
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - diagon.gke.io
+  resources:
+  - mldiagnosticsconnections/status
+  verbs:
+  - get
