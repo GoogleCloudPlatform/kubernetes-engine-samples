@@ -1,0 +1,40 @@
+# This GitHub Action workflow checks to ensure that all required source files
+# have the appropriate Apache 2.0 license header.
+name: Apache 2.0 License Header Check
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          # Use a specific, stable version of Go.
+          go-version: '1.22'
+
+      - name: Check for license headers
+        run: |
+          go run github.com/google/addlicense@v1.1.1 \
+            -check \
+            -c 'Google LLC' \
+            -s=only \
+            -ignore '**/Chart.yaml' \
+            -ignore '.github/workflows/**' \
+            .
+        # Arguments explained:
+        # -check:      Fail if license headers are missing, instead of adding them.
+        # -c '...':    Specifies the copyright holder.
+        # -s=only:     Strict mode. Only accepts the exact license header.
+        # -ignore ...: Excludes specified files or directories from the check.
+        # .:           Check all files recursively from the current directory.
