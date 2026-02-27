@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{{ if .Values.pdb.enabled -}}
-apiVersion: policy/v1
-kind: PodDisruptionBudget
+{{- if .Values.podMonitoring.enabled }}
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
 metadata:
-  name: {{ include "gemma.fullname" . }}
+  name: {{ include "gemma-inference.fullname" . }}
   labels:
-    {{- include "gemma.labels" . | nindent 4 }}
+    {{- include "gemma-inference.labels" . | nindent 4 }}
 spec:
-  minAvailable: {{ .Values.pdb.minAvailable }}
   selector:
     matchLabels:
-      {{- include "gemma.selectorLabels" . | nindent 6 }}
+      {{- include "gemma-inference.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - port: 8000
+    path: /metrics
+    interval: {{ .Values.podMonitoring.interval }}
 {{- end }}
