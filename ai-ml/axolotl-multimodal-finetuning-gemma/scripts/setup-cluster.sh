@@ -114,7 +114,7 @@ else
 fi
 
 # Create GCS bucket if it doesn't exist
-if ! gsutil ls -b gs://${GCS_BUCKET_NAME} &>/dev/null; then
+if ! gcloud storage ls --buckets gs://${GCS_BUCKET_NAME} &>/dev/null; then
     print_status "Creating GCS bucket: gs://${GCS_BUCKET_NAME}"
     gcloud storage buckets create gs://${GCS_BUCKET_NAME} \
         --location=${REGION} \
@@ -155,4 +155,3 @@ print_status "Next steps:"
 echo "  1. Run ./scripts/setup-workload-identity.sh to configure Workload Identity"
 echo "  2. Prepare your data using the DataPreparation notebook"
 echo "  3. Run ./scripts/deploy-training.sh to start training"
-
