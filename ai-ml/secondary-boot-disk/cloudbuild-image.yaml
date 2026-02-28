@@ -1,0 +1,37 @@
+steps:
+  # Build step 1 where the model is cloned using a git image
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        df -h && \
+        apt-get update && \
+        apt-get install -y git-lfs && \
+        git lfs install && \
+        git lfs clone https://$$HF_USERNAME:$$HF_TOKEN@huggingface.co/google/${_MODEL_PATH} ./${_MODEL_PATH}
+    secretEnv: ['HF_USERNAME', 'HF_TOKEN']
+
+  # Build step 2 where the Docker image is built
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'MODEL_PATH=${_MODEL_PATH}'
+      - '-t'
+      - '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPOSITORY_NAME/$_IMAGE_NAME:${_IMAGE_TAG}'
+      - '.'
+
+options:
+  machineType: 'E2_HIGHCPU_32'
+  diskSizeGb: 250
+
+images: 
+  - '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPOSITORY_NAME/$_IMAGE_NAME:${_IMAGE_TAG}'
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$_PROJECT_ID/secrets/hf-username/versions/latest
+    env: 'HF_USERNAME'
+  - versionName: projects/$_PROJECT_ID/secrets/hf-token/versions/latest
+    env: 'HF_TOKEN'
