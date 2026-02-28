@@ -1,0 +1,40 @@
+image:
+  registry: docker.io
+  repository: bitnami/mysql
+  tag: 8.4.3-debian-12-r0 
+  pullPolicy: IfNotPresent
+
+architecture: standalone
+auth:
+  rootPassword: "benchmark"
+  createDatabase: true
+  database: "my_database"
+primary:
+  resources:
+    requests:
+      cpu: "2"
+      memory: 8Gi
+    limits:
+      cpu: "4"
+      memory: 8Gi
+  affinity: 
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: "app.stateful/component"
+            operator: In
+            values:
+            - "data-cache"
+  tolerations:
+  - key: "app.stateful/component"
+    operator: "Equal"
+    value: "data-cache"
+    effect: NoSchedule
+  extraFlags: "--max_connections=400"
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 150Gi

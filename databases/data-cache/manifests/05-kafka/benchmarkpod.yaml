@@ -1,0 +1,47 @@
+#docker pull openmessaging/openmessaging-benchmark
+apiVersion: v1
+kind: Pod
+metadata:
+  name: benchmarkpod
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: "app.stateful/component"
+            operator: NotIn
+            values:
+            - "data-cache"
+  tolerations:
+  - key: "app.stateful/component"
+    operator: "Equal"
+    value: "data-cache"
+    effect: NoSchedule
+  containers:
+  - name: main
+    image: docker.io/bitnami/kafka:3.7.1-debian-12-r5 
+    command: ["sleep", "720000"]
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: "1"
+      limits:
+        memory: 2Gi
+        cpu: "2"
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    volumeMounts:
+    - name: config
+      mountPath: "/tmp/"
+      readOnly: true
+  volumes:
+  - name: config
+    configMap:
+      name: client-properties
