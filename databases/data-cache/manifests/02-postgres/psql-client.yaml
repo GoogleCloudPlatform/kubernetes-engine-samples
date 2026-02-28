@@ -1,0 +1,55 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_data_cache_02_postgres_psql_client]
+apiVersion: v1
+kind: Pod
+metadata:
+  name: psql
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: "app.stateful/component"
+            operator: NotIn
+            values:
+            - "data-cache"
+  tolerations:
+  - key: "app.stateful/component"
+    operator: "Equal"
+    value: "data-cache"
+    effect: NoSchedule
+  containers:
+  - name: main
+    image: postgres:17
+    command: ["sleep", "360000"]
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: "1"
+      limits:
+        memory: 2Gi
+        cpu: "2"
+    env:
+    - name: PGDATABASE
+      value: postgres
+    - name: PGUSER
+      value: postgres
+    - name: PGPASSWORD
+      value: benchmark
+# [END gke_databases_data_cache_02_postgres_psql_client]
+
