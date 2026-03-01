@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-google_adk==1.2.1
-fastapi==0.115.0
-litellm==1.68.0
-uvicorn==0.34.0
+google_adk==1.25.1
+fastapi==0.131.0
+litellm==1.81.14
+uvicorn==0.41.0

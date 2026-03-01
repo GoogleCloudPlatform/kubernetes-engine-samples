@@ -11,15 +11,17 @@ numpy==2.4.2
     #   pandas
     #   scikit-learn
     #   scipy
-pandas==2.2.2
+pandas==2.3.3
     # via -r requirements.in
+pyjwt==2.11.0
+    # via redis
 python-dateutil==2.9.0.post0
     # via pandas
 pytz==2025.2
     # via pandas
-redis==5.0.8
+redis==5.3.1
     # via -r requirements.in
-scikit-learn==1.5.1
+scikit-learn==1.8.0
     # via -r requirements.in
 scipy==1.17.1
     # via scikit-learn

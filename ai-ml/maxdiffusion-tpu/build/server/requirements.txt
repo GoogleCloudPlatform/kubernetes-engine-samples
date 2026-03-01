@@ -1,13 +1,13 @@
 --find-links https://storage.googleapis.com/jax-releases/jax_nightly_releases.html
 --find-links https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
-uvicorn[standard]==0.30.6
-fastapi[all]==0.114.0
+uvicorn[standard]==0.41.0
+fastapi[all]==0.131.0
 pillow
 jax[tpu]==0.4.36 --pre
 google-cloud-storage
 absl-py
-huggingface_hub==0.24.7
+huggingface_hub==0.36.2
 transformers>=4.25.1
 datasets
 flax
@@ -23,7 +23,7 @@ scikit-image
 parameterized
 Pillow
 pytest
-tensorflow==2.17.0
+tensorflow==2.20.0
 tensorflow-datasets>=4.9.6
-ruff>=0.6,<=0.6.4
+ruff>=0.15,<=0.15.2
 aqtp

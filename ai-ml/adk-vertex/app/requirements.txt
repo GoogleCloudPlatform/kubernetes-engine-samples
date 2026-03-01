@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-google-adk[otel-gcp]==1.16.0
-fastapi==0.115.13
-uvicorn==0.34.0
-pydantic==2.11.7
+google-adk[otel-gcp]==1.25.1
+fastapi==0.131.0
+uvicorn==0.41.0
+pydantic==2.12.5
 fsspec[gcs]
