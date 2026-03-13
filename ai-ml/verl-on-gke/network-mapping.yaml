@@ -1,0 +1,179 @@
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: gvnic-1
+spec:
+  vpc: ${GVNIC_NETWORK_PREFIX}-net
+  vpcSubnet: ${GVNIC_NETWORK_PREFIX}-sub
+  deviceMode: NetDevice
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: gvnic-1
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: gvnic-1
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-0
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-0
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-0
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-0
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-1
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-1
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-1
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-1
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-2
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-2
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-2
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-2
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-3
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-3
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-3
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-3
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-4
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-4
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-4
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-4
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-5
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-5
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-5
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-5
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-6
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-6
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-6
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-6
+---
+apiVersion: networking.gke.io/v1
+kind: GKENetworkParamSet
+metadata:
+  name: rdma-7
+spec:
+  vpc: ${RDMA_NETWORK_PREFIX}-net
+  vpcSubnet: ${RDMA_NETWORK_PREFIX}-sub-7
+  deviceMode: RDMA
+---
+apiVersion: networking.gke.io/v1
+kind: Network
+metadata:
+  name: rdma-7
+spec:
+  type: "Device"
+  parametersRef:
+    group: networking.gke.io
+    kind: GKENetworkParamSet
+    name: rdma-7
