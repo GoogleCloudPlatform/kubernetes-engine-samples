@@ -48,8 +48,8 @@ spec:
               claimName: training-bucket-pvc
   workerGroupSpecs:
   - replicas: 2
-    minReplicas: 0
-    maxReplicas: 4
+    minReplicas: 2
+    maxReplicas: 2
     groupName: gpu-group
     rayStartParams:
       num-cpus: "220"
