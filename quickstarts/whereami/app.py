@@ -129,6 +129,29 @@ class WhereamigRPC(whereami_pb2_grpc.WhereamiServicer):
         payload = whereami_payload.build_payload(None)
         return whereami_pb2.WhereamiReply(**payload)
 
+# Custom gRPC server interceptor for request logging
+class RequestLoggingInterceptor(grpc.ServerInterceptor):
+    def __init__(self):
+        self._logger = logging.getLogger(__name__)
+
+    def intercept_service(self, continuation, handler_call_details):
+        handler = continuation(handler_call_details)
+
+        # This interceptor only supports unary-unary RPCs
+        if not handler or not handler.unary_unary:
+            return handler
+
+        def logging_wrapper(request, context):
+            if handler_call_details.method != f'/{health.SERVICE_NAME}/Check':
+                self._logger.info(
+                    f"gRPC request received: Method='{handler_call_details.method}', Peer='{context.peer()}'")
+            return handler.unary_unary(request, context)
+
+        return grpc.unary_unary_rpc_method_handler(
+            logging_wrapper,
+            request_deserializer=handler.request_deserializer,
+            response_serializer=handler.response_serializer)
+
 
 # if selected will serve gRPC endpoint on port 9090
 # see https://github.com/grpc/grpc/blob/master/examples/python/xds/server.py
@@ -138,7 +161,7 @@ def grpc_serve():
     # working on a proper workaround
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()+5),
-        interceptors=(PromServerInterceptor(),))  # interceptor for metrics
+        interceptors=(PromServerInterceptor(), RequestLoggingInterceptor(),))  # interceptor for metrics and logging
 
     # Add the application servicer to the server.
     whereami_pb2_grpc.add_WhereamiServicer_to_server(WhereamigRPC(), server)

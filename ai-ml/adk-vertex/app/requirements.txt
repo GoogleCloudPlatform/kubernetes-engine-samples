@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-google_adk==1.4.1
+google-adk[otel-gcp]==1.16.0
 fastapi==0.115.13
 uvicorn==0.34.0
 pydantic==2.11.7
+fsspec[gcs]

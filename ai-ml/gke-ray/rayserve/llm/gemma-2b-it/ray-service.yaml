@@ -31,7 +31,7 @@ spec:
           num_gpus: 1
       runtime_env:
         working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/main.zip"
-        pip: ["vllm==0.4.3"]
+        pip: ["vllm", "ray==2.40.0", "transformers<5"]
         env_vars:
           MODEL_ID: "google/gemma-2b-it"
           TENSOR_PARALLELISM: "1"
@@ -39,6 +39,7 @@ spec:
     headGroupSpec:
       rayStartParams:
         dashboard-host: '0.0.0.0'
+        num-cpus: "0"
       template:
         metadata:
           labels:
@@ -46,14 +47,16 @@ spec:
         spec:
           containers:
           - name: ray-head
-            image: rayproject/ray-ml:2.9.0
+            image: rayproject/ray:2.40.0-py311-gpu
             resources:
               limits:
                 cpu: "2"
                 memory: "8Gi"
+                ephemeral-storage: "20Gi"
               requests:
                 cpu: "2"
                 memory: "8Gi"
+                ephemeral-storage: "20Gi"
             ports:
             - containerPort: 6379
               name: gcs-server
@@ -68,7 +71,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: hf-secret
-                  key: hf_api_token              
+                  key: hf_api_token
     workerGroupSpecs:
     - replicas: 1
       minReplicas: 0
@@ -82,7 +85,7 @@ spec:
         spec:
           containers:
           - name: llm
-            image: rayproject/ray-ml:2.9.0
+            image: rayproject/ray:2.40.0-py311-gpu
             env:
             - name: HUGGING_FACE_HUB_TOKEN
               valueFrom:
@@ -94,10 +97,12 @@ spec:
                 cpu: "8"
                 memory: "20Gi"
                 nvidia.com/gpu: "1"
+                ephemeral-storage: "20Gi"
               requests:
                 cpu: "8"
                 memory: "20Gi"
                 nvidia.com/gpu: "1"
+                ephemeral-storage: "20Gi"
           nodeSelector:
             cloud.google.com/gke-accelerator: nvidia-l4
 # [END gke_ai_ml_gke_ray_rayserve_llm_gemma_2b_it]
