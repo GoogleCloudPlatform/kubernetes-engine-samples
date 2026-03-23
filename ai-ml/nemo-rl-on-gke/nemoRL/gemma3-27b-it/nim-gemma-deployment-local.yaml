@@ -1,0 +1,116 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# kubectl create secret docker-registry ngc-secret \
+# --docker-server=nvcr.io \
+# --docker-username='$oauthtoken' \
+# --docker-password='nvapi-NVKEY' \
+# --docker-email='email'
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nim-gemma-3-27b-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nim-gemma-3-27b-server
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+      labels:
+        app: nim-gemma-3-27b-server
+    spec:
+      # FIX: Corrected indentation for spec-level fields
+      tolerations:
+      - key: "sku"
+        operator: "Equal"
+        value: "nvidia-h100-mega-80gb"
+        effect: "NoSchedule"
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-h100-mega-80gb
+      
+      containers:
+        - name: nim-gemma-3-27b-container
+          image: nvcr.io/nim/nvidia/llm-nim:latest
+          resources:
+            limits:
+              nvidia.com/gpu: "8"
+            requests:
+              nvidia.com/gpu: "8"
+          env:
+            - name: NGC_API_KEY
+              value: "nvapi-NVKEY"
+            - name: NIM_TENSOR_PARALLEL_SIZE
+              value: "2"
+            - name: NIM_MODEL_NAME
+              value: "/data/nemo_rl_gemma3_25b_2_27/hf"
+            - name: NIM_MAX_IMAGES_PER_PROMPT
+              value: "0"
+            - name: NIM_SERVED_MODEL_NAME
+              value: "google/gemma-3-27b-it"
+            - name: HF_TOKEN
+              value: "HF_TOKEN"
+            - name: NIM_LOG_LEVEL
+              value: "TRACE"
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /data
+              name: lustre-data
+      imagePullSecrets:
+        - name: ngc-secret
+      volumes:
+        - name: lustre-data
+          persistentVolumeClaim:
+            claimName: lustre-pvc
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "128Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nim-gemma-3-27b-service
+spec:
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  selector:
+    app: nim-gemma-3-27b-server
+
+#run after the deployment
+#kubectl port-forward service/nim-gemma-3-27b-service 8000:8000
+#list models
+#pmotgi-mac:exploration pmotgi$ curl -s http://localhost:8000/v1/models | jq .
+#Run inference
+# curl -X 'POST' \
+#     'http://0.0.0.0:8000/v1/completions' \
+#     -H 'accept: application/json' \
+#     -H 'Content-Type: application/json' \
+#     -d '{
+#       "model": "google/gemma-3-27b-it",
+#       "prompt": "Once upon a time",
+#       "max_tokens": 64
+#     }'
+

@@ -1,0 +1,277 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+image:
+  repository: "nvcr.io/nvidia/nemo-rl"
+  tag: "v0.5.0" 
+  pullPolicy: Always
+
+nameOverride: "kuberay"
+fullnameOverride: ""
+
+common:
+  containerEnv: {}
+
+configMap:
+  fluentbit:
+    data:
+      fluent-bit.conf: |
+        [INPUT]
+            Name              tail
+            Path              /tmp/ray/session_latest/logs/worker-*
+            Tag               ray-worker
+        [INPUT]
+            Name              tail
+            Path              /tmp/ray/session_latest/logs/raylet*
+            Tag               raylet
+        [INPUT]
+            Name              tail
+            Path              /tmp/ray/session_latest/logs/*
+            Exclude_Path      /tmp/ray/session_latest/logs/debug_state.txt,/tmp/ray/session_latest/logs/raylet*,/tmp/ray/session_latest/logs/worker-*
+            Tag               ray-misc
+        [OUTPUT]
+            Name              stackdriver
+            Match             *
+            resource          gce_instance
+            labels_key        labels
+
+# --- Head Node Configuration ---
+head:
+  enableInTreeAutoscaling: false
+  serviceAccountName: ""
+  rayStartParams:
+    dashboard-host: '0.0.0.0'
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        networking.gke.io/default-interface: 'eth0'
+  containerEnv:
+  - name: RAY_GROUP
+    value: "head"
+  resources:
+    limits:
+      cpu: "64"
+      memory: "500G"
+      nvidia.com/gpu: 0
+    requests:
+      cpu: "64"
+      memory: "500G"
+      nvidia.com/gpu: 0
+  tolerations:
+    # - operator: "Exists"
+    #   key: "components.gke.io/gke-managed-components"
+    # - key: "nvidia.com/gpu"
+    #   operator: "Exists"
+    #   effect: "NoSchedule"
+  volumeMounts:
+    - mountPath: /data
+      name: lustre-data
+
+  volumes:
+    - name: log-volume
+      emptyDir: {}
+    - name: fluentbit-config-volume
+      configMap:
+        name: "ray-cluster-kuberay-fluentbit-config"
+    - name: lustre-data
+      persistentVolumeClaim:
+        claimName: lustre-pvc
+  sidecarContainers:
+    - name: fluent-bit
+      image: fluent/fluent-bit:latest
+      env:
+      - name: RAY_GROUP
+        value: "head"
+      volumeMounts:
+        - name: fluentbit-config-volume
+          mountPath: /fluent-bit/etc/
+        - mountPath: /tmp/ray
+          name: log-volume
+  
+  # --- HEAD POD STARTUP SCRIPT ---
+  command:
+    - "bash"
+    - "-c"
+    - |
+      set -ex
+      echo "--- Head Pod Setup ---"
+      apt-get update
+      apt-get install -y sudo netcat-openbsd pciutils
+      cd /opt/nemo-rl
+      /usr/bin/python -m pip install uv
+      /usr/bin/python -m uv venv
+      echo "Head pod setup complete. Starting Ray..."
+      
+      exec ${KUBERAY_GEN_RAY_START_CMD}
+
+  args: []
+  headService: {}
+  # nodeSelector:
+  #   cloud.google.com/gke-accelerator: nvidia-b200 #cloud.google.com/gke-nodepool: cpu-node-pool-llama #cpu-node-pool
+
+# --- Default Worker (Disabled) ---
+worker:
+  disabled: true
+
+# --- A4 GPU Worker Groups ---
+additionalWorkerGroups:
+  worker-grp-0:
+    disabled: false
+    replicas: 4
+    annotations:
+      networking.gke.io/default-interface: 'eth0'
+      networking.gke.io/interfaces: |
+        [
+          {"interfaceName":"eth0","network":"default"},
+          {"interfaceName":"eth1","network":"gvnic-1"},
+          {"interfaceName":"eth2","network":"rdma-0"},
+          {"interfaceName":"eth3","network":"rdma-1"},
+          {"interfaceName":"eth4","network":"rdma-2"},
+          {"interfaceName":"eth5","network":"rdma-3"},
+          {"interfaceName":"eth6","network":"rdma-4"},
+          {"interfaceName":"eth7","network":"rdma-5"},
+          {"interfaceName":"eth8","network":"rdma-6"},
+          {"interfaceName":"eth9","network":"rdma-7"}
+        ]
+    containerEnv:
+      - name: RAY_GROUP
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['ray.io/group']
+      - name: NCCL_NET  
+        value: "gIB"
+      - name: NCCL_IB_GID_INDEX
+        value: "3"   
+      - name: GLOO_SOCKET_IFNAME
+        value: "eth0"
+      - name: NCCL_CROSS_NIC
+        value: "0"
+      - name: NCCL_SOCKET_IFNAME
+        value: "eth0"
+      - name: TP_SOCKET_IFNAME # Specific to DTensor/PyTorch Distributed
+        value: "eth0"
+      - name: NCCL_TUNER_CONFIG_PATH
+        value: "/usr/local/gib/configs/tuner_config_a4.txtpb"
+      - name: NCCL_NET_GDR_LEVEL
+        value: "PIX"
+      - name: LD_LIBRARY_PATH
+        value: /usr/local/nvidia/lib64
+    resources:
+      limits:
+        nvidia.com/gpu: 8
+        cpu: "206"
+        memory: "2400Gi"
+      requests:
+        nvidia.com/gpu: 8
+        cpu: "206"
+        memory: "2400Gi"
+
+    nodeSelector:
+      cloud.google.com/gke-accelerator: nvidia-b200
+    tolerations:
+      - operator: "Exists"
+        key: "nvidia.com/gpu"
+      - operator: "Exists"
+        key: "cloud.google.com/impending-node-termination"
+      - operator: "Exists"
+        key: "user-workload"
+    securityContext:
+      privileged: true
+    volumes:
+      - name: log-volume
+        emptyDir: {}
+      - name: shared-memory
+        emptyDir:
+          medium: "Memory"
+          sizeLimit: 240Gi
+      - name: ray-tmp
+        emptyDir:
+          medium: "Memory"
+      - name: fluentbit-config-volume
+        configMap:
+          name: "ray-cluster-kuberay-fluentbit-config"
+      - name: nvidia-install-dir-host
+        hostPath:
+          path: /home/kubernetes/bin/nvidia
+      - name: gib-nccl-plugin-volume
+        hostPath: 
+          path: /home/kubernetes/bin/gib
+      - name: lustre-data
+        persistentVolumeClaim:
+          claimName: lustre-pvc
+    volumeMounts:
+      - mountPath: /tmp/ray
+        name: log-volume
+      - name: shared-memory
+        mountPath: /dev/shm
+      - name: nvidia-install-dir-host
+        mountPath: /usr/local/nvidia
+      - name: gib-nccl-plugin-volume
+        mountPath: /usr/local/gib
+      - mountPath: /data
+        name: lustre-data   
+    # --- WORKER POD STARTUP SCRIPT ---
+    command:
+      - "bash"
+      - "-c"
+      - |
+        set -ex
+        
+        echo "--- Worker Pod Setup ---"
+        apt-get update
+        apt-get install -y sudo netcat-openbsd pciutils
+        cd /opt/nemo-rl
+        /usr/bin/python -m pip install uv
+        /usr/bin/python -m uv venv
+        
+        ldconfig /usr/local/nvidia/lib64/
+        ldconfig -p | grep libcuda | sed 's/^/  /'
+        export LD_LIBRARY_PATH="/usr/local/gib/lib64:$LD_LIBRARY_PATH"
+        source /usr/local/gib/scripts/set_nccl_env.sh
+        
+        echo "Worker pod setup complete. Starting Ray..."
+        
+        exec ${KUBERAY_GEN_RAY_START_CMD}
+
+    # initContainers:
+    #   - name: nccl-plugin-installer
+    #     imagePullPolicy: Always
+    #     image: "us-docker.pkg.dev/gce-ai-infra/gpudirect-gib/nccl-plugin-gib:v1.1.0"
+    #     volumeMounts:
+    #     - name: gib-nccl-plugin-volume
+    #       mountPath: /target/usr/local/gib
+    #     command: ["/bin/sh", "-c"]
+    #     args:
+    #     - |
+    #       set -ex
+    #       /scripts/container_entry.sh install --install-nccl
+    #       cp -R /var/lib/gib/. /target/usr/local/gib
+    sidecarContainers:
+      - name: fluent-bit
+        env:
+          - name: RAY_GROUP
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['ray.io/group']
+        image: fluent/fluent-bit:latest
+        volumeMounts:
+          - name: fluentbit-config-volume
+            mountPath: /fluent-bit/etc/
+          - mountPath: /tmp/ray
+            name: log-volume
+
+# --- Service Config ---
+service:
+  type: ClusterIP

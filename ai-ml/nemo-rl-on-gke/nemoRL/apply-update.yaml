@@ -1,0 +1,18 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    components.gke.io/component-name: lustrecsi
+    components.gke.io/component-version: 0.1.17
+    components.gke.io/layer: addon
+  labels:
+    k8s-app: lustre-csi-driver
+  name: lustre-rl
+
+parameters:
+  network: projects/northam-ce-mlai-tpu/global/networks/pmotgi-b200-gke-net-0
+  perUnitStorageThroughput: "500"
+provisioner: lustre.csi.storage.gke.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+

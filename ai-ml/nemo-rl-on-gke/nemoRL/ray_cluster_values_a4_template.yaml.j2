@@ -1,0 +1,209 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+image:
+  repository: {{ docker_repository }}
+  tag: {{ docker_tag }}
+  pullPolicy: Always
+
+nameOverride: "kuberay"
+fullnameOverride: ""
+
+common:
+  containerEnv: {{ "{}" }}
+
+configMap:
+  fluentbit:
+    data:
+      fluent-bit.conf: |
+        {{ fluent_bit_conf | indent(8)}}
+
+{% if schedule_using_kueue %}
+metadata:
+  labels:
+    kueue.x-k8s.io/queue-name: a4-high
+{% endif %}
+
+
+head:
+  enableInTreeAutoscaling: false
+  autoscalerOptions:
+    upscalingMode: Default
+    idleTimeoutSeconds: 60
+
+  serviceAccountName: ""
+  rayStartParams:
+    dashboard-host: '0.0.0.0'
+  containerEnv:
+  - name: RAY_GROUP
+    value: "head"
+  envFrom: []
+  resources:
+    limits:
+      cpu: "8"
+      memory: "12G"
+    requests:
+      cpu: "8"
+      memory: "12G"
+  tolerations:
+    - operator: "Exists"
+      key: components.gke.io/gke-managed-components
+  volumes:
+    - name: log-volume
+      emptyDir: {{ "{}" }}
+    - name: fluentbit-config-volume
+      configMap:
+        name: {{ cluster_name }}-fluentbit-config
+  volumeMounts:
+    - mountPath: /tmp/ray
+      name: log-volume
+  sidecarContainers:
+    - name: fluent-bit
+      image: fluent/fluent-bit:latest
+      env:
+      - name: RAY_GROUP
+        value: "head"
+      volumeMounts:
+        - name: fluentbit-config-volume
+          mountPath: /fluent-bit/etc/
+        - mountPath: /tmp/ray
+          name: log-volume
+
+  command:
+    - "apt-get install -y sudo"
+  args: []
+  headService: {{ "{}" }}
+  nodeSelector:
+    cloud.google.com/gke-nodepool: system
+
+
+worker:
+  disabled: true
+
+additionalWorkerGroups:
+{% for idx in range(num_worker_groups) %}
+    worker-grp-{{ loop.index0 }}:
+      disabled: false
+      replicas: {{ worker_group_size }}
+      minReplicas: {{ worker_group_size }}
+      maxReplicas: {{ worker_group_size }}
+      labels: {{ "{}" }}
+      serviceAccountName: ""
+      rayStartParams:
+        resources: '"{{ "{" }}\"$RAY_GROUP\": {{ gpus_per_node + cpus_per_node }}{{ "}" }}"'
+      containerEnv:
+        - name: RAY_GROUP
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['ray.io/group']
+        - name: "RAY_worker_register_timeout_seconds"
+          value: "120"
+        - name: "RAY_ENABLE_RECORD_ACTOR_TASK_LOGGING"
+          value: "1"
+        - name: "RAY_DEDUP_LOGS"
+          value: "0"
+
+      envFrom: []
+      resources:
+        limits:
+          nvidia.com/gpu: {{ gpus_per_node }}
+      {% if schedule_using_kueue %}
+      annotations:
+        {% if force_single_sbrg %}
+        kueue.x-k8s.io/podset-required-topology: "cloud.google.com/gce-topology-block"
+        {% else %}
+        kueue.x-k8s.io/podset-preferred-topology: "kubernetes.io/hostname"
+        {% endif %}
+      {% endif %}
+      {% if node_label %}
+      nodeSelector:
+        {{ node_label }}
+      {% endif %}
+      tolerations:
+        - operator: "Exists"
+          key: nvidia.com/gpu
+
+        - operator: "Exists"
+          key: cloud.google.com/impending-node-termination
+        - operator: "Exists"
+          key: user-workload
+      affinity: {{ "{}" }}
+      securityContext:
+        privileged: true
+      volumes:
+        - name: log-volume
+          emptyDir: {{ "{}" }}
+        - name: shared-memory
+          emptyDir:
+            medium: "Memory"
+            sizeLimit: 250Gi
+        - name: ray-tmp
+          emptyDir:
+            medium: "Memory"
+        - name: fluentbit-config-volume
+          configMap:
+            name: {{ cluster_name }}-fluentbit-config
+        - name: nvidia-install-dir-host
+          hostPath:
+            path: /home/kubernetes/bin/nvidia
+        - name: gib-nccl-plugin-volume
+          emptyDir: {{ "{}" }}
+      volumeMounts:
+        - mountPath: /tmp/ray
+          name: log-volume
+        - name: shared-memory
+          mountPath: /dev/shm
+        - name: nvidia-install-dir-host
+          mountPath: /usr/local/nvidia
+        - name: gib-nccl-plugin-volume
+          mountPath: /usr/local/gib
+      command:
+        - "ldconfig /usr/local/nvidia/lib64/ &&"
+        - "ldconfig -p | grep libcuda | sed 's/^/  /' &&"
+        - "export LD_LIBRARY_PATH=\"/usr/local/gib/lib64:$LD_LIBRARY_PATH\" && "
+        - "apt-get install -y sudo && "
+        - "source /usr/local/gib/scripts/set_nccl_env.sh"
+      initContainers:
+        - name: nccl-plugin-installer
+          imagePullPolicy: Always
+          image: {{ nccl_plugin_image }}
+          volumeMounts:
+          - name: gib-nccl-plugin-volume
+            mountPath: /target/usr/local/gib
+         
+          command: ["/bin/sh", "-c"]
+          args:
+          - |
+            set -ex
+            /scripts/container_entry.sh install --install-nccl
+            cp -R /var/lib/gib/. /target/usr/local/gib
+
+      sidecarContainers:
+        - name: fluent-bit
+          env:
+            - name: RAY_GROUP
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['ray.io/group']
+          image: fluent/fluent-bit:latest
+          volumeMounts:
+            - name: fluentbit-config-volume
+              mountPath: /fluent-bit/etc/
+            - mountPath: /tmp/ray
+              name: log-volume
+
+{% endfor %}
+
+service:
+  type: ClusterIP

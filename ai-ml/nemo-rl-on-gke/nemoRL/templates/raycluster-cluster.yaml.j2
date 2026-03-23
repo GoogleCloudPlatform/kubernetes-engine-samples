@@ -1,0 +1,166 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  labels:
+    {{- include "ray-cluster.labels" . | nindent 4 }}
+  name: {{ include "ray-cluster.fullname" . }}
+spec:
+  {{- if .Values.head.rayVersion }}
+  rayVersion: {{ .Values.head.rayVersion }}
+  {{- end }}
+  {{- if .Values.head.enableInTreeAutoscaling }}
+  enableInTreeAutoscaling: {{ .Values.head.enableInTreeAutoscaling }}
+  {{- end }}
+  {{- if .Values.head.autoscalerOptions }}
+  autoscalerOptions: {{- toYaml .Values.head.autoscalerOptions | nindent 4 }}
+  {{- end }}
+  headGroupSpec:
+    {{- if .Values.head.headService }}
+    headService: {{- toYaml .Values.head.headService | nindent 6 }}
+    {{- end }}
+    serviceType: {{ .Values.service.type }}
+    rayStartParams:
+    {{- if not .Values.head.rayStartParams }}
+      {}
+    {{- else }}
+      {{- range $key, $val := .Values.head.rayStartParams }}
+      {{ $key }}: {{ $val | quote }}
+      {{- end }}
+    {{- end }}
+    template:
+      spec:
+        {{- if .Values.head.serviceAccountName }}
+        serviceAccountName: {{ .Values.head.serviceAccountName }}
+        {{- end }}
+        containers:
+          - name: ray-head
+            image: {{ .Values.image.repository }}{{ if .Values.image.tag }}:{{ .Values.image.tag }}{{ end }}
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            resources: {{- toYaml .Values.head.resources | nindent 14 }}
+            {{- with .Values.head.securityContext }}
+            securityContext:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            env:
+            {{- with .Values.common.containerEnv }}
+            {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.head.containerEnv }}
+            {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- if .Values.head.ports }}
+            ports: {{- toYaml .Values.head.ports | nindent 14}}
+            {{- end }}
+            {{- if .Values.head.command }}
+            command: {{- toYaml .Values.head.command | nindent 14}}
+            {{- end }}
+            {{- if .Values.head.args }}
+            args: {{- toYaml .Values.head.args | nindent 14}}
+            {{- end }}
+            {{- if .Values.head.volumeMounts }}
+            volumeMounts: {{- toYaml .Values.head.volumeMounts | nindent 12 }}
+            {{- end }}
+          {{- if .Values.head.sidecarContainers }}
+          {{- toYaml .Values.head.sidecarContainers | nindent 10 }}
+          {{- end }}
+        {{- if .Values.head.volumes }}
+        volumes: {{- toYaml .Values.head.volumes | nindent 10 }}
+        {{- end }}
+        {{- with .Values.head.affinity }}
+        affinity:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.head.tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.head.nodeSelector }}
+        nodeSelector:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+
+  workerGroupSpecs:
+  {{- range $groupName, $values := .Values.additionalWorkerGroups }}
+  {{- if ne $values.disabled true }}
+  - rayStartParams:
+    {{- if not $values.rayStartParams }}
+      {}
+    {{- else }}
+      {{- range $key, $val := $values.rayStartParams }}
+      {{ $key }}: {{ $val | quote }}
+      {{- end }}
+    {{- end }}
+    replicas: {{ $values.replicas }}
+    minReplicas: {{ $values.minReplicas | default 0 }}
+    maxReplicas: {{ $values.maxReplicas | default 2147483647 }}
+    groupName: {{ $groupName }}
+    template:
+      spec:
+        {{- if $values.serviceAccountName }}
+        serviceAccountName: {{ $values.serviceAccountName }}
+        {{- end }}
+        {{- if $values.initContainers }}
+        initContainers: {{- toYaml $values.initContainers | nindent 10 }}
+        {{- end }}
+        containers:
+          - name: ray-worker
+            image: {{ $.Values.image.repository }}{{ if $.Values.image.tag }}:{{ $.Values.image.tag }}{{ end }}
+            imagePullPolicy: {{ $.Values.image.pullPolicy }}
+            resources: {{- toYaml $values.resources | nindent 14 }}
+            {{- with $values.securityContext }}
+            securityContext:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            env:
+            {{- with $.Values.common.containerEnv }}
+            {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with $values.containerEnv }}
+            {{- toYaml . | nindent 14}}
+            {{- end }}
+            {{- if $values.ports }}
+            ports: {{- toYaml $values.ports | nindent 14}}
+            {{- end }}
+            {{- if $values.command }}
+            command: {{- toYaml $values.command | nindent 14}}
+            {{- end }}
+            {{- if $values.args }}
+            args: {{- toYaml $values.args | nindent 14}}
+            {{- end }}
+            {{- if $values.volumeMounts }}
+            volumeMounts: {{- toYaml $values.volumeMounts | nindent 12 }}
+            {{- end }}
+          {{- if $values.sidecarContainers }}
+          {{- toYaml $values.sidecarContainers | nindent 10 }}
+          {{- end }}
+        {{- if $values.volumes }}
+        volumes: {{- toYaml $values.volumes | nindent 10 }}
+        {{- end }}
+        {{- with $values.affinity }}
+        affinity:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $values.tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $values.nodeSelector }}
+        nodeSelector:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+  {{- end }}
+  {{- end }}

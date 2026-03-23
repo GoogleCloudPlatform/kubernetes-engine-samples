@@ -1,0 +1,115 @@
+# kubectl create secret docker-registry ngc-secret \
+# --docker-server=nvcr.io \
+# --docker-username='$oauthtoken' \
+# --docker-password='nvapi-NVKEY' \
+# --docker-email='email'
+
+# kubectl create secret generic hf-secret \
+#     --from-literal=hf_api_token=${HUGGING_FACE_TOKEN} \
+#     --dry-run=client -o yaml | kubectl apply -f -
+
+# //final working server
+# vllm serve /data/nemo_rl_gemma3_25b_2_27/hf \
+#     --tensor-parallel-size 2 \
+#     --trust-remote-code \
+#     --host 0.0.0.0 \
+#     --port 8000
+
+#Testing the server
+#kubectl port-forward service/llm-service 8000:8000
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-gemma-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-server
+  template:
+    metadata:
+      labels:
+        app: gemma-server
+        ai.gke.io/model: gemma-3-27b-it
+        ai.gke.io/inference-server: vllm
+        examples.ai.gke.io/source: user-guide
+    spec:
+      containers:
+      - name: inference-server
+        image: nvcr.io/nvidia/vllm:26.02-py3
+        resources:
+          requests:
+            nvidia.com/gpu: "8"
+          limits:
+            nvidia.com/gpu: "8"
+        command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+        args:
+        - --model=$(MODEL_ID)
+        - --tensor-parallel-size=4
+        - --host=0.0.0.0
+        - --port=8000
+        - --max-model-len=4096
+        - --max-num-seqs=4
+        env:
+        - name: MODEL_ID
+          value: /data/nemo_rl_gemma3_27b_3_11/hf3-11 #Path to converted HF Checkpoint
+        
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /data
+          name: lustre-data
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 600
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 600
+          periodSeconds: 5
+      volumes:
+      - name: dshm
+        emptyDir:
+            medium: Memory
+            sizeLimit: "128Gi"
+      - name: lustre-data
+        persistentVolumeClaim:
+          claimName: lustre-pvc
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-h100-mega-80gb
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+spec:
+  selector:
+    app: gemma-server
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+
+# curl http://localhost:8000/v1/chat/completions \
+#     -H "Content-Type: application/json" \
+#     -d '{
+#         "model": "/data/nemo_rl_gemma3_27b_3_11/hf3-11",
+#         "messages": [
+#             {"role": "user", "content": "whats a double derivitive of x?"}
+#         ],
+#         "max_tokens": 200,
+#         "temperature": 0.7
+#     }'

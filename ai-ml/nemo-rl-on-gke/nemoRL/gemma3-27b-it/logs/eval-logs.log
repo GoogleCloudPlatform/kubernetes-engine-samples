@@ -1,0 +1,275 @@
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# ls
+chat_template.jinja  config.json  pytorch_model.bin  special_tokens_map.json  tokenizer.json  tokenizer_config.json
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# vim preprocessor_config.json
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# 
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# 
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# 
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# cd /opt/nemo
+nemo-rl/                       nemo_rl_container_fingerprint  nemo_rl_venv/                  
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# cd /opt/nemo
+nemo-rl/                       nemo_rl_container_fingerprint  nemo_rl_venv/                  
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/data/nemo_rl_gemma3_25b_2_27/hf# cd /opt/nemo-rl/
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/opt/nemo-rl# uv run python examples/run_eval.py     --config examples/configs/evals/math_eval.yaml     generation.model_name=/data/nemo_rl_gemma3_25b_2_27/hf     generation.temperature=0.6     generation.vllm_cfg.max_model_len=32768     data.dataset_name=math500     eval.num_tests_per_prompt=16     cluster.gpus_per_node=8
+/opt/nemo_rl_venv/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/opt/nemo_rl_venv/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+Loaded configuration from: examples/configs/evals/math_eval.yaml
+Overrides: {'--config': None, 'examples/configs/evals/math_eval': {'yaml': None}, 'generation': {'model_name': '/data/nemo_rl_gemma3_25b_2_27/hf', 'temperature': 0.6, 'vllm_cfg': {'max_model_len': 32768}}, 'data': {'dataset_name': 'math500'}, 'eval': {'num_tests_per_prompt': 16}, 'cluster': {'gpus_per_node': 8}}
+Applied CLI overrides
+Final config:
+{'--config': None,
+ 'cluster': {'gpus_per_node': 8, 'num_nodes': 1},
+ 'data': {'dataset_name': 'math500',
+          'max_input_seq_length': 32768,
+          'prompt_file': 'examples/prompts/cot.txt',
+          'system_prompt_file': None},
+ 'env': {'math': {'num_workers': 8}},
+ 'eval': {'k_value': 1,
+          'metric': 'pass@k',
+          'num_tests_per_prompt': 16,
+          'save_path': None,
+          'seed': 42},
+ 'examples/configs/evals/math_eval': {'yaml': None},
+ 'generation': {'backend': 'vllm',
+                'colocated': {'enabled': True,
+                              'resources': {'gpus_per_node': None,
+                                            'num_nodes': None}},
+                'max_new_tokens': 32768,
+                'model_name': '/data/nemo_rl_gemma3_25b_2_27/hf',
+                'num_prompts_per_step': -1,
+                'stop_strings': None,
+                'stop_token_ids': None,
+                'temperature': 0.6,
+                'top_k': -1,
+                'top_p': 1.0,
+                'vllm_cfg': {'async_engine': False,
+                             'enforce_eager': False,
+                             'expert_parallel_size': 1,
+                             'gpu_memory_utilization': 0.9,
+                             'max_model_len': 32768,
+                             'pipeline_parallel_size': 1,
+                             'precision': 'bfloat16',
+                             'tensor_parallel_size': 1}},
+ 'tokenizer': {'chat_template': 'default',
+               'chat_template_kwargs': None,
+               'name': '/data/nemo_rl_gemma3_25b_2_27/hf'}}
+2026-02-28 03:53:25,891 INFO worker.py:1630 -- Using address ray-cluster-kuberay-head-svc.default.svc.cluster.local:6379 set in the environment variable RAY_ADDRESS
+2026-02-28 03:53:25,891 INFO worker.py:1771 -- Connecting to existing Ray cluster at address: ray-cluster-kuberay-head-svc.default.svc.cluster.local:6379...
+2026-02-28 03:53:25,953 INFO worker.py:1942 -- Connected to Ray cluster. View the dashboard at http://10.4.29.26:8265 
+Using tokenizer's default chat template
+Setting up data...
+  ✓ Evaluation dataset loaded with 500 samples
+
+▶ Setting up compute cluster...
+  ✓ Ray cluster initialized with 1 nodes
+
+▶ Setting up model...
+Initializing vllm_policy workers: 100%|███████████████████████████████████████████████████████████████████████████| 8/8 [00:04<00:00,  1.65worker/s]
+  ✓ 8 workers initialized in 4.87s
+(VllmGenerationWorker pid=208398) The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:46 [utils.py:253] non-default args: {'served_model_name': '/data/nemo_rl_gemma3_25b_2_27/hf', 'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': 7, 'max_model_len': 32768, 'enable_prefix_caching': True, 'logprobs_mode': 'processed_logprobs', 'disable_log_stats': True, 'worker_extension_cls': 'nemo_rl.models.generation.vllm.vllm_backend.VllmInternalWorkerExtension', 'enable_sleep_mode': True, 'model': '/data/nemo_rl_gemma3_25b_2_27/hf'}
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:46 [model.py:631] Resolved architecture: Gemma3ForConditionalGeneration
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:46 [model.py:1745] Using max model len 32768
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:46 [arg_utils.py:1443] Using ray runtime env (env vars redacted): {'py_executable': '/opt/ray_venvs/nemo_rl.models.generation.vllm.vllm_worker.VllmGenerationWorker/bin/python', 'env_vars': {'AVAILABLE_ADDR_LIST': '***', 'AVAILABLE_PORT_LIST': '***', 'AWS_OFI_NCCL_VERSION': '***', 'BASH_ENV': '***', 'CAL_VERSION': '***', 'CUBLASMP_VERSION': '***', 'CUBLAS_VERSION': '***', 'CUDA_ARCH_LIST': '***', 'CUDA_DRIVER_VERSION': '***', 'CUDA_VERSION': '***', 'CUDNN_FRONTEND_VERSION': '***', 'CUDNN_VERSION': '***', 'CUFFT_VERSION': '***', 'CUFILE_VERSION': '***', 'CURAND_VERSION': '***', 'CUSOLVER_VERSION': '***', 'CUSPARSELT_VERSION': '***', 'CUSPARSE_VERSION': '***', 'DALI_BUILD': '***', 'DALI_URL_SUFFIX': '***', 'DALI_VERSION': '***', 'EFA_VERSION': '***', 'ENV': '***', 'FQ_RAY_IP': '***', 'GDRCOPY_VERSION': '***', 'GLOO_SOCKET_IFNAME': '***', 'HOME': '***', 'HOSTNAME': '***', 'HPCX_VERSION': '***', 'KMP_DUPLICATE_LIB_OK': '***', 'KMP_INIT_AT_FORK': '***', 'KUBERAY_GEN_RAY_START_CMD': '***', 'KUBERNETES_PORT': '***', 'KUBERNETES_PORT_443_TCP': '***', 'KUBERNETES_PORT_443_TCP_ADDR': '***', 'KUBERNETES_PORT_443_TCP_PORT': '***', 'KUBERNETES_PORT_443_TCP_PROTO': '***', 'KUBERNETES_SERVICE_HOST': '***', 'KUBERNETES_SERVICE_PORT': '***', 'KUBERNETES_SERVICE_PORT_HTTPS': '***', 'LC_CTYPE': '***', 'LD_LIBRARY_PATH': '***', 'LESSCLOSE': '***', 'LESSOPEN': '***', 'LIBRARY_PATH': '***', 'LOCAL_RANK': '***', 'LS_COLORS': '***', 'MASTER_ADDR': '***', 'MASTER_PORT': '***', 'MODEL_OPT_VERSION': '***', 'MOFED_VERSION': '***', 'NCCL_CROSS_NIC': '***', 'NCCL_IB_GID_INDEX': '***', 'NCCL_NET': '***', 'NCCL_NET_GDR_LEVEL': '***', 'NCCL_SOCKET_IFNAME': '***', 'NCCL_TUNER_CONFIG_PATH': '***', 'NCCL_VERSION': '***', 'NEMO_RL_COMMIT': '***', 'NEMO_RL_VENV_DIR': '***', 'NODE_RANK': '***', 'NPP_VERSION': '***', 'NRL_CONTAINER': '***', 'NSIGHT_COMPUTE_VERSION': '***', 'NSIGHT_SYSTEMS_VERSION': '***', 'NVIDIA_BUILD_ID': '***', 'NVIDIA_BUILD_REF': '***', 'NVIDIA_DRIVER_CAPABILITIES': '***', 'NVIDIA_PRODUCT_NAME': '***', 'NVIDIA_REQUIRE_CUDA': '***', 'NVIDIA_REQUIRE_JETPACK_HOST_MOUNTS': '***', 'NVIDIA_VISIBLE_DEVICES': '***', 'NVJITLINK_VERSION': '***', 'NVJPEG_VERSION': '***', 'NVSHMEM_VERSION': '***', 'OLDPWD': '***', 'OMPI_MCA_coll_hcoll_enable': '***', 'OPAL_PREFIX': '***', 'OPENMPI_VERSION': '***', 'OPENUCX_VERSION': '***', 'PATH': '***', 'POLYGRAPHY_VERSION': '***', 'PWD': '***', 'PYTHONBREAKPOINT': '***', 'RANK': '***', 'RAY_ADDRESS': '***', 'RAY_CLIENT_MODE': '***', 'RAY_CLOUD_INSTANCE_ID': '***', 'RAY_CLUSTER_NAME': '***', 'RAY_DASHBOARD_ENABLE_K8S_DISK_USAGE': '***', 'RAY_ENABLE_UV_RUN_RUNTIME_ENV': '***', 'RAY_GROUP': '***', 'RAY_IP': '***', 'RAY_NODE_TYPE_NAME': '***', 'RAY_PORT': '***', 'RAY_USAGE_STATS_ENABLED': '***', 'RAY_USAGE_STATS_KUBERAY_IN_USE': '***', 'RDMACORE_VERSION': '***', 'SHELL': '***', 'SHLVL': '***', 'SWANLAB_API_HOST': '***', 'SWANLAB_RUNTIME': '***', 'SWANLAB_WEB_HOST': '***', 'TERM': '***', 'TORCH_CUDA_ARCH_LIST': '***', 'TP_SOCKET_IFNAME': '***', 'TRANSFORMER_ENGINE_VERSION': '***', 'TRTOSS_VERSION': '***', 'TRT_VERSION': '***', 'UV': '***', 'UV_LINK_MODE': '***', 'UV_PROJECT_ENVIRONMENT': '***', 'UV_RUN_RECURSION_DEPTH': '***', 'VIRTUAL_ENV': '***', 'VLLM_CACHE_ROOT': '***', 'VLLM_ENABLE_V1_MULTIPROCESSING': '***', 'VLLM_SKIP_P2P_CHECK': '***', 'WORLD_SIZE': '***', '_': '***', '_CUDA_COMPAT_PATH': '***', '_MLFLOW_TELEMETRY_SESSION_ID': '***'}}
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:46 [scheduler.py:216] Chunked prefill is enabled with max_num_batched_tokens=16384.
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:49 [core.py:93] Initializing a V1 LLM engine (v0.11.2) with config: model='/data/nemo_rl_gemma3_25b_2_27/hf', speculative_config=None, tokenizer='/data/nemo_rl_gemma3_25b_2_27/hf', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=7, served_model_name=/data/nemo_rl_gemma3_25b_2_27/hf, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'use_inductor': None, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_cudagraph_capture_size': 512, 'local_cache_dir': None}
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:49 [worker_base.py:283] Injected <class 'nemo_rl.models.generation.vllm.vllm_backend.VllmInternalWorkerExtension'> into <class 'vllm.v1.worker.gpu_worker.Worker'> for extended collective_rpc calls ['_maybe_process_fp8_kv_cache', 'cleanup', 'get_zmq_address', 'init_collective', 'maybe_init_zmq', 'prepare_refit_info', 'report_device_id', 'start_gpu_profiling', 'stop_gpu_profiling', 'update_weights_from_collective', 'update_weights_via_ipc_zmq']
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:50 [parallel_state.py:1208] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://10.4.1.9:40449 backend=nccl
+(VllmGenerationWorker pid=208398) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(VllmGenerationWorker pid=208398) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(VllmGenerationWorker pid=208398) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(VllmGenerationWorker pid=208398) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(VllmGenerationWorker pid=208398) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(VllmGenerationWorker pid=208398) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(VllmGenerationWorker pid=208398) INFO 02-28 03:53:50 [parallel_state.py:1394] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+(VllmGenerationWorker pid=208398) Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+(VllmGenerationWorker pid=208404) The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored. [repeated 7x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:51 [utils.py:253] non-default args: {'served_model_name': '/data/nemo_rl_gemma3_25b_2_27/hf', 'trust_remote_code': True, 'dtype': 'bfloat16', 'seed': 2, 'max_model_len': 32768, 'enable_prefix_caching': True, 'logprobs_mode': 'processed_logprobs', 'disable_log_stats': True, 'worker_extension_cls': 'nemo_rl.models.generation.vllm.vllm_backend.VllmInternalWorkerExtension', 'enable_sleep_mode': True, 'model': '/data/nemo_rl_gemma3_25b_2_27/hf'} [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:51 [model.py:631] Resolved architecture: Gemma3ForConditionalGeneration [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:51 [model.py:1745] Using max model len 32768 [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:51 [arg_utils.py:1443] Using ray runtime env (env vars redacted): {'py_executable': '/opt/ray_venvs/nemo_rl.models.generation.vllm.vllm_worker.VllmGenerationWorker/bin/python', 'env_vars': {'AVAILABLE_ADDR_LIST': '***', 'AVAILABLE_PORT_LIST': '***', 'AWS_OFI_NCCL_VERSION': '***', 'BASH_ENV': '***', 'CAL_VERSION': '***', 'CUBLASMP_VERSION': '***', 'CUBLAS_VERSION': '***', 'CUDA_ARCH_LIST': '***', 'CUDA_DRIVER_VERSION': '***', 'CUDA_VERSION': '***', 'CUDNN_FRONTEND_VERSION': '***', 'CUDNN_VERSION': '***', 'CUFFT_VERSION': '***', 'CUFILE_VERSION': '***', 'CURAND_VERSION': '***', 'CUSOLVER_VERSION': '***', 'CUSPARSELT_VERSION': '***', 'CUSPARSE_VERSION': '***', 'DALI_BUILD': '***', 'DALI_URL_SUFFIX': '***', 'DALI_VERSION': '***', 'EFA_VERSION': '***', 'ENV': '***', 'FQ_RAY_IP': '***', 'GDRCOPY_VERSION': '***', 'GLOO_SOCKET_IFNAME': '***', 'HOME': '***', 'HOSTNAME': '***', 'HPCX_VERSION': '***', 'KMP_DUPLICATE_LIB_OK': '***', 'KMP_INIT_AT_FORK': '***', 'KUBERAY_GEN_RAY_START_CMD': '***', 'KUBERNETES_PORT': '***', 'KUBERNETES_PORT_443_TCP': '***', 'KUBERNETES_PORT_443_TCP_ADDR': '***', 'KUBERNETES_PORT_443_TCP_PORT': '***', 'KUBERNETES_PORT_443_TCP_PROTO': '***', 'KUBERNETES_SERVICE_HOST': '***', 'KUBERNETES_SERVICE_PORT': '***', 'KUBERNETES_SERVICE_PORT_HTTPS': '***', 'LC_CTYPE': '***', 'LD_LIBRARY_PATH': '***', 'LESSCLOSE': '***', 'LESSOPEN': '***', 'LIBRARY_PATH': '***', 'LOCAL_RANK': '***', 'LS_COLORS': '***', 'MASTER_ADDR': '***', 'MASTER_PORT': '***', 'MODEL_OPT_VERSION': '***', 'MOFED_VERSION': '***', 'NCCL_CROSS_NIC': '***', 'NCCL_IB_GID_INDEX': '***', 'NCCL_NET': '***', 'NCCL_NET_GDR_LEVEL': '***', 'NCCL_SOCKET_IFNAME': '***', 'NCCL_TUNER_CONFIG_PATH': '***', 'NCCL_VERSION': '***', 'NEMO_RL_COMMIT': '***', 'NEMO_RL_VENV_DIR': '***', 'NODE_RANK': '***', 'NPP_VERSION': '***', 'NRL_CONTAINER': '***', 'NSIGHT_COMPUTE_VERSION': '***', 'NSIGHT_SYSTEMS_VERSION': '***', 'NVIDIA_BUILD_ID': '***', 'NVIDIA_BUILD_REF': '***', 'NVIDIA_DRIVER_CAPABILITIES': '***', 'NVIDIA_PRODUCT_NAME': '***', 'NVIDIA_REQUIRE_CUDA': '***', 'NVIDIA_REQUIRE_JETPACK_HOST_MOUNTS': '***', 'NVIDIA_VISIBLE_DEVICES': '***', 'NVJITLINK_VERSION': '***', 'NVJPEG_VERSION': '***', 'NVSHMEM_VERSION': '***', 'OLDPWD': '***', 'OMPI_MCA_coll_hcoll_enable': '***', 'OPAL_PREFIX': '***', 'OPENMPI_VERSION': '***', 'OPENUCX_VERSION': '***', 'PATH': '***', 'POLYGRAPHY_VERSION': '***', 'PWD': '***', 'PYTHONBREAKPOINT': '***', 'RANK': '***', 'RAY_ADDRESS': '***', 'RAY_CLIENT_MODE': '***', 'RAY_CLOUD_INSTANCE_ID': '***', 'RAY_CLUSTER_NAME': '***', 'RAY_DASHBOARD_ENABLE_K8S_DISK_USAGE': '***', 'RAY_ENABLE_UV_RUN_RUNTIME_ENV': '***', 'RAY_GROUP': '***', 'RAY_IP': '***', 'RAY_NODE_TYPE_NAME': '***', 'RAY_PORT': '***', 'RAY_USAGE_STATS_ENABLED': '***', 'RAY_USAGE_STATS_KUBERAY_IN_USE': '***', 'RDMACORE_VERSION': '***', 'SHELL': '***', 'SHLVL': '***', 'SWANLAB_API_HOST': '***', 'SWANLAB_RUNTIME': '***', 'SWANLAB_WEB_HOST': '***', 'TERM': '***', 'TORCH_CUDA_ARCH_LIST': '***', 'TP_SOCKET_IFNAME': '***', 'TRANSFORMER_ENGINE_VERSION': '***', 'TRTOSS_VERSION': '***', 'TRT_VERSION': '***', 'UV': '***', 'UV_LINK_MODE': '***', 'UV_PROJECT_ENVIRONMENT': '***', 'UV_RUN_RECURSION_DEPTH': '***', 'VIRTUAL_ENV': '***', 'VLLM_CACHE_ROOT': '***', 'VLLM_ENABLE_V1_MULTIPROCESSING': '***', 'VLLM_SKIP_P2P_CHECK': '***', 'WORLD_SIZE': '***', '_': '***', '_CUDA_COMPAT_PATH': '***', '_MLFLOW_TELEMETRY_SESSION_ID': '***'}} [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:51 [scheduler.py:216] Chunked prefill is enabled with max_num_batched_tokens=16384. [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:54 [core.py:93] Initializing a V1 LLM engine (v0.11.2) with config: model='/data/nemo_rl_gemma3_25b_2_27/hf', speculative_config=None, tokenizer='/data/nemo_rl_gemma3_25b_2_27/hf', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=2, served_model_name=/data/nemo_rl_gemma3_25b_2_27/hf, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'use_inductor': None, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {}, 'max_cudagraph_capture_size': 512, 'local_cache_dir': None} [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:54 [worker_base.py:283] Injected <class 'nemo_rl.models.generation.vllm.vllm_backend.VllmInternalWorkerExtension'> into <class 'vllm.v1.worker.gpu_worker.Worker'> for extended collective_rpc calls ['_maybe_process_fp8_kv_cache', 'cleanup', 'get_zmq_address', 'init_collective', 'maybe_init_zmq', 'prepare_refit_info', 'report_device_id', 'start_gpu_profiling', 'stop_gpu_profiling', 'update_weights_from_collective', 'update_weights_via_ipc_zmq'] [repeated 7x across cluster]
+(VllmGenerationWorker pid=208402) INFO 02-28 03:53:59 [gpu_model_runner.py:3259] Starting to load model /data/nemo_rl_gemma3_25b_2_27/hf...
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:54 [parallel_state.py:1208] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://10.4.1.9:54749 backend=nccl [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) [Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0 [repeated 42x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:53:54 [parallel_state.py:1394] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0 [repeated 7x across cluster]
+(VllmGenerationWorker pid=208402) INFO 02-28 03:54:00 [layer.py:571] MultiHeadAttention attn_backend: AttentionBackendEnum.FLASH_ATTN, use_upstream_fa: False
+(VllmGenerationWorker pid=208397) INFO 02-28 03:54:16 [cuda.py:418] Valid backends: ['FLASHINFER', 'FLASH_ATTN', 'TRITON_ATTN', 'FLEX_ATTENTION']
+(VllmGenerationWorker pid=208397) INFO 02-28 03:54:16 [cuda.py:427] Using FLASHINFER backend.
+(VllmGenerationWorker pid=208397) INFO 02-28 03:54:16 [selector.py:191] Using HND KV cache layout for FLASHINFER backend.
+(VllmGenerationWorker pid=208404) INFO 02-28 03:54:04 [gpu_model_runner.py:3259] Starting to load model /data/nemo_rl_gemma3_25b_2_27/hf... [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:54:04 [layer.py:571] MultiHeadAttention attn_backend: AttentionBackendEnum.FLASH_ATTN, use_upstream_fa: False [repeated 7x across cluster]
+Loading pt checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+(VllmGenerationWorker pid=208404) Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`. [repeated 7x across cluster]
+Loading pt checkpoint shards: 100% Completed | 1/1 [01:58<00:00, 118.03s/it]
+Loading pt checkpoint shards: 100% Completed | 1/1 [01:58<00:00, 118.03s/it]
+(VllmGenerationWorker pid=208403) 
+Loading pt checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s] [repeated 7x across cluster]
+(VllmGenerationWorker pid=208403) INFO 02-28 03:56:15 [default_loader.py:314] Loading weights took 118.08 seconds
+(VllmGenerationWorker pid=208403) INFO 02-28 03:54:16 [cuda.py:418] Valid backends: ['FLASHINFER', 'FLASH_ATTN', 'TRITON_ATTN', 'FLEX_ATTENTION'] [repeated 7x across cluster]
+(VllmGenerationWorker pid=208403) INFO 02-28 03:54:16 [cuda.py:427] Using FLASHINFER backend. [repeated 7x across cluster]
+(VllmGenerationWorker pid=208403) INFO 02-28 03:54:16 [selector.py:191] Using HND KV cache layout for FLASHINFER backend. [repeated 7x across cluster]
+(VllmGenerationWorker pid=208403) INFO 02-28 03:56:16 [gpu_model_runner.py:3338] Model loading took 51.4478 GiB memory and 135.081553 seconds
+(VllmGenerationWorker pid=208403) INFO 02-28 03:56:16 [gpu_model_runner.py:4088] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 63 image items of the maximum feature size.
+(VllmGenerationWorker pid=208401) 
+Loading pt checkpoint shards: 100% Completed | 1/1 [02:10<00:00, 130.80s/it] [repeated 2x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:28 [default_loader.py:314] Loading weights took 130.85 seconds
+(VllmGenerationWorker pid=208403) INFO 02-28 03:56:28 [backends.py:631] Using cache directory: /root/.cache/vllm_4/torch_compile_cache/f6e1c48fba/rank_0_0/backbone for vLLM's torch.compile
+(VllmGenerationWorker pid=208403) INFO 02-28 03:56:28 [backends.py:647] Dynamo bytecode transform time: 10.66 s
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:28 [gpu_model_runner.py:3338] Model loading took 51.4478 GiB memory and 147.672692 seconds
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:28 [gpu_model_runner.py:4088] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 63 image items of the maximum feature size.
+(VllmGenerationWorker pid=208398) 
+(VllmGenerationWorker pid=208399) 
+(VllmGenerationWorker pid=208398) INFO 02-28 03:56:31 [default_loader.py:314] Loading weights took 134.45 seconds
+(VllmGenerationWorker pid=208397) 
+(VllmGenerationWorker pid=208402) 
+(VllmGenerationWorker pid=208400) 
+(VllmGenerationWorker pid=208404) 
+(VllmGenerationWorker pid=208403) INFO 02-28 03:56:35 [backends.py:251] Cache the graph for dynamic shape for later use
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:32 [gpu_model_runner.py:3338] Model loading took 51.4478 GiB memory and 147.677363 seconds [repeated 6x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:33 [gpu_model_runner.py:4088] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 63 image items of the maximum feature size. [repeated 6x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:40 [backends.py:631] Using cache directory: /root/.cache/vllm_1/torch_compile_cache/f6e1c48fba/rank_0_0/backbone for vLLM's torch.compile
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:40 [backends.py:647] Dynamo bytecode transform time: 10.41 s
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:32 [default_loader.py:314] Loading weights took 134.81 seconds [repeated 5x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:41 [backends.py:251] Cache the graph for dynamic shape for later use
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:45 [backends.py:631] Using cache directory: /root/.cache/vllm_2/torch_compile_cache/f6e1c48fba/rank_0_0/backbone for vLLM's torch.compile [repeated 6x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:45 [backends.py:647] Dynamo bytecode transform time: 10.65 s [repeated 6x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:50 [backends.py:282] Compiling a graph for dynamic shape takes 9.46 s
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:45 [backends.py:251] Cache the graph for dynamic shape for later use [repeated 6x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:57 [monitor.py:34] torch.compile takes 19.87 s in total
+(VllmGenerationWorker pid=208404) INFO 02-28 03:56:54 [backends.py:282] Compiling a graph for dynamic shape takes 8.62 s [repeated 7x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:58 [gpu_worker.py:359] Available KV cache memory: 88.51 GiB
+(VllmGenerationWorker pid=208401) WARNING 02-28 03:56:58 [kv_cache_utils.py:979] Add 8 padding layers, may waste at most 15.38% KV cache memory
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:58 [kv_cache_utils.py:1229] GPU KV cache size: 165,712 tokens
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:58 [kv_cache_utils.py:1234] Maximum concurrency for 32,768 tokens per request: 8.45x
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:58 [utils.py:380] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+(VllmGenerationWorker pid=208401) INFO 02-28 03:56:58 [kernel_warmup.py:65] Warming up FlashInfer attention.
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:58,898 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:58,921 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+Loading pt checkpoint shards: 100% Completed | 1/1 [02:14<00:00, 134.77s/it] [repeated 12x across cluster]
+(VllmGenerationWorker pid=208401) WARNING 02-28 03:56:59 [flashinfer.py:324] Using TRTLLM prefill attention (auto-detected).
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:59,408 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//checksums.txt from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/checksums.txt
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:59,409 - INFO - cubin_loader.py:81 - flashinfer.jit: Acquired lock for /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/checksums.txt
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:59,474 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/checksums.txt -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/checksums.txt
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:59,477 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//include/flashInferMetaInfo.h from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/include/flashInferMetaInfo.h
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:59,478 - INFO - cubin_loader.py:81 - flashinfer.jit: Acquired lock for /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/include/flashInferMetaInfo.h
+(VllmGenerationWorker pid=208401) 2026-02-28 03:56:59,747 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/include/flashInferMetaInfo.h -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/include/flashInferMetaInfo.h
+(VllmGenerationWorker pid=208404) INFO 02-28 03:57:00 [monitor.py:34] torch.compile takes 19.26 s in total [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:57:02 [gpu_worker.py:359] Available KV cache memory: 88.51 GiB [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) 2026-02-28 03:57:03,012 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ... [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) 2026-02-28 03:57:03,033 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends [repeated 7x across cluster]
+(VllmGenerationWorker pid=208401) 2026-02-28 03:57:17,416 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16VarSeqQ128Kv128PersistentContext.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16VarSeqQ128Kv128PersistentContext.cubin [repeated 2x across cluster]
+(VllmGenerationWorker pid=208401) 2026-02-28 03:57:17,417 - INFO - cubin_loader.py:81 - flashinfer.jit: Acquired lock for /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16VarSeqQ128Kv128PersistentContext.cubin [repeated 2x across cluster]
+(VllmGenerationWorker pid=208403) 2026-02-28 03:57:00,044 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/include/flashInferMetaInfo.h -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/include/flashInferMetaInfo.h
+(VllmGenerationWorker pid=208401) 2026-02-28 03:57:17,641 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16VarSeqQ128Kv128PersistentContext.cubin -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16VarSeqQ128Kv128PersistentContext.cubin
+(VllmGenerationWorker pid=208397) 2026-02-28 03:57:35,204 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin
+(VllmGenerationWorker pid=208402) 2026-02-28 03:57:35,165 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin
+(VllmGenerationWorker pid=208404) 2026-02-28 03:57:35,124 - INFO - cubin_loader.py:81 - flashinfer.jit: Acquired lock for /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin
+(VllmGenerationWorker pid=208404) 2026-02-28 03:57:35,284 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:03, 15.66it/s]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 48/51 [00:03<00:00, 13.93it/s]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:03<00:00, 14.89it/s]
+Capturing CUDA graphs (decode, FULL):   0%|          | 0/51 [00:00<?, ?it/s]
+Capturing CUDA graphs (decode, FULL):   4%|▍         | 2/51 [00:00<00:03, 12.88it/s]
+(VllmGenerationWorker pid=208400) 2026-02-28 03:57:35,994 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16VarSeqQ8Kv128PersistentSwapsAbForGen.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16VarSeqQ8Kv128PersistentSwapsAbForGen.cubin [repeated 15x across cluster]
+(VllmGenerationWorker pid=208402) 2026-02-28 03:57:36,470 - INFO - cubin_loader.py:81 - flashinfer.jit: Acquired lock for /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin [repeated 16x across cluster]
+(VllmGenerationWorker pid=208402) 2026-02-28 03:57:36,654 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvVarSeqQ8Kv128StaticSwapsAbForGen.cubin [repeated 16x across cluster]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s] [repeated 7x across cluster]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|█████████ | 46/51 [00:03<00:00, 13.76it/s] [repeated 183x across cluster]
+Capturing CUDA graphs (decode, FULL):  94%|█████████▍| 48/51 [00:03<00:00, 13.58it/s]2026-02-28 03:57:43,698 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvSlidingOrChunkedCausalP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin
+Capturing CUDA graphs (decode, FULL):  98%|█████████▊| 50/51 [00:04<00:00,  8.31it/s]
+(VllmGenerationWorker pid=208398) INFO 02-28 03:57:44 [gpu_model_runner.py:4244] Graph capturing finished in 9 secs, took 4.19 GiB
+(VllmGenerationWorker pid=208398) INFO 02-28 03:57:44 [core.py:250] init engine (profile, create kv cache, warmup model) took 72.48 seconds
+(VllmGenerationWorker pid=208404) WARNING 02-28 03:57:02 [kv_cache_utils.py:979] Add 8 padding layers, may waste at most 15.38% KV cache memory [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:57:02 [kv_cache_utils.py:1229] GPU KV cache size: 165,712 tokens [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:57:02 [kv_cache_utils.py:1234] Maximum concurrency for 32,768 tokens per request: 8.45x [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:57:03 [utils.py:380] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND. [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) INFO 02-28 03:57:03 [kernel_warmup.py:65] Warming up FlashInfer attention. [repeated 7x across cluster]
+(VllmGenerationWorker pid=208404) WARNING 02-28 03:57:03 [flashinfer.py:324] Using TRTLLM prefill attention (auto-detected). [repeated 7x across cluster]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:03<00:00, 14.53it/s] [repeated 17x across cluster]
+(VllmGenerationWorker pid=208398) INFO 02-28 03:57:46 [llm.py:352] Supported tasks: ('generate',)
+  ✓ Using vLLM backend for generation with /data/nemo_rl_gemma3_25b_2_27/hf
+
+============================================================
+                  SETUP COMPLETE
+============================================================
+
+Adding requests:   0%|          | 0/1000 [00:00<?, ?it/s]
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:03<00:00, 14.82it/s] [repeated 2x across cluster]
+Capturing CUDA graphs (decode, FULL):   0%|          | 0/51 [00:00<?, ?it/s] [repeated 7x across cluster]
+Capturing CUDA graphs (decode, FULL):  90%|█████████ | 46/51 [00:03<00:00, 12.59it/s] [repeated 183x across cluster]
+(VllmGenerationWorker pid=208404) 2026-02-28 03:57:43,844 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin
+(VllmGenerationWorker pid=208397) 2026-02-28 03:57:44,295 - INFO - cubin_loader.py:81 - flashinfer.jit: Acquired lock for /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin [repeated 5x across cluster]
+(VllmGenerationWorker pid=208397) 2026-02-28 03:57:44,458 - INFO - cubin_loader.py:111 - flashinfer.jit: File downloaded successfully: https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin -> /root/.cache/flashinfer/cubins/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin [repeated 5x across cluster]
+Adding requests:  34%|███▍      | 340/1000 [00:00<00:00, 3397.10it/s]
+Adding requests: 100%|██████████| 1000/1000 [00:00<00:00, 3713.28it/s]
+Processed prompts:   0%|          | 0/1000 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+Adding requests: 100%|██████████| 1000/1000 [00:00<00:00, 3676.59it/s]
+Adding requests: 100%|██████████| 1000/1000 [00:00<00:00, 3264.47it/s]
+Processed prompts:   0%|          | 1/1000 [00:07<2:09:50,  7.80s/it, est. speed input: 7.05 toks/s, output: 10.39 toks/s]
+Capturing CUDA graphs (decode, FULL):  94%|█████████▍| 48/51 [00:03<00:00, 13.42it/s]2026-02-28 03:57:43,994 - INFO - cubin_loader.py:209 - flashinfer.jit: Fetching cubin 463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen//fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin from https://edge.urm.nvidia.com/artifactory/sw-kernelinferencelibrary-public-generic-local/463def7494c9fc6792b5aa5b5beef34025e247ac/fmha/trtllm-gen/fmhaSm100fKernel_QkvBfloat16OBfloat16H128PagedKvDenseP16MultiCtasKvCgaVarSeqQ8Kv128StaticSwapsAbForGen.cubin [repeated 3x across cluster]
+Capturing CUDA graphs (decode, FULL): 100%|██████████| 51/51 [00:03<00:00, 12.92it/s] [repeated 19x across cluster]
+Adding requests:   0%|          | 0/1000 [00:00<?, ?it/s] [repeated 7x across cluster]
+Adding requests:  68%|██████▊   | 678/1000 [00:00<00:00, 3380.19it/s] [repeated 12x across cluster]
+Adding requests: 100%|██████████| 1000/1000 [00:00<00:00, 3733.66it/s] [repeated 2x across cluster]
+Processed prompts:   0%|          | 0/1000 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s] [repeated 7x across cluster]
+Adding requests: 100%|██████████| 1000/1000 [00:00<00:00, 3392.06it/s] [repeated 2x across cluster]
+Adding requests: 100%|██████████| 1000/1000 [00:00<00:00, 3281.46it/s]
+Processed prompts:   0%|          | 2/1000 [00:08<58:45,  3.53s/it, est. speed input: 13.18 toks/s, output: 20.13 toks/s] 
+Processed prompts:   3%|▎         | 26/1000 [00:12<03:07,  5.19it/s, est. speed input: 151.10 toks/s, output: 236.71 toks/s] [repeated 68x across cluster]
+Processed prompts:   4%|▎         | 35/1000 [00:17<01:32, 10.39it/s, est. speed input: 199.50 toks/s, output: 309.74 toks/s] [repeated 158x across cluster]
+Processed prompts:  17%|█▋        | 172/1000 [00:22<01:00, 13.60it/s, est. speed input: 695.30 toks/s, output: 1465.93 toks/s] [repeated 225x across cluster]
+Processed prompts:  29%|██▉       | 289/1000 [00:28<00:24, 29.54it/s, est. speed input: 921.89 toks/s, output: 2577.33 toks/s] [repeated 234x across cluster]
+Processed prompts:  36%|███▋      | 364/1000 [00:33<00:46, 13.80it/s, est. speed input: 996.41 toks/s, output: 3035.64 toks/s] [repeated 218x across cluster]
+Processed prompts:  42%|████▏     | 415/1000 [00:38<00:43, 13.54it/s, est. speed input: 1019.75 toks/s, output: 3198.11 toks/s] [repeated 212x across cluster]
+Processed prompts:  48%|████▊     | 485/1000 [00:43<00:38, 13.31it/s, est. speed input: 1072.24 toks/s, output: 3726.05 toks/s] [repeated 205x across cluster]
+Processed prompts:  53%|█████▎    | 532/1000 [00:48<00:35, 13.06it/s, est. speed input: 1063.74 toks/s, output: 3951.51 toks/s] [repeated 184x across cluster]
+Processed prompts:  66%|██████▌   | 661/1000 [00:53<00:57,  5.86it/s, est. speed input: 1293.41 toks/s, output: 4331.97 toks/s] [repeated 188x across cluster]
+Processed prompts:  67%|██████▋   | 671/1000 [00:58<00:29, 11.26it/s, est. speed input: 1174.88 toks/s, output: 4665.85 toks/s] [repeated 156x across cluster]
+Processed prompts:  72%|███████▏  | 724/1000 [01:03<00:29,  9.45it/s, est. speed input: 1185.47 toks/s, output: 4853.51 toks/s] [repeated 140x across cluster]
+Processed prompts:  72%|███████▏  | 722/1000 [01:08<00:30,  9.05it/s, est. speed input: 1096.11 toks/s, output: 4591.57 toks/s] [repeated 162x across cluster]
+Processed prompts:  83%|████████▎ | 828/1000 [01:13<00:15, 11.31it/s, est. speed input: 1285.61 toks/s, output: 5274.11 toks/s]
+Processed prompts:  83%|████████▎ | 831/1000 [01:13<00:13, 12.96it/s, est. speed input: 1285.64 toks/s, output: 5305.49 toks/s] [repeated 165x across cluster]
+Processed prompts:  83%|████████▎ | 833/1000 [01:18<00:31,  5.22it/s, est. speed input: 1166.11 toks/s, output: 5172.17 toks/s] [repeated 161x across cluster]
+Processed prompts:  90%|████████▉ | 895/1000 [01:23<00:18,  5.63it/s, est. speed input: 1273.74 toks/s, output: 5421.85 toks/s] [repeated 159x across cluster]
+Processed prompts:  91%|█████████▏| 913/1000 [01:25<00:06, 13.37it/s, est. speed input: 1277.47 toks/s, output: 5531.94 toks/s]
+Processed prompts:  74%|███████▍  | 744/1000 [01:28<00:13, 18.92it/s, est. speed input: 851.87 toks/s, output: 4280.80 toks/s] [repeated 128x across cluster]
+Processed prompts:  95%|█████████▍| 949/1000 [01:30<00:07,  7.13it/s, est. speed input: 1114.41 toks/s, output: 5590.31 toks/s] [repeated 44x across cluster]
+Processed prompts:  88%|████████▊ | 878/1000 [01:33<00:11, 10.30it/s, est. speed input: 920.22 toks/s, output: 4825.26 toks/s] [repeated 96x across cluster]
+Processed prompts:  94%|█████████▍| 938/1000 [01:35<00:09,  6.29it/s, est. speed input: 1109.95 toks/s, output: 5570.32 toks/s] [repeated 65x across cluster]
+Processed prompts:  88%|████████▊ | 880/1000 [01:38<00:08, 14.82it/s, est. speed input: 949.41 toks/s, output: 5123.94 toks/s] [repeated 69x across cluster]
+Processed prompts:  97%|█████████▋| 974/1000 [01:40<00:06,  4.09it/s, est. speed input: 1199.66 toks/s, output: 5678.92 toks/s] [repeated 80x across cluster]
+Processed prompts:  91%|█████████ | 911/1000 [01:43<00:16,  5.55it/s, est. speed input: 930.12 toks/s, output: 4920.54 toks/s] [repeated 24x across cluster]
+Processed prompts:  97%|█████████▋| 966/1000 [01:45<00:08,  4.04it/s, est. speed input: 967.36 toks/s, output: 5499.81 toks/s] [repeated 98x across cluster]
+Processed prompts:  91%|█████████ | 912/1000 [01:44<00:19,  4.53it/s, est. speed input: 927.20 toks/s, output: 4923.06 toks/s]
+Processed prompts: 100%|█████████▉| 998/1000 [01:50<00:00,  2.52it/s, est. speed input: 1024.42 toks/s, output: 5737.27 toks/s] [repeated 79x across cluster]
+Processed prompts: 100%|██████████| 1000/1000 [01:54<00:00,  8.70it/s, est. speed input: 993.03 toks/s, output: 5595.12 toks/s]
+Processed prompts:  99%|█████████▉| 988/1000 [01:56<00:05,  2.17it/s, est. speed input: 988.49 toks/s, output: 5684.07 toks/s] [repeated 47x across cluster]
+Processed prompts: 100%|██████████| 1000/1000 [02:00<00:00,  8.27it/s, est. speed input: 1029.41 toks/s, output: 5233.49 toks/s]
+Processed prompts: 100%|█████████▉| 999/1000 [02:01<00:00,  1.23it/s, est. speed input: 882.92 toks/s, output: 5494.36 toks/s] [repeated 43x across cluster]
+Processed prompts: 100%|██████████| 1000/1000 [02:04<00:00,  8.04it/s, est. speed input: 863.37 toks/s, output: 5396.54 toks/s] [repeated 2x across cluster]
+Processed prompts:  99%|█████████▉| 994/1000 [02:06<00:04,  1.46it/s, est. speed input: 880.34 toks/s, output: 5326.86 toks/s] [repeated 15x across cluster]
+Processed prompts: 100%|██████████| 1000/1000 [02:09<00:00,  7.75it/s, est. speed input: 819.36 toks/s, output: 5128.48 toks/s] [repeated 2x across cluster]
+Processed prompts: 100%|█████████▉| 996/1000 [02:12<00:10,  2.69s/it, est. speed input: 807.96 toks/s, output: 4639.92 toks/s] [repeated 6x across cluster]
+Processed prompts: 100%|█████████▉| 998/1000 [02:20<00:07,  3.63s/it, est. speed input: 762.99 toks/s, output: 4428.86 toks/s] [repeated 3x across cluster]
+Processed prompts: 100%|█████████▉| 999/1000 [02:34<00:06,  6.76s/it, est. speed input: 694.00 toks/s, output: 4058.10 toks/s]
+Processed prompts: 100%|██████████| 1000/1000 [08:40<00:00,  1.92it/s, est. speed input: 205.81 toks/s, output: 1265.47 toks/s] 
+Processed prompts: 100%|██████████| 1000/1000 [08:49<00:00,  1.89it/s, est. speed input: 211.95 toks/s, output: 1362.45 toks/s] 
+
+============================================================
+model_name='hf' dataset_name='math500'
+max_new_tokens=32768 temperature=0.6 top_p=1.0 top_k=-1 seed=42
+
+metric=pass@1 num_tests_per_prompt=16
+
+score=0.8949 (447.43750113248825/500)
+============================================================
+
+(VllmGenerationWorker pid=208402) INFO 02-28 03:57:45 [gpu_model_runner.py:4244] Graph capturing finished in 9 secs, took 4.19 GiB [repeated 7x across cluster]
+(VllmGenerationWorker pid=208402) INFO 02-28 03:57:45 [core.py:250] init engine (profile, create kv cache, warmup model) took 72.46 seconds [repeated 7x across cluster]
+(VllmGenerationWorker pid=208401) INFO 02-28 03:57:47 [llm.py:352] Supported tasks: ('generate',) [repeated 7x across cluster]
+root@ray-cluster-kuberay-worker-grp-0-worker-7cx2w:/opt/nemo-rl#
