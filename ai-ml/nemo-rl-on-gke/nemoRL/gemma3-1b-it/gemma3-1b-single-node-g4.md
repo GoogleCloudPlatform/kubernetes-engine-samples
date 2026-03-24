@@ -22,7 +22,7 @@ gcloud compute instances create $VM_NAME \
     --metadata=enable-osconfig=TRUE,enable-oslogin=true \
     --maintenance-policy=TERMINATE \
     --provisioning-model=STANDARD \
-    --service-account=9452062936-compute@developer.gserviceaccount.com \
+    --service-account=<your-compute-service-account>@developer.gserviceaccount.com \
     --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/trace.append \
     --accelerator=count=8,type=nvidia-rtx-pro-6000 \
     --create-disk=auto-delete=yes,boot=yes,device-name=$VM_NAME,disk-resource-policy=projects/$PROJECT/regions/$REGION/resourcePolicies/default-schedule-1,image=projects/ubuntu-os-accelerator-images/global/images/ubuntu-accelerator-2404-amd64-with-nvidia-580-v20260225,mode=rw,provisioned-iops=21000,provisioned-throughput=2400,size=3000,type=hyperdisk-balanced \
