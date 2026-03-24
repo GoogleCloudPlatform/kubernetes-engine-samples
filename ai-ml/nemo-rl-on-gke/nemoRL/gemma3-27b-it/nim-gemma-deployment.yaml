@@ -28,7 +28,7 @@ spec:
       labels:
         app: nim-gemma-3-27b-server
     spec:
-      # FIX: Corrected indentation for spec-level fields
+      
       tolerations:
       - key: "sku"
         operator: "Equal"
