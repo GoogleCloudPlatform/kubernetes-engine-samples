@@ -12,27 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# kubectl create secret docker-registry ngc-secret \
-# --docker-server=nvcr.io \
-# --docker-username='$oauthtoken' \
-# --docker-password='nvapi-NVKEY' \
-# --docker-email='email'
-
-# kubectl create secret generic hf-secret \
-#     --from-literal=hf_api_token=${HUGGING_FACE_TOKEN} \
-#     --dry-run=client -o yaml | kubectl apply -f -
-
-# //final working server
-# vllm serve /data/nemo_rl_gemma3_25b_2_27/hf \
-#     --tensor-parallel-size 2 \
-#     --trust-remote-code \
-#     --host 0.0.0.0 \
-#     --port 8000
-
-#Testing the server
-#kubectl port-forward service/llm-service 8000:8000
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -116,18 +95,3 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-
-
-
-# Note: After the model is deployed, this curl command can be used to test the model.
-# The value for the "model" key should be the path where the model is stored.
-# curl http://localhost:8000/v1/chat/completions \
-#     -H "Content-Type: application/json" \
-#     -d '{
-#         "model": "/data/nemo_rl_gemma3_27b_3_11/hf3-11",
-#         "messages": [
-#             {"role": "user", "content": "whats a double derivitive of x?"}
-#         ],
-#         "max_tokens": 200,
-#         "temperature": 0.7
-#     }'
