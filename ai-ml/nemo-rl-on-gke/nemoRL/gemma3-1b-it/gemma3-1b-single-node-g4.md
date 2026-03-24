@@ -1,6 +1,6 @@
 This document provides a step-by-step guide on how to run NeMo-RL on a single Google Cloud G4 instance featuring NVIDIA RTX PRO 6000 GPUs. The goal is to showcase the implementation of NeMo-RL for large language model training and inference. For more information on the G4 instances, please refer to the official Google Cloud documentation: [https://docs.cloud.google.com/compute/docs/gpus#rtx-6000-gpus](https://docs.cloud.google.com/compute/docs/gpus#rtx-6000-gpus).
 
-# 1. Exports
+## 1. Exports
 These environment variables are used to configure the gcloud commands in the following steps. Make sure to replace the placeholder for `PROJECT` with your Google Cloud project ID.
 
 ```bash
@@ -10,7 +10,7 @@ export REGION=us-central1
 export ZONE=us-central1-f
 ```
 
-# 2. Create RTX PRO 6000 (G4) VM
+## 2. Create RTX PRO 6000 (G4) VM
 This command creates a new Google Compute Engine virtual machine instance with the specified configuration. The machine type is `g4-standard-384` and it is equipped with 8 NVIDIA RTX PRO 6000 GPUs. The boot disk is a 3TB hyperdisk and the image used is a pre-configured Ubuntu image with NVIDIA drivers.
 
 ```bash
@@ -32,14 +32,14 @@ gcloud compute instances create $VM_NAME \
     --reservation-affinity=any
 ```
 
-# 3. SSH into the newly created VM
+## 3. SSH into the newly created VM
 This command establishes an SSH connection to the newly created VM, allowing you to execute commands on the remote machine.
 
 ```bash
 gcloud compute ssh --zone "$ZONE" "$VM_NAME" --project "$PROJECT"
 ```
 
-# 4. Docker and NVIDIA Container toolkit setup
+## 4. Docker and NVIDIA Container toolkit setup
 These commands install Docker and the NVIDIA Container Toolkit on the VM. Docker is used to run containerized applications, and the NVIDIA Container Toolkit allows Docker containers to access the GPUs.
 
 ```bash
@@ -87,7 +87,7 @@ sudo systemctl restart docker
 sudo nvidia-ctk config --set nvidia-container-cli.no-cgroups --in-place
 ```
 
-# 5. Run a nemorl container
+## 5. Run a nemorl container
 This command pulls and runs the NeMo-RL container from the NVIDIA container registry. The `--gpus all` flag makes all GPUs available to the container, and the other flags configure the container's environment.
 
 ```bash
@@ -100,7 +100,7 @@ sudo docker run --runtime=nvidia --gpus all \
     nvcr.io/nvidia/nemo-rl:v0.5.0
 ```
 
-# 6. Pre-process the dataset so it works with our GRPO example
+## 6. Pre-process the dataset so it works with our GRPO example
 These commands modify the NeMo-RL source code to correctly load the `openai/gsm8k` dataset. This is a temporary workaround and may not be necessary in future versions of NeMo-RL.
 
 ```bash
@@ -108,7 +108,7 @@ sed -i 's/subset: Optional\[str\] = None/subset: Optional[str] = "main"/' /opt/n
 sed -i 's/raw_dataset = load_dataset(data_path)/raw_dataset = load_dataset(data_path, "main")/' /opt/nemo-rl/nemo_rl/data/datasets/utils.py
 ```
 
-# 7. Run GRPO for Gemma3-1b
+## 7. Run GRPO for Gemma3-1b
 This command starts the GRPO (Generative Reward Policy Optimization) training process for the Gemma3-1b model. The configuration file `grpo-gemma3-1b-it-1n8g-fsdp2tp1.yaml` specifies the model, dataset, and training parameters. We override some of these parameters on the command line to use the `openai/gsm8k` dataset and to limit the training to 10 steps.
 
 ```bash
@@ -131,7 +131,7 @@ uv run python examples/run_grpo_math.py \
   logger.wandb_enabled=False
 ```
 
-# 8. Results, should look similar to:
+## 8. Results, should look similar to:
 The following output shows the training results and performance metrics after the training is complete. The "Training Results" section shows the loss, generation KL error, average reward, and mean generation length. The "Timing" section shows the time spent in different parts of the training process. The "Performance Metrics" section shows the throughput in terms of samples per second and tokens per second.
 
 ``` bash
