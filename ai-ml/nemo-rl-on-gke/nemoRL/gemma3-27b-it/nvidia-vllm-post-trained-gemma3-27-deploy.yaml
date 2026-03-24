@@ -118,6 +118,9 @@ spec:
       targetPort: 8000
 
 
+
+# Note: After the model is deployed, this curl command can be used to test the model.
+# The value for the "model" key should be the path where the model is stored.
 # curl http://localhost:8000/v1/chat/completions \
 #     -H "Content-Type: application/json" \
 #     -d '{

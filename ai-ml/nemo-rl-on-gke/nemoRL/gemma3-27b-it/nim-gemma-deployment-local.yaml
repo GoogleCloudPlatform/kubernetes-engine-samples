@@ -99,18 +99,28 @@ spec:
   selector:
     app: nim-gemma-3-27b-server
 
-#run after the deployment
-#kubectl port-forward service/nim-gemma-3-27b-service 8000:8000
-#list models
-#pmotgi-mac:exploration pmotgi$ curl -s http://localhost:8000/v1/models | jq .
-#Run inference
-# curl -X 'POST' \
-#     'http://0.0.0.0:8000/v1/completions' \
-#     -H 'accept: application/json' \
-#     -H 'Content-Type: application/json' \
-#     -d '{
-#       "model": "google/gemma-3-27b-it",
-#       "prompt": "Once upon a time",
-#       "max_tokens": 64
-#     }'
+# --- Testing the Deployment ---
+
+# 1. Port-forward the service to your local machine:
+#    (This allows you to access the service on localhost)
+#
+#    kubectl port-forward service/nim-gemma-3-27b-service 8000:8000
+
+# 2. List the available models:
+#    (Verify that the model is loaded and available)
+#
+#    curl -s http://localhost:8000/v1/models | jq .
+
+# 3. Run inference:
+#    (Send a request to the model to get a completion)
+#
+#    curl -X 'POST' \
+#      'http://localhost:8000/v1/completions' \
+#      -H 'accept: application/json' \
+#      -H 'Content-Type: application/json' \
+#      -d '{
+#        "model": "google/gemma-3-27b-it",
+#        "prompt": "Once upon a time",
+#        "max_tokens": 64
+#      }'
 
