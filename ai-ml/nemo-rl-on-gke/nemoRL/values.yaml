@@ -245,19 +245,7 @@ additionalWorkerGroups:
         
         exec ${KUBERAY_GEN_RAY_START_CMD}
 
-    # initContainers:
-    #   - name: nccl-plugin-installer
-    #     imagePullPolicy: Always
-    #     image: "us-docker.pkg.dev/gce-ai-infra/gpudirect-gib/nccl-plugin-gib:v1.1.0"
-    #     volumeMounts:
-    #     - name: gib-nccl-plugin-volume
-    #       mountPath: /target/usr/local/gib
-    #     command: ["/bin/sh", "-c"]
-    #     args:
-    #     - |
-    #       set -ex
-    #       /scripts/container_entry.sh install --install-nccl
-    #       cp -R /var/lib/gib/. /target/usr/local/gib
+
     sidecarContainers:
       - name: fluent-bit
         env:
