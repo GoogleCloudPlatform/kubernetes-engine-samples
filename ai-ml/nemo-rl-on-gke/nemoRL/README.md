@@ -2,14 +2,14 @@
 
 ## 1. Overview
 
-This repository provides a comprehensive guide and toolkit for fine-tuning state-of-the-art large language models (LLMs) using Reinforcement Learning (RL). The solution leverages NVIDIA's NeMo-RL framework, running on a distributed Ray cluster deployed on Google Kubernetes Engine (GKE).
+This recipe provides a comprehensive guide and toolkit for fine-tuning state-of-the-art large language models (LLMs) using Reinforcement Learning (RL). The solution leverages NVIDIA's NeMo-RL framework, running on a distributed Ray cluster deployed on Google Kubernetes Engine (GKE).
 
 The primary goal is to enhance model performance on specific tasks by applying the **GRPO (Generative Rejection Policy Optimization)** algorithm. This process has been tested with several leading models, including:
 
-*   **[Llama 3.1 (8B-it)](llama3_1_8b_it/README.md)**
+*   **[Llama 3.1 (8B-it)](llama3.1-8b/README.md)**
 *   **[Gemma 3 (1B-it)](gemma3-1b-it/gemma3-1b-single-node-g4.md)**
 *   **[Gemma 3 (27B-it)](gemma3-27b-it/README.md)**
-*   **[Qwen 2.5 (1.5B-it)](qwen2_5_1_5b_it/README.md)**
+*   **[Qwen 2.5 (1.5B-it)](qwen2-1.5b/README.md)**
 
 This example is validated on datasets **OpenMathInstruct**, **Deepscaler**, and **GSM8K**.
 
@@ -71,16 +71,16 @@ The end-to-end process for fine-tuning and deploying a model follows a structure
 
 7.  **Serve the Model:** Deploy the final, fine-tuned model for inference. This can be achieved using high-performance serving solutions like **NVIDIA NIM** or **vLLM**.
 
-## 4. How to Use This Repository
+## 4. How to Use This Folder
 
-This repository is structured to support multiple models. Each model has its own dedicated folder containing specific configurations and `README.md` files.
+This folder ([nemoRL](./)) is structured to support multiple models. Each model has its own dedicated folder containing specific configurations and `README.md` files.
 
 #### General Setup:
 
 1.  **Prerequisites:**
     *   A Google Cloud project with billing enabled.
     *   `gcloud` CLI, `kubectl`, and `helm` installed and configured.
-    *   `krew` for installing `kubectl` plugins, including the `ray` plugin.
+    *   Optional for kubectl - `krew` for installing `kubectl` plugins, including the `ray` plugin.
     *   Ray enabled on your GKE cluster.
     *   Access to a GKE cluster with GPU node pools (e.g., NVIDIA H100s, B200s, etc.).
     *   Huggingface access to models and datasets.

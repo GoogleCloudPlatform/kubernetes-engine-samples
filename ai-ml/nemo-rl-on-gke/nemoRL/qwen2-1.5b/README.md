@@ -1,6 +1,6 @@
 # Run 4 Nodes GRPO for Qwen2.5-1.5b workloads on A4 GKE Node pools with Nvidia NeMo RL Framework
 
-This recipe outlines the steps for running a Qwen2.5-1.5b GRPO workload
+This recipe outlines the steps for running a Qwen2.5-1.5b GRPO (Group Relative Policy Optimization) workload
 on [A4 GKE Node pools](https://cloud.google.com/kubernetes-engine) by using the
 [NVIDIA NeMo framework](https://github.com/NVIDIA-NeMo/RL).
 
@@ -85,14 +85,6 @@ Set the default project:
  gcloud config set project $PROJECT_ID
  ```
 
-### Get the recipe
-
-Clone the `gpu-recipes` repository and set a reference to the recipe folder.
-
-```
-git clone https://github.com/ai-hypercomputer/gpu-recipes.git
-cd gpu-recipes
-```
 
 ### Get cluster credentials
 
