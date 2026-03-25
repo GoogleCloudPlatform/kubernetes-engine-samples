@@ -1,0 +1,101 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_tpu_dws_rayjob_tpu_v6e_dws]
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: rayjob-tpu-v6e-dws-${JOB_ID}
+  labels:
+    kueue.x-k8s.io/queue-name: user-queue
+  annotations:
+    kueue.x-k8s.io/elastic-job: "true"
+spec:
+  shutdownAfterJobFinishes: true
+  entrypoint: python /app/train.py
+  runtimeEnvYAML: |
+    pip:
+      - jax[tpu]==0.8.2
+      - pandas==2.3.3
+  rayClusterSpec:
+    enableInTreeAutoscaling: true
+    headGroupSpec:
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            cloud.google.com/gke-nodepool: default-pool
+          containers:
+            - name: ray-head
+              image: rayproject/ray:2.53.0-py311
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: "4Gi"
+                requests:
+                  cpu: "2"
+                  memory: "4Gi"
+              volumeMounts:
+                - mountPath: /app
+                  name: train-script-volume
+          volumes:
+            - name: train-script-volume
+              configMap:
+                name: jax-train-script
+    workerGroupSpecs:
+      - replicas: 1
+        minReplicas: 1
+        maxReplicas: 2
+        numOfHosts: 4
+        groupName: tpu-group
+        rayStartParams: {}
+        template:
+          spec:
+            tolerations:
+              - key: "google.com/tpu"
+                operator: "Exists"
+                effect: "NoSchedule"
+              - key: "cloud.google.com/gke-queued"
+                operator: "Exists"
+                effect: "NoSchedule"
+            containers:
+              - name: ray-worker
+                image: rayproject/ray:2.53.0-py311
+                resources:
+                  limits:
+                    cpu: "8"
+                    google.com/tpu: "4"
+                    memory: "16Gi"
+                  requests:
+                    cpu: "8"
+                    google.com/tpu: "4"
+                    memory: "16Gi"
+                volumeMounts:
+                  - mountPath: /app
+                    name: train-script-volume
+            volumes:
+              - name: train-script-volume
+                configMap:
+                  name: jax-train-script
+            nodeSelector:
+              cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+              cloud.google.com/gke-tpu-topology: 4x4
+# [END gke_ai_ml_gke_ray_tpu_dws_rayjob_tpu_v6e_dws]
