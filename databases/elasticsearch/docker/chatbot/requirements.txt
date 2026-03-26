@@ -1,4 +1,4 @@
-streamlit==1.38.0
+streamlit==1.54.0
 google-cloud-aiplatform==1.65.0
 langchain==0.2.17
 langchain-community==0.2.19
