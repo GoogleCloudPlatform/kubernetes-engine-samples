@@ -26,7 +26,9 @@ if "DISABLE_SYSTEM_MESSAGE" in os.environ:
     disable_system_message = os.environ["DISABLE_SYSTEM_MESSAGE"]
 
 
-def inference_interface(message, history, model_temperature, top_p, max_tokens):
+def inference_interface(
+    message, history, model_temperature, top_p, max_tokens, enable_thinking
+):
 
     json_message = {}
 
@@ -85,23 +87,33 @@ def inference_interface(message, history, model_temperature, top_p, max_tokens):
 
             json_message["temperature"] = model_temperature
 
+            if enable_thinking:
+                json_message["chat_template_kwargs"] = {"enable_thinking": True}
+                json_message["skip_special_tokens"] = False
+
             if len(history) > 0:
                 # we have history
-                print(
-                    "** Before adding additional messages: "
-                    + str(json_message["messages"])
-                )
                 for item in history:
-                    user_message = {"role": "user", "content": item[0]}
-                    assistant_message = {"role": "assistant", "content": item[1]}
-                    json_message["messages"].append(user_message)
-                    json_message["messages"].append(assistant_message)
+                    if isinstance(item, dict):
+                        json_message["messages"].append(item)
+                    elif isinstance(item, (list, tuple)):
+                        user_message = {"role": "user", "content": item[0]}
+                        assistant_message = {"role": "assistant", "content": item[1]}
+                        json_message["messages"].append(user_message)
+                        json_message["messages"].append(assistant_message)
 
             new_user_message = {"role": "user", "content": message}
             json_message["messages"].append(new_user_message)
 
             json_data = post_request(json_message)
-            output = json_data["choices"][0]["message"]["content"]
+            message_response = json_data["choices"][0]["message"]
+            content = message_response.get("content", "")
+            reasoning = message_response.get("reasoning", "")
+
+            if enable_thinking and reasoning:
+                output = f"<details>\n<summary>Thinking</summary>\n\n{reasoning}\n\n</details>\n\n{content}"
+            else:
+                output = content or reasoning
 
     return output
 
@@ -126,9 +138,29 @@ def process_message(message, history):
     if len(history) > 0:
         # we have history
         for item in history:
-            user_message = user_prompt_format.replace("prompt", item[0])
-            system_message = system_prompt_format.replace("prompt", item[1])
-            history_message = history_message + user_message + system_message
+            if isinstance(item, dict):
+                role = item.get("role")
+                content = item.get("content")
+                if isinstance(content, list):
+                    content = "".join(
+                        [
+                            b.get("text", "")
+                            for b in content
+                            if isinstance(b, dict) and b.get("type") == "text"
+                        ]
+                    )
+                if role == "user":
+                    history_message += user_prompt_format.replace(
+                        "prompt", str(content)
+                    )
+                elif role == "assistant":
+                    history_message += system_prompt_format.replace(
+                        "prompt", str(content)
+                    )
+            elif isinstance(item, (list, tuple)):
+                user_message = user_prompt_format.replace("prompt", str(item[0]))
+                system_message = system_prompt_format.replace("prompt", str(item[1]))
+                history_message = history_message + user_message + system_message
 
     new_user_message = user_prompt_format.replace("prompt", message)
 
@@ -158,9 +190,11 @@ with gr.Blocks(fill_height=True) as app:
     max_tokens = gr.Slider(
         minimum=1, maximum=4096, value=256, label="Max Tokens", render=False
     )
+    enable_thinking = gr.Checkbox(label="Enable Thinking", value=False, render=False)
 
     gr.ChatInterface(
-        inference_interface, additional_inputs=[model_temperature, top_p, max_tokens]
+        inference_interface,
+        additional_inputs=[model_temperature, top_p, max_tokens, enable_thinking],
     )
 
 app.launch(server_name="0.0.0.0")
