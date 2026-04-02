@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: gradio
-        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.4
+        image: us-docker.pkg.dev/google-samples/containers/gke/gradio-app:v1.0.7
         resources:
           requests:
             cpu: "250m"
