@@ -13,8 +13,8 @@
 # limitations under the License.
 
 #!/bin/bash
-WANDB_API_KEY='WANDB_API_KEY' # Update this with your WANDB API key
-HF_TOKEN='HF_TOKEN' # Update this with your HF token
+WANDB_API_KEY='YOUR_WANDB_API_KEY' # Update this with your WANDB API key
+HF_TOKEN='YOUR_HF_TOKEN' # Update this with your HF token
 WORLD_SIZE=16
 
 # --- Step 1: Find the Ray Head Pod ---

@@ -15,8 +15,8 @@
 #reference: https://docs.nvidia.com/nemo/rl/0.3.0/guides/eval.html
 
 #!/bin/bash
-WANDB_API_KEY='WANDB_API_KEY' # Update this with your WANDB API key
-HF_TOKEN='HF_TOKEN' # Update this with your HF token
+WANDB_API_KEY='YOUR_WANDB_API_KEY' # Update this with your WANDB API key
+HF_TOKEN='YOUR_HF_TOKEN' # Update this with your HF token
 WORLD_SIZE=8
 DISTRIBUTED_CHECKPOINT_PATH="/data/nemo_rl_gemma3_27b_3_11" #Source Path of the NemoRL Distrbuted checkpoint
 HUGGINGFACE_CHECKPOINT_PATH="/data/nemo_rl_gemma3_27b_3_11/hf3-11" #Destination path for converted HF Checkpoint

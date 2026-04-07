@@ -16,8 +16,8 @@
 #Note- for gemma models make sure you have preprocessor-config.json to hf checkpoint folder as its essential for nemorl to read model.
 
 #!/bin/bash
-WANDB_API_KEY='WANDB_API_KEY' # Update this with your WANDB API key
-HF_TOKEN='HF_TOKEN' # Update this with your HF token
+WANDB_API_KEY='YOUR_WANDB_API_KEY' # Update this with your WANDB API key
+HF_TOKEN='YOUR_HF_TOKEN' # Update this with your HF token
 HF_CONVERTED_CHECKPOINT_PATH="/data/nemo_rl_gemma3_27b_3_11/hf3-11" #"/data/gemma-3-27b-it"  #"/data/nemo_rl_gemma3_27b_3_11/hf3-11"
 TP="4"
 WORLD_SIZE=8
