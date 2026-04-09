@@ -14,5 +14,5 @@
 
 google_adk==1.2.1
 fastapi==0.115.0
-litellm==1.68.0
+litellm==1.83.0
 uvicorn==0.34.0
