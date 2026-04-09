@@ -49,7 +49,7 @@ export HF_HOME=/opt/nemo-rl/
 ###-----Example to launch Gemma3-27B on 3 nodes (24 GPUs)----------
 uv run python examples/run_grpo_math.py \
   --config examples/configs/recipes/llm/grpo-gemma3-27b-it-8n4g-fsdp2tp4-actckpt-long.yaml \
-  cluster.num_nodes=3 \
+  cluster.num_nodes=2 \
   cluster.gpus_per_node=8 \
   grpo.max_num_steps=300 \
   checkpointing.checkpoint_dir=/data/nemo_rl_gemma3_27b_3_17 \
