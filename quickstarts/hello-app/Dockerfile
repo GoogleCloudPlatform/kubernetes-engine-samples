@@ -19,7 +19,7 @@ RUN go mod init hello-app
 COPY *.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /hello-app
 
-FROM gcr.io/distroless/base-debian11
+FROM gcr.io/distroless/static-debian12@sha256:15bfbd671b2f71aa96538aa68638391d120c633e26c270f8bd6cac446304830c
 WORKDIR /
 COPY --from=builder /hello-app /hello-app
 ENV PORT=8080
