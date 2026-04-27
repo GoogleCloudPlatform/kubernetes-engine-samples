@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.13-alpine
+FROM python:3.14-alpine
 WORKDIR /app
 
 COPY requirements.txt .
