@@ -6,7 +6,7 @@
 #
 joblib==1.5.3
     # via scikit-learn
-numpy==2.4.3
+numpy==2.4.4
     # via
     #   pandas
     #   scikit-learn
@@ -27,5 +27,5 @@ six==1.17.0
     # via python-dateutil
 threadpoolctl==3.6.0
     # via scikit-learn
-tzdata==2025.3
+tzdata==2026.2
     # via pandas
