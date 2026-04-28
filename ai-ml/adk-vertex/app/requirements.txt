@@ -13,7 +13,7 @@
 # limitations under the License.
 
 google-adk[otel-gcp]==1.16.0
-fastapi==0.115.13
-uvicorn==0.34.0
-pydantic==2.11.7
+fastapi==0.136.0
+uvicorn==0.45.0
+pydantic==2.13.3
 fsspec[gcs]
