@@ -569,9 +569,9 @@ frozenlist==1.8.0 \
     # via
     #   aiohttp
     #   aiosignal
-fsspec==2026.3.0 \
-    --hash=sha256:1ee6a0e28677557f8c2f994e3eea77db6392b4de9cd1f5d7a9e87a0ae9d01b41 \
-    --hash=sha256:d2ceafaad1b3457968ed14efa28798162f1638dbb5d2a6868a2db002a5ee39a4
+fsspec==2026.4.0 \
+    --hash=sha256:11ef7bb35dab8a394fde6e608221d5cf3e8499401c249bebaeaad760a1a8dec2 \
+    --hash=sha256:301d8ac70ae90ef3ad05dcf94d6c3754a097f9b5fe4667d2787aa359ec7df7e4
     # via fastparquet
 google-api-core[grpc]==2.22.0 \
     --hash=sha256:26f8d76b96477db42b55fd02a33aae4a42ec8b86b98b94969b7333a2c828bf35 \
