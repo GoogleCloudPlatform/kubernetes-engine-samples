@@ -13,6 +13,6 @@
 # limitations under the License.
 
 google_adk==1.2.1
-fastapi==0.115.0
-litellm==1.83.7
-uvicorn==0.34.0
+fastapi==0.136.1
+litellm==1.83.14
+uvicorn==0.46.0
