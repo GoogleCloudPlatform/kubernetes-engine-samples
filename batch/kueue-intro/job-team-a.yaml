@@ -18,7 +18,7 @@ kind: Job
 metadata:
   namespace: team-a # Job under team-a namespace
   generateName: sample-job-team-a-
-  annotations:
+  labels:
     kueue.x-k8s.io/queue-name: lq-team-a # Point to the LocalQueue
 spec:
   ttlSecondsAfterFinished: 60 # Job will be deleted after 60 seconds
