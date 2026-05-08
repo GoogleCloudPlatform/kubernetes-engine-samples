@@ -33,7 +33,7 @@ spec:
         #   kubernetes.io/hostname: 'node02'        
           env:
             - name: TOTAL_CHAOS_DURATION
-              value: '1800' # in seconds
+              value: '720' # in seconds
               
              # provide the target node name
             - name: TARGET_NODE
