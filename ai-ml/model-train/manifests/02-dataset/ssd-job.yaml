@@ -1,0 +1,112 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_model_train_02_data_load_job]
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bucket-access
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: download-script
+data:
+  download.sh: |-
+    #!/usr/bin/bash -x
+    apt-get update -y && \
+      apt-get install -y --no-install-recommends \
+      git git-lfs rsync
+    git lfs install
+    cd /tmp
+    echo "Saving dataset into tmp..."
+    time git clone --depth=1 "$DATASET_REPO"; echo "cloned"
+    if [ "$UPLOAD_SSD" == "1" ]; then
+    echo "Saving dataset into Local SSD..."
+    time rsync --info=progress2 -a /tmp/dataset/dataset/ /local-ssd/dataset/
+    fi
+    if [ "$UPLOAD_RAM" == "1" ]; then
+    echo "Saving dataset into Ram disk..."
+    time rsync --info=progress2 -a /tmp/dataset/dataset/ /ram-disk/dataset/
+    fi
+    if [ "$UPLOAD_PD" == "1" ]; then
+    echo "Saving dataset into Persistent disk..."
+    time rsync --info=progress2 -a /tmp/dataset/dataset/ /pd-ssd/dataset/
+    fi
+    if [ "$UPLOAD_BUCKET" == "1" ]; then
+    echo "Saving dataset into Bucket..."
+    time gsutil -q -m cp -r /tmp/dataset/dataset/ gs://$BUCKET_NAME/
+    echo "Dataset was successfully saved in all storages!"
+    fi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ssd-dataset-downloader
+  labels:
+    app: ssd-dataset-downloader
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    metadata:
+      labels:
+        app: ssd-dataset-downloader
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: bucket-access
+      containers:
+      - name: gcloud
+        image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+        resources:
+          requests:
+            cpu: "1"
+            memory: "3Gi"
+          limits:
+            cpu: "2"
+            memory: "3Gi"
+        command:
+        - /scripts/download.sh
+        env:
+        - name: UPLOAD_SSD
+          value: "1"
+        - name: DATASET_REPO
+          value: "https://huggingface.co/datasets/dganochenko/dataset"
+        - name: TIMEFORMAT
+          value: "%0lR"
+        volumeMounts:
+        - name: local-ssd-storage
+          mountPath: /local-ssd
+        - name: scripts-volume
+          mountPath: "/scripts/"
+          readOnly: true
+      volumes:
+      - name: scripts-volume
+        configMap:
+          defaultMode: 0700
+          name: download-script
+      - name: local-ssd-storage
+        persistentVolumeClaim:
+          claimName: local-ssd-claim
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: NoSchedule
+      - key: "app.stateful/component"
+        operator: "Equal"
+        value: "model-train"
+        effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+# [END gke_ai_ml_model_train_02_data_load_job]
