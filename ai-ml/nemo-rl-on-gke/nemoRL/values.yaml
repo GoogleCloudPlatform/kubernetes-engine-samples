@@ -60,6 +60,8 @@ head:
   containerEnv:
   - name: RAY_GROUP
     value: "head"
+  nodeSelector:
+    cloud.google.com/gke-nodepool: default-pool
   resources:
     limits:
       cpu: "64"
