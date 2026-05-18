@@ -19,7 +19,7 @@ metadata:
 spec:
   storageClassName: lustre-rwx-500mbps-per-tib
   capacity:
-    storage: 9000Gi
+    storage: 18000Gi
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
@@ -29,7 +29,7 @@ spec:
     name: lustre-pvc
   csi:
     driver: lustre.csi.storage.gke.io
-    volumeHandle: "northam-ce-mlai-tpu/asia-northeast1-b/pmotgi-lustre"
+    volumeHandle: "${PROJECT_ID}/${NODE_ZONE}/${LUSTRE_NAME}"
     volumeAttributes:
-      ip: 10.247.224.2
+      ip: ${LUSTRE_IP}
       filesystem: lustrefs
