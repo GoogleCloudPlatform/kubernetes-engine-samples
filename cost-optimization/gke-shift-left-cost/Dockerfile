@@ -23,7 +23,7 @@ COPY . ./
 RUN go build -mod=readonly -v -o /k8s-cost-estimator
 
 
-FROM alpine:3.22
+FROM alpine:3.23
 WORKDIR /app
 # Install utilities needed durin ci/cd process
 RUN apk update && apk upgrade && \
