@@ -46,12 +46,12 @@ export WANDB_API_KEY=$WANDB_API_KEY
 export HF_TOKEN=$HF_TOKEN
 export HF_HOME=/opt/nemo-rl/
 
-###-----Example to launch Gemma3-27B on 3 nodes (24 GPUs)----------
+###-----Example to launch Gemma3-27B on 2 nodes (16 GPUs)----------
 uv run python examples/run_grpo_math.py \
   --config examples/configs/recipes/llm/grpo-gemma3-27b-it-8n4g-fsdp2tp4-actckpt-long.yaml \
   cluster.num_nodes=2 \
   cluster.gpus_per_node=8 \
-  grpo.max_num_steps=300 \
+  grpo.max_num_steps=10 \
   checkpointing.checkpoint_dir=/data/nemo_rl_gemma3_27b_3_17 \
   data.dataset_name=ResponseDataset \
   +data.train_data_path=openai/gsm8k \
@@ -65,7 +65,7 @@ uv run python examples/run_grpo_math.py \
   logger.wandb_enabled=True \
   logger.wandb.name='nemo_rl_gemma3_27b_3_17' \
   grpo.num_prompts_per_step=16 \
-  grpo.num_generations_per_prompt=64 \
+  grpo.num_generations_per_prompt=32 \
   policy.generation.colocated.enabled=False \
   policy.generation.colocated.resources.num_nodes=1 \
   policy.generation.colocated.resources.gpus_per_node=8 \
