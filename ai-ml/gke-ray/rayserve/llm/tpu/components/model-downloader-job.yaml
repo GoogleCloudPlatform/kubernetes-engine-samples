@@ -69,5 +69,4 @@ spec:
           volumeAttributes:
             bucketName: ${GS_BUCKET}
             mountOptions: "implicit-dirs"
-
 # [END gke_ai_ml_gke_ray_rayserve_llm_tpu_components_model_downloader_job]

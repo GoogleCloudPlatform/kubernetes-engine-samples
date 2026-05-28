@@ -149,5 +149,4 @@ spec:
           nodeSelector:
             cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
             cloud.google.com/gke-tpu-topology: 4x4
-
 # [END gke_ai_ml_gke_ray_rayserve_llm_tpu_raycluster_v6e_multihost]

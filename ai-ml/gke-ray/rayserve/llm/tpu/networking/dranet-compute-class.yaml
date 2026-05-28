@@ -27,5 +27,4 @@ spec:
   priorities:
   - machineType: ct6e-standard-4t
     acceleratorNetworkProfile: auto
-
 # [END gke_ai_ml_gke_ray_rayserve_llm_tpu_networking_dranet_compute_class]

@@ -25,5 +25,4 @@ spec:
         exactly:
           deviceClassName: netdev.google.com
           allocationMode: All
-
 # [END gke_ai_ml_gke_ray_rayserve_llm_tpu_networking_all_netdev_template]

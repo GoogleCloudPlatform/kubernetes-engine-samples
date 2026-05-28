@@ -65,5 +65,4 @@ spec:
     port: 8080
     targetPort: 7860
   type: ClusterIP
-
 # [END gke_ai_ml_gke_ray_rayserve_llm_tpu_components_gradio]
