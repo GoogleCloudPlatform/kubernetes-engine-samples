@@ -18,20 +18,20 @@ import ray
 from ray import serve
 from ray.serve.llm import LLMConfig, ModelLoadingConfig, LLMServingArgs, build_openai_app
 
-# Read configurations from environment variables with sensible defaults
+# Read configurations from environment variables
 MODEL_ID = os.environ.get("MODEL_ID", "google/gemma-4-31B-it")
 MODEL_SOURCE = os.environ.get("MODEL_SOURCE", "/data/google/gemma-4-31B-it")
 
-# Hardware options (can easily switch between TPU-V5E, TPU-V6E, etc.)
+# TPU hardware options (i.e. TPU-V6E, TPU-V7X etc.)
 ACCELERATOR_TYPE = os.environ.get("ACCELERATOR_TYPE", "TPU-V6E")
 TPU_TOPOLOGY = os.environ.get("TPU_TOPOLOGY", "4x4")
 
-# Engine hyper-parameters (auto-converts strings to integers)
+# vLLM engine parameters
 TENSOR_PARALLEL_SIZE = int(os.environ.get("TENSOR_PARALLEL_SIZE", "16"))
 MAX_MODEL_LEN = int(os.environ.get("MAX_MODEL_LEN", "8192"))
 MAX_NUM_BATCHED_TOKENS = int(os.environ.get("MAX_NUM_BATCHED_TOKENS", "4096"))
 
-# Define generic multi-host TPU serving configuration
+# Define the multi-host TPU LLM config
 llm_config = LLMConfig(
     model_loading_config=dict(
         model_id=MODEL_ID,
