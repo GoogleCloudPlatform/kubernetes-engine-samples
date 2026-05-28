@@ -1,0 +1,29 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_rayserve_llm_tpu_networking_all_netdev_template]
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: all-netdev
+spec:
+  spec:
+    devices:
+      requests:
+      - name: req-netdev
+        exactly:
+          deviceClassName: netdev.google.com
+          allocationMode: All
+
+# [END gke_ai_ml_gke_ray_rayserve_llm_tpu_networking_all_netdev_template]
