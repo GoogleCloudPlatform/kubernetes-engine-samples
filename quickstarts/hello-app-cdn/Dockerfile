@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.24.3 as builder
+FROM golang:1.24.3 AS builder
 WORKDIR /app
 RUN go mod init hello-app-cdn
 COPY *.go ./
@@ -21,6 +21,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /hello-app-cdn
 FROM gcr.io/distroless/base-debian11
 WORKDIR /
 COPY --from=builder /hello-app-cdn /hello-app-cdn
-ENV PORT 8080
+ENV PORT=8080
 USER nonroot:nonroot
 CMD ["/hello-app-cdn"]
