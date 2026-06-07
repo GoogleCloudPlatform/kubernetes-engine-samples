@@ -1,0 +1,8 @@
+.env
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate*
+terraform/*.tfvars
+!terraform/example_vars.tfvars
+deploy/overlays/*/params.yaml
+deploy/overlays/*/params.env
