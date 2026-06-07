@@ -52,9 +52,9 @@ All commands assume `cp .env.example .env`, values filled in, `source .env`.
   `deploy/base/sandbox-template.yaml`. Only the environment key
   (`ANTHROPIC_ENVIRONMENT_KEY`) goes into the sandbox.
 
-## Gotchas to preserve
+## Implementation notes
 
-These work around upstream behavior — do not "clean up" without re-testing:
+These work around upstream behavior; do not refactor without re-testing:
 
 - `src/dispatcher/main.py` reads the bound pod IP from the core API, **not**
   `sb.get_pod_ip()` (returns `None` on GKE) and **not** the per-claim Service
