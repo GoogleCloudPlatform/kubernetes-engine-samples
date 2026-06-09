@@ -19,7 +19,8 @@ requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.40.0",
     "google-cloud-monitoring>=2.21.0",
-    "kubernetes>=30.0.0",
+    # Upper-bound until kubernetes-sigs/agent-sandbox fixes auth handling with kubernetes>=36.
+    "kubernetes>=30.0.0,<36.0.0",
 ]
 
 [tool.uv]

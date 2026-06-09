@@ -18,8 +18,10 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.40.0",
-    "k8s-agent-sandbox>=0.3.0",
-    "kubernetes>=30.0.0",
+    # Pinned to the last v1alpha1-compatible release; bump alongside the GKE add-on's API version.
+    "k8s-agent-sandbox==0.4.6",
+    # Upper-bound until kubernetes-sigs/agent-sandbox fixes auth handling with kubernetes>=36.
+    "kubernetes>=30.0.0,<36.0.0",
 ]
 
 [tool.uv]
