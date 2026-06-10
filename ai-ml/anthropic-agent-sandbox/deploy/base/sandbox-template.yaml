@@ -1,0 +1,97 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_anthropic_agent_sandbox_template]
+apiVersion: extensions.agents.x-k8s.io/v1alpha1
+kind: SandboxTemplate
+metadata:
+  name: claude-agent-worker
+spec:
+  podTemplate:
+    metadata:
+      labels:
+        app: claude-agent-worker
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        gke-gcsfuse/cpu-request: "50m"
+        gke-gcsfuse/memory-request: "64Mi"
+        gke-gcsfuse/ephemeral-storage-request: "128Mi"
+    spec:
+      serviceAccountName: claude-agent-worker
+      runtimeClassName: gvisor
+      nodeSelector:
+        sandbox.gke.io/runtime: gvisor
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: claude-agent-worker
+          imagePullPolicy: Always
+          ports:
+            - name: dispatch
+              containerPort: 8080
+          workingDir: /workspace
+          env:
+            - name: ANTHROPIC_ENVIRONMENT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-environment-key
+                  key: latest
+            - name: ANTHROPIC_ENVIRONMENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: anthropic-env
+                  key: environment_id
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+            - name: session
+              mountPath: /mnt/session
+            - name: session-outputs-gcs
+              mountPath: /mnt/gcs
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+      volumes:
+        - name: workspace
+          emptyDir: {}
+        # entrypoint.py symlinks /mnt/session/outputs -> /mnt/gcs/<session_id>.
+        - name: session
+          emptyDir: {}
+        - name: session-outputs-gcs
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: PATCHED_BY_OVERLAY
+              mountOptions: implicit-dirs,uid=1000,gid=1000
+              skipCSIBucketAccessCheck: "true"
+        - name: tmp
+          emptyDir: {}
+# [END gke_aiml_anthropic_agent_sandbox_template]
