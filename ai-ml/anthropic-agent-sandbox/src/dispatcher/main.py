@@ -78,8 +78,8 @@ def post_with_retry(url: str, body: bytes, *, attempts: int = 5, timeout: int = 
             req = urllib.request.Request(
                 url, data=body, headers={"Content-Type": "application/json"}
             )
-            urllib.request.urlopen(req, timeout=timeout)
-            return
+            with urllib.request.urlopen(req, timeout=timeout):
+                return
         except OSError as e:
             last_err = e
             time.sleep(0.5 * (2 ** i))
