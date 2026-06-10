@@ -31,7 +31,8 @@ spec:
         runtime_env:
           working_dir: "https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/archive/main.zip"
           env_vars:
-            VLLM_XLA_CACHE_PATH: "/data"
+            # Use local disk to prevent multi-host GCSFuse race conditions
+            VLLM_XLA_CACHE_PATH: "/tmp/vllm_xla_cache"
   rayClusterConfig:
     headGroupSpec:
       rayStartParams: {}
