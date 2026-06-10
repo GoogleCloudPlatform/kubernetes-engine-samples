@@ -17,6 +17,9 @@ apiVersion: ray.io/v1
 kind: RayService
 metadata:
   name: vllm-tpu-multihost
+  labels:
+    ai.gke.io/model: "gemma-4-31B-it"
+    ai.gke.io/inference-server: "vllm"
 spec:
   serveConfigV2: |
     http_options:
