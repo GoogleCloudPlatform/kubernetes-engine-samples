@@ -43,7 +43,7 @@ spec:
         - name: CONTEXT_PATH
           value: "/v1/chat/completions"
         - name: HOST
-          value: "http://vllm-tpu-multihost-head-svc:8000"
+          value: "http://vllm-tpu-multihost-serve-svc:8000"
         - name: LLM_ENGINE
           value: "openai-chat"
         - name: MODEL_ID
