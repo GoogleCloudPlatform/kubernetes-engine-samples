@@ -1,0 +1,61 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: producer-job
+spec:
+  template: # Template for the Pods the Job will create
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-nodepool
+                operator: In
+                values:
+                - "gpupool"
+      containers:
+      - name: model-download
+        image: huggingface/downloader:0.17.3
+        command: ["huggingface-cli"]
+        args:
+        - download
+        - google/gemma-2b-it
+        - --local-dir=/data/gemma-2b-it
+        - --local-dir-use-symlinks=False
+        resources:
+          limits:
+            cpu: "16"
+            memory: "64Gi"
+            nvidia.com/gpu: 1  # Assuming each node has 2 GPUs available as per your configuration.
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: hf_api_token
+        volumeMounts:
+        - mountPath: "/data"
+          name: volume
+      restartPolicy: Never
+      volumes:
+      - name: volume
+        persistentVolumeClaim:
+          claimName: producer-pvc
+  parallelism: 1         # Run 1 Pod concurrently
+  completions: 1         # Once 1 Pod completes successfully, the Job is done
+  backoffLimit: 4        # Max retries on failure
