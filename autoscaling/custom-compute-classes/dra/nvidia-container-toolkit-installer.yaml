@@ -25,6 +25,8 @@ spec:
       app: nvidia-container-toolkit-installer
   template:
     metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: nvidia-container-toolkit-installer
     spec:
