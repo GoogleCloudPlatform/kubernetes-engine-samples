@@ -1,0 +1,102 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-gemma-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-server
+  template:
+    metadata:
+      labels:
+        app: gemma-server
+        ai.gke.io/model: gemma-2b-it
+        ai.gke.io/inference-server: vllm
+        examples.ai.gke.io/source: user-guide
+    spec:
+      containers:
+      - name: init-prefetch
+        image: busybox:latest # https://boxmatrix.info/wiki/BusyBox-Commands
+        volumeMounts:
+        - mountPath: /mnt/disks/hdml
+          name: gemma-2b-it
+        command: ['/bin/sh','-ec']
+        args:
+        - |
+          df;
+          echo;
+          date;
+          time find /mnt/disks/hdml -name \*.safetensors | xargs -I {} -P 15 dd if={} of=/dev/null bs=8192k
+          date;
+          sleep infinity;
+      - name: inference-server
+        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240220_0936_RC01
+        readinessProbe:
+          httpGet:
+            path: http://localhost/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: "2"
+            memory: "7Gi"
+            ephemeral-storage: "10Gi"
+            nvidia.com/gpu: 1
+          limits:
+            cpu: "2"
+            memory: "7Gi"
+            ephemeral-storage: "10Gi"
+            nvidia.com/gpu: 1
+        command: ["python3", "-m", "vllm.entrypoints.api_server"]
+        args:
+        - --model=$(MODEL_ID)
+        - --tensor-parallel-size=1
+        env:
+        - name: MODEL_ID
+          value: /data/gemma-2b-it
+        - name: PORT
+          value: "8000"
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /data
+          name: gemma-2b-it
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gemma-2b-it
+        persistentVolumeClaim:
+          claimName: hdml-consumer-pvc
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+        cloud.google.com.node-restriction.kubernetes.io/gke-secondary-boot-disk-<DISK_IMAGE_NAME>: CONTAINER_IMAGE_CACHE.<PROJECT_ID>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+spec:
+  selector:
+    app: gemma-server
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
