@@ -91,6 +91,8 @@ For the GPUs we will use in this example, the following command is sufficient:
 
 ```console
 kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+kubectl patch daemonset nvidia-driver-installer -n kube-system -p \
+  '{"spec":{"template":{"metadata":{"annotations":{"cluster-autoscaler.kubernetes.io/safe-to-evict":"true"}}}}}'
 ```
 
 The container toolkit is installed via a DaemonSet:
