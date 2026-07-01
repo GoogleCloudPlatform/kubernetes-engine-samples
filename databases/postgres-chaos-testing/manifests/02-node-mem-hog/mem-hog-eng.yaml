@@ -35,7 +35,7 @@ spec:
           env:
             # set chaos duration (in sec) as desired
             - name: TOTAL_CHAOS_DURATION
-              value: '1800'
+              value: '720'
 
             ## Specify the size as percent of total node capacity Ex: '30'
             ## Note: For consuming memory in mebibytes change the variable to MEMORY_CONSUMPTION_MEBIBYTES
