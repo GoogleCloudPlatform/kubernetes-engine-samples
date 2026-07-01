@@ -1,0 +1,129 @@
+imagePullPolicy: IfNotPresent
+
+controller:
+  slurmctld:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: 25.11-ubuntu24.04-gke.4
+  reconfigure:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: 25.11-ubuntu24.04-gke.4
+  logfile:
+    image:
+      repository: docker.io/library/alpine
+      tag: latest
+  persistence:
+    enabled: true
+    existingClaim: ""
+    storageClassName: null
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 4Gi
+  extraConf: null
+
+  metadata:
+    labels:
+      app: slurmctld
+  extraConfMap:
+    SlurmctldDebug: verbose
+    MetricsType: metrics/openmetrics
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: false
+
+restapi:
+  replicas: 1
+  slurmrestd:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmrestd
+      tag: 25.11-ubuntu24.04-gke.4
+  podSpec:
+    nodeSelector:
+      kubernetes.io/os: linux
+
+loginsets:
+  slinky:
+    enabled: true
+    replicas: 1
+    podSpec:
+      tolerations:
+        - key: "login-pool"
+          operator: "Equal"
+          value: "login-pods"
+          effect: "NoSchedule"
+      volumes:
+        - name: home-vol
+          persistentVolumeClaim:
+            claimName: slurm-shared-storage-pvc
+    login:
+      image:
+        repository: gcr.io/gke-release/slinky/login
+        tag: 25.11-ubuntu24.04-gke.4
+      volumeMounts:
+        - name: home-vol
+          mountPath: /home
+
+nodesets:
+  slinky:
+    enabled: false
+  cpu-nodes:
+    enabled: true
+    replicas: 1
+    updateStrategy:
+        type: RollingUpdate
+    slurmd:
+      args: [" -N ${POD_NAME#slurm-worker-}"]
+      env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      image:
+        repository: gcr.io/gke-release/slinky/slurmd
+        tag: 25.11-ubuntu24.04-gke.4
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: home-vol
+          mountPath: /home
+    logfile:
+      image:
+        repository: docker.io/library/alpine
+        tag: latest
+    partition:
+      enabled: true
+      useResourceLimits: true
+      updateStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 25%
+    podSpec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - key: "slurm-pool"
+          operator: "Equal"
+          value: "cpu-nodes"
+          effect: "NoSchedule"
+      nodeSelector:
+        kubernetes.io/os: linux
+      volumes:
+        - name: home-vol
+          persistentVolumeClaim:
+            claimName: slurm-shared-storage-pvc
+    taintKubeNodes: false
+
+partitions:
+  all:
+    enabled: false
+  cpu-partition:
+    enabled: true
+    nodesets:
+      - cpu-nodes
+    configMap:
+      State: UP
+      Default: "YES"
+      MaxTime: UNLIMITED

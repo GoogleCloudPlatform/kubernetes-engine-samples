@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: slurm-filestore-pv
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  csi:
+    driver: filestore.csi.storage.gke.io
+    volumeHandle: "modeInstance/INSTANCE_ZONE/INSTANCE_NAME/SHARE_NAME"
+    volumeAttributes:
+      ip: INSTANCE_IP
+      volume: SHARE_NAME
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: slurm-shared-storage-pvc
+  namespace: slurm
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 1Ti
+  volumeName: slurm-filestore-pv
