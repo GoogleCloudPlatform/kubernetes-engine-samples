@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # [START gke_ai_ml_gke_ray_rayserve_llm_tpu_dockerfile]
-FROM vllm/vllm-tpu:v0.21.0
+FROM vllm/vllm-tpu:v0.23.0
 
 ENV VLLM_TARGET_DEVICE=tpu
 ENV VLLM_XLA_CACHE_PATH=/data
