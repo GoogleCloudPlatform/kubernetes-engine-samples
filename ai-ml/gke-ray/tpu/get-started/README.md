@@ -13,10 +13,10 @@ The repository is organized in a way to cover the entire end-to-end lifecycle of
 
 Here's how to approach its content:
 
-1. **[cluster](cluster/)**. Use Terraform to create GKE + Ray Operator add-on + TPU v6e slice + Prometheus/Grafana
-2. **[serve](serve/)**. Serve Qwen3-4B on a TPU slice with Ray Serve + vLLM
-3. **[data](data/)**. Prepare a DPO dataset
-4. **[train](train/)**. DPO fine-tune Qwen3-4B on a TPU slice with Ray Train (JaxTrainer)
+1. Use Terraform in **[cluster](cluster/)** to create the whole environment, including a GKE cluster with the Ray Operator add-on, a single-host TPU v6e `2x4` slice (8 chips), and a Prometheus + Grafana monitoring stack.
+2. Serve Qwen3-4B in **[serve](serve/)** with Ray Serve and vLLM, using topology-aware scheduling to reserve the whole slice and run tensor parallelism across all 8 chips.
+3. Use Ray Data in **[data](data/)** to prepare a DPO preference dataset and run offline batch prediction across the slice's chips.
+4. Run a DPO fine-tune of Qwen3-4B in **[train](train/)** on the slice with Ray Train's JaxTrainer and Tunix, using qwix LoRA and checkpointing to Cloud Storage.
 
 In **[data](data/)**, you also have a sample for batch-prediction on the slice with Ray Data.
 
