@@ -26,6 +26,6 @@ ARG BASE_IMAGE=docker.io/vllm/vllm-tpu:nightly-20260701-6af3d12-9969466
 FROM ${BASE_IMAGE}
 
 RUN pip install --no-cache-dir \
-      "protobuf>=6.31,<7" \
-      "google-tunix" grain \
-      wandb  # optional experiment tracking (Tunix WandbBackend)
+      "protobuf==6.33.6" \
+      "google-tunix==0.1.7" "grain==0.2.18" "qwix==0.1.8" \
+      "wandb==0.28.0"  # optional experiment tracking (Tunix WandbBackend)

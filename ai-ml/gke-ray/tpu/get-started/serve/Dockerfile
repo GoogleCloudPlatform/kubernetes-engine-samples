@@ -21,4 +21,4 @@
 ARG BASE_IMAGE=docker.io/vllm/vllm-tpu:nightly-20260701-6af3d12-9969466
 FROM ${BASE_IMAGE}
 
-RUN pip install --no-cache-dir "protobuf<6,>=5.26" "grpcio-status==1.70.0"
+RUN pip install --no-cache-dir "protobuf==5.29.6" "grpcio-status==1.70.0"
