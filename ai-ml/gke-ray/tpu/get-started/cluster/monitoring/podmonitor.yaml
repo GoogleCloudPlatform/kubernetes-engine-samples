@@ -1,0 +1,42 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Tell Prometheus to scrape Ray's metrics.
+#
+# Ray exports Prometheus metrics on port 8080 ("metrics") of every node (head and
+# workers). The kube-prometheus-stack operator only scrapes PodMonitor objects
+# whose labels match its podMonitorSelector, which defaults to the helm release
+# name (here prometheus-stack). Without this object, Prometheus collects nothing
+# from Ray and the dashboard's time-series charts stay empty.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ray-workloads
+  namespace: prometheus-system
+  labels:
+    # Must match the operator's podMonitorSelector (helm release name).
+    release: prometheus-stack
+spec:
+  # Watch Ray pods in the default namespace (where the RayService or RayCluster runs).
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      ray.io/is-ray-node: "yes"
+  podMetricsEndpoints:
+  # Ray's metrics port is named "metrics" (8080) on the head and workers.
+  - port: metrics
+    interval: 15s
+    path: /metrics
