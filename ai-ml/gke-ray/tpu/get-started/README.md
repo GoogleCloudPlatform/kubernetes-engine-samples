@@ -11,12 +11,12 @@ preference dataset (MIT). Both are ungated.
 
 The repository is organized in a way to cover the entire end-to-end lifecycle of [`Qwen/Qwen3-4B-Instruct-2507`](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507), from cluster creation, data preparation, tuning and serving.
 
-| Step | Content                 | What it shows                                                             |
-| ---- | ----------------------- | ------------------------------------------------------------------------- |
-| 0    | **[cluster](cluster/)** | Terraform: GKE + Ray Operator add-on + TPU v6e slice + Prometheus/Grafana |
-| 1    | **[serve](serve/)**     | Serve Qwen3-4B on a TPU slice with Ray Serve + vLLM                       |
-| 2    | **[data](data/)**       | Prepare a DPO dataset                                                     |
-| 3    | **[train](train/)**     | DPO fine-tune Qwen3-4B on a TPU slice with Ray Train (JaxTrainer)         |
+Here's how to approach its content:
+
+1. **[cluster](cluster/)**. Use Terraform to create GKE + Ray Operator add-on + TPU v6e slice + Prometheus/Grafana
+2. **[serve](serve/)**. Serve Qwen3-4B on a TPU slice with Ray Serve + vLLM
+3. **[data](data/)**. Prepare a DPO dataset
+4. **[train](train/)**. DPO fine-tune Qwen3-4B on a TPU slice with Ray Train (JaxTrainer)
 
 In **[data](data/)**, you also have a sample for batch-prediction on the slice with Ray Data.
 
