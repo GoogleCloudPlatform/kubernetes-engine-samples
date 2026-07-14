@@ -65,6 +65,16 @@ spec:
             # your Grafana URL (localhost:3000 when you port-forward Grafana to 3000).
             - name: RAY_GRAFANA_IFRAME_HOST
               value: "http://localhost:3000"
+            # Ray Serve high-throughput ingress (Ray 2.56+). Needs haproxy in the
+            # image (see Dockerfile). Set on head and worker.
+            - name: RAY_SERVE_ENABLE_HA_PROXY
+              value: "1"
+            - name: RAY_SERVE_THROUGHPUT_OPTIMIZED
+              value: "1"
+            - name: RAY_SERVE_LLM_ENABLE_DIRECT_STREAMING
+              value: "1"
+            - name: VLLM_USE_RAY_V2_EXECUTOR_BACKEND
+              value: "1"
             resources:
               limits: {cpu: "4", memory: 16Gi}
               requests: {cpu: "4", memory: 16Gi}
@@ -97,6 +107,16 @@ spec:
               value: "tpu,cpu"
             - name: ENABLE_PJRT_COMPATIBILITY
               value: "true"
+            # Ray Serve high-throughput ingress (Ray 2.56+). Needs haproxy in the
+            # image (see Dockerfile). Set on head and worker.
+            - name: RAY_SERVE_ENABLE_HA_PROXY
+              value: "1"
+            - name: RAY_SERVE_THROUGHPUT_OPTIMIZED
+              value: "1"
+            - name: RAY_SERVE_LLM_ENABLE_DIRECT_STREAMING
+              value: "1"
+            - name: VLLM_USE_RAY_V2_EXECUTOR_BACKEND
+              value: "1"
             volumeMounts:
             - name: app-code
               mountPath: /home/ray/app

@@ -21,4 +21,10 @@
 ARG BASE_IMAGE=docker.io/vllm/vllm-tpu:nightly-20260701-6af3d12-9969466
 FROM ${BASE_IMAGE}
 
+# haproxy powers Ray Serve's high-throughput ingress (RAY_SERVE_ENABLE_HA_PROXY).
+# The base image does not ship it.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends haproxy \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir "protobuf==5.29.6" "grpcio-status==1.70.0"

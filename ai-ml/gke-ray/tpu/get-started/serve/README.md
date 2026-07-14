@@ -11,6 +11,8 @@ get-started README for cluster setup.
 
 ## Prerequisites
 
+Before you deploy, make sure you have:
+
 - A GKE cluster with the Ray Operator add-on and a **TPU v6e** node pool
   (`2x4`, single host, 8 chips, `ct6e-standard-8t`). See [`../cluster/`](../cluster/).
 - A Kubernetes ServiceAccount (`ray-tpu-sa`) with access to your model cache bucket.
@@ -32,9 +34,26 @@ get-started README for cluster setup.
 ## About the base image
 
 The image is a pinned nightly, `vllm/vllm-tpu:nightly-20260701-6af3d12-9969466`,
-the first to bundle Ray 2.56, vLLM, and `ray.serve.llm` on TPU. The pin locks the validated stack, and `Dockerfile` adds the `protobuf<6` fix Ray Serve needs.
+the first to bundle Ray 2.56, vLLM, and `ray.serve.llm` on TPU.
 
-Nightly tags can be pruned from Docker Hub over time. For a durable setup, mirror this image to your own Artifact Registry and reference that instead.
+Nightly tags can be pruned from Docker Hub over time. For a durable setup,
+mirror this image to your own Artifact Registry and reference that instead.
+
+In the image, the pin locks the validated stack, and `Dockerfile` adds the
+`protobuf<6` fix and `haproxy` for the high-throughput ingress with Ray Serve.
+You enable high-throughput serving (Ray 2.56+) with env vars on the head and
+worker:
+
+- `RAY_SERVE_ENABLE_HA_PROXY` puts an HAProxy load balancer in front of each
+  pod's Serve proxy.
+- `RAY_SERVE_THROUGHPUT_OPTIMIZED` turns on throughput optimizations, including
+  direct gRPC data-plane traffic between Serve replicas.
+- `RAY_SERVE_LLM_ENABLE_DIRECT_STREAMING` streams requests and responses
+  straight to the backend instead of through the ingress.
+- `VLLM_USE_RAY_V2_EXECUTOR_BACKEND` runs vLLM on the Ray V2 executor backend.
+
+These help most under high load with multiple replicas. See the
+[KubeRay high-throughput guide](https://docs.ray.io/en/master/cluster/kubernetes/user-guides/kuberay-serve-high-throughput.html).
 
 ## Deploy
 
@@ -99,7 +118,7 @@ kubectl -n prometheus-system port-forward svc/prometheus-stack-grafana 3000:80
 #   open http://localhost:3000  (default login admin / prom-operator)
 ```
 
-See [cluster → Monitoring](../cluster/#monitoring) for the full metrics walkthrough.
+See [cluster/monitoring](../cluster/#monitoring) for the full metrics walkthrough.
 
 ## How it works
 
