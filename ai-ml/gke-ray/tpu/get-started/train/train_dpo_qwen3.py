@@ -213,6 +213,12 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--topology", default="2x4")
     parser.add_argument("--accelerator-type", default="TPU-V6E")
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=1,
+        help="TPU hosts in the slice (1 for a single-host 2x4)",
+    )
     # Optional WandB. Pass --wandb-project to enable (auth via WANDB_API_KEY).
     parser.add_argument(
         "--wandb-project", default="", help="W&B project (enables logging)"
@@ -236,7 +242,7 @@ def main() -> None:
             use_tpu=True,
             topology=args.topology,
             accelerator_type=args.accelerator_type,
-            num_workers=1,  # one worker per host, 2x4 is a single-host slice
+            num_workers=args.num_workers,
         ),
         run_config=RunConfig(name="qwen3-dpo"),
     )
