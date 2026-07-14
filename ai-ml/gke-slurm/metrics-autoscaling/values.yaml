@@ -90,7 +90,7 @@ nodesets:
     enabled: true
     replicas: 1
     updateStrategy:
-        type: RollingUpdate
+      type: RollingUpdate
     slurmd:
       args: [" -N ${POD_NAME#slurm-worker-}"]
       env:
