@@ -32,6 +32,8 @@ rejected_responses}`. Qwen3-4B has a JAX-native Tunix implementation
 
 ## Prerequisites
 
+Before you launch the DPO run, make sure you have:
+
 1. **Cluster** with a v6e slice + GCS FUSE CSI driver ([`../cluster/`](../cluster/)).
 2. **Training image** with vLLM-TPU nightly + Tunix + grain (see `Dockerfile`). Build
    it with `cloudbuild.yaml`:

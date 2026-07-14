@@ -22,6 +22,8 @@ slice, so the serve and train manifests select `tpu-v6e-slice` / `2x4`.
 
 ## Prerequisites
 
+Before you provision the cluster, make sure you have:
+
 - `terraform` >= 1.5, `gcloud`, `kubectl`.
 - A GCP project with **TPU v6e quota** in your chosen zone. Check with:
   ```bash

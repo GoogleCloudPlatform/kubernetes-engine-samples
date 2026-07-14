@@ -100,4 +100,4 @@ Starting from ingesting data, below you have the process:
 ## Next
 
 - **[train](../train/)**. DPO fine-tune Qwen3-4B on the prepared JSONL.
-- **[cluster → Monitoring](../cluster/#monitoring)**. Watch TPU utilization while jobs run.
+- **[cluster/monitoring](../cluster/#monitoring)**. Watch TPU utilization while jobs run.
