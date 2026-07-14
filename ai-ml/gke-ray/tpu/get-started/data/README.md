@@ -13,6 +13,18 @@ Two things Ray Data does around a TPU fine-tune, both distributed on CPU:
 This is the **data** sample in the Ray-on-TPU get-started set. It runs against the
 cluster from [`../cluster/`](../cluster/).
 
+## Prerequisites
+
+Before you run the data jobs, make sure you have:
+
+- A cluster from [`../cluster/`](../cluster/) up and running.
+- A **Ray head to submit to** (`ray job submit`). Prepare is CPU-only and can use
+  any running RayCluster or RayService (for example serve's `qwen3-serve`).
+  **Batch prediction** needs the [train](../train/) RayCluster (`qwen3-dpo`),
+  which gcsfuse-mounts the bucket at `/data` and holds the TPU slice. Set
+  `RAY_CLUSTER_NAME` to whichever you use.
+- `kubectl` and the Ray CLI (`pip install ray`).
+
 ## Dataset
 
 [`HuggingFaceH4/ultrafeedback_binarized`](https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized)
@@ -29,7 +41,7 @@ emits the Tunix DPO schema: `prompts`, `chosen_responses`, `rejected_responses`.
 
 ## Prepare the data
 
-With the cluster up and a RayCluster running (see below), submit the prep job:
+Submit the prep job:
 
 ```bash
 # port-forward the Ray head dashboard

@@ -96,6 +96,10 @@ ray job submit --address http://localhost:8265 --working-dir . -- \
 reference model, applies LoRA, and logs the DPO loss decreasing over steps. The
 LoRA checkpoint lands under `/data/ckpts/qwen3-dpo` (i.e. in your bucket).
 
+The slice defaults to a single-host `2x4`. For a multi-host topology, pass
+`--topology` and `--num-workers` (one worker per host) to match, and set the
+RayCluster's `numOfHosts` to the same count.
+
 ## Optional: Weights & Biases tracking
 
 W&B logging is off by default. To enable it:
