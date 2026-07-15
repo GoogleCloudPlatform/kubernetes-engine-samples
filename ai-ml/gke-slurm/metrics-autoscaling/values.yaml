@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ai_ml_gke_slurm_metrics_autoscaling]
+# [START gke_ai_ml_gke_slurm_metrics_autoscaling_values]
 
 imagePullPolicy: IfNotPresent
 
@@ -143,3 +143,5 @@ partitions:
       State: UP
       Default: "YES"
       MaxTime: UNLIMITED
+
+# [END gke_ai_ml_gke_slurm_metrics_autoscaling_values]

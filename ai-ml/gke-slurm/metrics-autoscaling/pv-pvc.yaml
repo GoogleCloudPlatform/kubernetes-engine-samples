@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ai_ml_gke_slurm_metrics_autoscaling]
+# [START gke_ai_ml_gke_slurm_metrics_autoscaling_pv_pvc]
 
 apiVersion: v1
 kind: PersistentVolume
@@ -46,3 +46,5 @@ spec:
     requests:
       storage: 1Ti
   volumeName: PV_NAME
+
+# [END gke_ai_ml_gke_slurm_metrics_autoscaling_pv_pvc]

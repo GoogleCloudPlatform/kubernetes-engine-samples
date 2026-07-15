@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START gke_ai_ml_gke_slurm_metrics_autoscaling]
+# [START gke_ai_ml_gke_slurm_metrics_autoscaling_keda]
 
 apiVersion: monitoring.googleapis.com/v1
 kind: PodMonitoring
@@ -61,3 +61,5 @@ spec:
     authenticationRef:
       kind: ClusterTriggerAuthentication
       name: google-workload-identity-auth
+
+# [END gke_ai_ml_gke_slurm_metrics_autoscaling_keda]
