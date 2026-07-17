@@ -1,0 +1,75 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_slurm_autopilot_values]
+
+controller:
+  slurmctld:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: ${IMAGE_TAG}
+  reconfigure:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: ${IMAGE_TAG}
+
+restapi:
+  replicas: 1
+  slurmrestd:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmrestd
+      tag: ${IMAGE_TAG}
+
+nodesets:
+  slinky:
+    enabled: true
+    replicas: 1
+    metadata:
+      labels:
+        # The label value must exactly match the name of the WorkloadAllowlist
+        cloud.google.com/matching-allowlist: slurm-worker-allowlist.yaml
+    slurmd:
+      image:
+        repository: gcr.io/gke-release/slinky/slurmd
+        tag: ${IMAGE_TAG}
+      volumeMounts:
+        - name: shared-dir
+          mountPath: /shared
+      resources:
+        requests:
+          cpu: "30"
+          memory: "110Gi"
+        limits:
+          cpu: "30"
+          memory: "110Gi"
+
+    # Optional: You can request a specific GKE Compute class
+    podSpec:
+      volumes:
+        - name: shared-dir
+          persistentVolumeClaim:
+            claimName: slurm-shared-storage
+      nodeSelector:
+        cloud.google.com/compute-class: Performance
+
+loginsets:
+  slinky:
+    enabled: true
+    replicas: 1
+    login:
+      image:
+        repository: gcr.io/gke-release/slinky/login
+        tag: ${IMAGE_TAG}
+
+# [END gke_ai_ml_gke_slurm_autopilot_values]
