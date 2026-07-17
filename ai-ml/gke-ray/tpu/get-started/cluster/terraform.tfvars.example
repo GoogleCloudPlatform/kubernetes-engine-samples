@@ -1,0 +1,38 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Copy to terraform.tfvars and fill in. Provisions a TPU v6e slice on GKE with
+# the Ray Operator add-on and kube-prometheus-stack (Prometheus, Grafana, Ray
+# dashboards). Spot by default to keep costs low.
+
+project_id = "" # your GCP project ID (required)
+zone       = "us-east5-b" # a zone with TPU v6e capacity
+
+cluster_name = "ray-tpu-get-started"
+ksa_name     = "ray-tpu-sa"
+
+# TPU v6e single-host. A 2x4 slice is 8 chips (256 GB HBM) on one ct6e-standard-8t
+# VM. Qwen3-4B is small and text-only, so 8 v6e chips comfortably serve it,
+# fine-tune it with LoRA, and run batch inference. The whole get-started set runs
+# on this one slice.
+tpu_machine_type = "ct6e-standard-8t"
+tpu_accelerator  = "tpu-v6e-slice"
+tpu_topology     = "2x4"
+num_tpu_slices   = 1
+nodes_per_slice  = 1
+tpu_spot         = true # about 5x cheaper, may be preempted mid-run
+
+# Qwen3-4B and ultrafeedback are ungated, so a Hugging Face token is optional. If
+# set, it is stored in Secret Manager and mirrored to a k8s secret. Leave "" to skip.
+hf_token = ""
