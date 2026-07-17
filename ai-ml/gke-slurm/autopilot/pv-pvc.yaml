@@ -17,28 +17,28 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: ${PV_NAME}
+  name: PV_NAME
 spec:
   capacity:
-    storage: ${FILESTORE_CAPACITY}
+    storage: FILESTORE_CAPACITY
   accessModes:
   - ReadWriteMany
   nfs:
-    path: /${FILESTORE_SHARE}
-    server: ${FS_IP}
+    path: /FILESTORE_SHARE
+    server: FILESTORE_IP
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ${PVC_NAME}
+  name: PVC_NAME
   namespace: slurm
 spec:
   accessModes:
   - ReadWriteMany
   resources:
     requests:
-      storage: ${FILESTORE_CAPACITY
-  volumeName: ${PV_NAME}
+      storage: FILESTORE_CAPACITY
+  volumeName: PV_NAME
   storageClassName: ""
 
 # [END gke_ai_ml_gke_slurm_autopilot_pv_pvc]

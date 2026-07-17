@@ -19,8 +19,8 @@ kind: AllowlistSynchronizer
 metadata:
   name: slurm-worker-synchronizer
 spec:
-  projectNumber: ${PROJECT_NUMBER}
-  bucketName: ${ALLOWLIST_BUCKET}
+  projectNumber: PROJECT_NUMBER
+  bucketName: ALLOWLIST_BUCKET
   allowlistPaths:
     - allowlists/slurm-worker-allowlist.yaml
 

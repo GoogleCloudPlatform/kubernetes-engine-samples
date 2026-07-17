@@ -54,7 +54,7 @@ matchingCriteria:
           name: slurm-logfile
   containers:
     - name: slurmd
-      image: gcr.io/gke-release/slinky/slurmd:${IMAGE_TAG}
+      image: gcr.io/gke-release/slinky/slurmd:IMAGE_TAG
       args:
         - -Z
         - --conf-server

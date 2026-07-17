@@ -18,18 +18,18 @@ controller:
   slurmctld:
     image:
       repository: gcr.io/gke-release/slinky/slurmctld
-      tag: ${IMAGE_TAG}
+      tag: IMAGE_TAG
   reconfigure:
     image:
       repository: gcr.io/gke-release/slinky/slurmctld
-      tag: ${IMAGE_TAG}
+      tag: IMAGE_TAG
 
 restapi:
   replicas: 1
   slurmrestd:
     image:
       repository: gcr.io/gke-release/slinky/slurmrestd
-      tag: ${IMAGE_TAG}
+      tag: IMAGE_TAG
 
 nodesets:
   slinky:
@@ -42,7 +42,7 @@ nodesets:
     slurmd:
       image:
         repository: gcr.io/gke-release/slinky/slurmd
-        tag: ${IMAGE_TAG}
+        tag: IMAGE_TAG
       volumeMounts:
         - name: shared-dir
           mountPath: /shared
@@ -70,6 +70,6 @@ loginsets:
     login:
       image:
         repository: gcr.io/gke-release/slinky/login
-        tag: ${IMAGE_TAG}
+        tag: IMAGE_TAG
 
 # [END gke_ai_ml_gke_slurm_autopilot_values]
