@@ -1,0 +1,67 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_aiml_hotswap_hero_train_job_workloads_low_priority_job_autopilot]
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+ name: low-priority
+ annotations:
+   alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool
+spec:
+ failurePolicy:
+   maxRestarts: 100
+ replicatedJobs:
+ - name: job
+   replicas: 1
+   template:
+     spec:
+       parallelism: 2
+       completions: 4
+       backoffLimit: 0
+       template:
+         metadata:
+           labels:
+             priority: low-priority
+         spec:
+           nodeSelector:
+             cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+             cloud.google.com/gke-tpu-topology: 2x4
+             cloud.google.com/gke-spot: "true"
+           priorityClassName: low-prior-job
+           terminationGracePeriodSeconds: 0
+           containers:
+           - name: jax-tpu
+             image: python:3.8
+             ports:
+             - containerPort: 8471
+             - containerPort: 8080
+             - containerPort: 8431
+             command:
+             - bash
+             - -c
+             - |
+               pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+               python -c 'import jax; print("Global device count:", jax.device_count())'
+               sleep 60000
+             resources:
+               requests:
+                 cpu: 10
+                 memory: 50Gi
+                 google.com/tpu: 4
+               limits:
+                 cpu: 10
+                 memory: 50Gi
+                 google.com/tpu: 4
+# [END gke_aiml_hotswap_hero_train_job_workloads_low_priority_job_autopilot]
