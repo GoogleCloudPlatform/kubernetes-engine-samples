@@ -1,0 +1,50 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: ai-ml-gke-ray-tpu-get-started-ci
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ai-ml-gke-ray-tpu-get-started-ci.yml'
+      - 'ai-ml/gke-ray/tpu/get-started/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ai-ml-gke-ray-tpu-get-started-ci.yml'
+      - 'ai-ml/gke-ray/tpu/get-started/**'
+jobs:
+  job:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate cluster Terraform
+        run: |
+          cd ai-ml/gke-ray/tpu/get-started/cluster
+          terraform init -backend=false
+          terraform validate
+      # The serve and train images build on the large vllm-tpu nightly base, so
+      # free the runner disk before building to avoid running out of space.
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /usr/local/.ghcup
+          df -h /
+      - name: Build serve container image
+        run: |
+          cd ai-ml/gke-ray/tpu/get-started/serve
+          docker build --tag qwen3-serve-tpu .
+      - name: Build train container image
+        run: |
+          cd ai-ml/gke-ray/tpu/get-started/train
+          docker build --tag qwen3-train-tpu .
