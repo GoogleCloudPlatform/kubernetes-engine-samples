@@ -34,7 +34,7 @@ steps:
   # Download the model in parallel with the build. python:slim has no gcloud,
   # so a separate cloud-sdk step does the upload.
   - id: download-model
-    name: python:3.12-slim
+    name: python:3.13-slim
     waitFor: ["-"]
     entrypoint: bash
     args:
