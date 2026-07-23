@@ -1,5 +1,5 @@
 
-FROM python:3.12-slim
+FROM python:3.13-slim
 WORKDIR /app
 RUN apt-get -y update
 RUN apt-get -y install git
