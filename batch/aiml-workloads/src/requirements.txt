@@ -6,20 +6,24 @@
 #
 joblib==1.5.3
     # via scikit-learn
-numpy==2.4.4
+narwhals==2.24.0
+    # via scikit-learn
+numpy==2.4.6
     # via
     #   pandas
     #   scikit-learn
     #   scipy
-pandas==2.2.2
+pandas==2.3.3
     # via -r requirements.in
+pyjwt==2.13.0
+    # via redis
 python-dateutil==2.9.0.post0
     # via pandas
-pytz==2026.1.post1
+pytz==2026.2
     # via pandas
-redis==5.0.8
+redis==5.3.1
     # via -r requirements.in
-scikit-learn==1.5.1
+scikit-learn==1.9.0
     # via -r requirements.in
 scipy==1.17.1
     # via scikit-learn
@@ -27,5 +31,5 @@ six==1.17.0
     # via python-dateutil
 threadpoolctl==3.6.0
     # via scikit-learn
-tzdata==2026.2
+tzdata==2026.3
     # via pandas
