@@ -1,0 +1,56 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: two-super-slices
+  labels:
+    kueue.x-k8s.io/queue-name: lq
+spec:
+  replicatedJobs:
+    - name: job-jax
+      replicas: 2
+      template:
+        spec:
+          parallelism: 64  # Pods per slice calculation: (4*8*8) / 4 = 64
+          completions: 64
+          backoffLimit: 10
+          template:
+            metadata:
+              annotations:
+                cloud.google.com/gke-tpu-slice-topology: 4x8x8
+            spec:
+              tolerations:
+                - key: "google.com/tpu"
+                  operator: "Equal"
+                  value: "present"
+                  effect: "NoSchedule"
+              nodeSelector:
+                cloud.google.com/gke-tpu-accelerator: tpu7x
+                cloud.google.com/gke-tpu-partition-4x4x4-state: "HEALTHY"
+              containers:
+                - name: jax
+                  image: python:latest
+                  command:
+                    - bash
+                    - -c
+                    - |
+                      printenv
+                      pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+                      python -c 'import jax; print("Global device count:", jax.device_count(), "Local device count:", jax.local_device_count())'
+                  resources:
+                    limits:
+                      google.com/tpu: 4
+              restartPolicy: Never
