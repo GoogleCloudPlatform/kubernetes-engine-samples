@@ -1,0 +1,113 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_tpu_get_started_train_raycluster]
+# RayCluster for Qwen3-4B DPO training on a v6e slice. The data bucket is
+# gcsfuse-mounted at /data on head and worker, so the trainer reads the staged
+# model (and writes checkpoints) as local paths under /data.
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: qwen3-dpo
+spec:
+  rayVersion: "2.56.0"
+  headGroupSpec:
+    rayStartParams: {}
+    template:
+      metadata:
+        annotations:
+          gke-gcsfuse/volumes: "true"
+      spec:
+        serviceAccountName: ${KSA_NAME}
+        containers:
+        - name: ray-head
+          image: ${TRAIN_IMAGE}
+          imagePullPolicy: IfNotPresent
+          ports:
+          - {containerPort: 6379, name: gcs}
+          - {containerPort: 8265, name: dashboard}
+          - {containerPort: 10001, name: client}
+          - {containerPort: 8080, name: metrics}
+          env:
+          # Wire the Ray dashboard's Metrics tab to the cluster's Prometheus and Grafana
+          # so the Ray Train dashboard populates during the DPO run. See ../cluster for
+          # the PodMonitor and monitoring setup. HOST vars are in-cluster service DNS.
+          # IFRAME host is the Grafana URL the browser loads panels from (localhost:3000).
+          - name: RAY_PROMETHEUS_HOST
+            value: "http://prometheus-stack-kube-prom-prometheus.prometheus-system.svc:9090"
+          - name: RAY_GRAFANA_HOST
+            value: "http://prometheus-stack-grafana.prometheus-system.svc:80"
+          - name: RAY_PROMETHEUS_NAME
+            value: "Prometheus"
+          - name: RAY_GRAFANA_IFRAME_HOST
+            value: "http://localhost:3000"
+          resources:
+            limits: {cpu: "8", memory: 32Gi}
+            requests: {cpu: "8", memory: 32Gi}
+          volumeMounts:
+          - name: data
+            mountPath: /data
+        volumes:
+        - name: data
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: ${DATA_BUCKET}
+              mountOptions: "implicit-dirs"
+  workerGroupSpecs:
+  - groupName: tpu-group
+    replicas: 1
+    minReplicas: 1
+    maxReplicas: 1
+    numOfHosts: 1
+    rayStartParams: {}
+    template:
+      metadata:
+        annotations:
+          gke-gcsfuse/volumes: "true"
+      spec:
+        serviceAccountName: ${KSA_NAME}
+        containers:
+        - name: ray-worker
+          image: ${TRAIN_IMAGE}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits: {google.com/tpu: "8", cpu: "24", memory: 200Gi}
+            requests: {google.com/tpu: "8", cpu: "24", memory: 200Gi}
+          env:
+          - name: JAX_PLATFORMS
+            value: "tpu,cpu"
+          # Optional WandB key from the k8s secret the cluster Terraform creates
+          # (only when wandb_api_key is set). optional is true so the pod starts
+          # fine when WandB is not configured.
+          - name: WANDB_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: wandb-api-key
+                key: key
+                optional: true
+          volumeMounts:
+          - name: data
+            mountPath: /data
+        volumes:
+        - name: data
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: ${DATA_BUCKET}
+              mountOptions: "implicit-dirs"
+        nodeSelector:
+          cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+          cloud.google.com/gke-tpu-topology: 2x4
+# [END gke_ai_ml_gke_ray_tpu_get_started_train_raycluster]

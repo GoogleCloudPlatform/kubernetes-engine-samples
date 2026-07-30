@@ -1,0 +1,130 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_tpu_get_started_serve_rayservice]
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: qwen3-serve
+spec:
+  serveConfigV2: |
+    http_options:
+      host: 0.0.0.0
+      port: 8000
+    applications:
+      - name: llm
+        import_path: serve_qwen3_tpu:deployment
+        runtime_env:
+          env_vars:
+            PYTHONPATH: "/home/ray/app"
+            MODEL_ID: "Qwen/Qwen3-4B-Instruct-2507"
+            ACCELERATOR_TYPE: "TPU-V6E"
+            TPU_TOPOLOGY: "2x4"
+            TENSOR_PARALLEL_SIZE: "8"
+            VLLM_XLA_CACHE_PATH: "/tmp/vllm_xla_cache"
+  rayClusterConfig:
+    headGroupSpec:
+      rayStartParams: {}
+      template:
+        spec:
+          serviceAccountName: ${KSA_NAME}
+          containers:
+          - name: ray-head
+            image: ${SERVE_IMAGE}
+            imagePullPolicy: IfNotPresent
+            ports:
+            - {containerPort: 6379, name: gcs}
+            - {containerPort: 8265, name: dashboard}
+            - {containerPort: 10001, name: client}
+            - {containerPort: 8000, name: serve}
+            - {containerPort: 8080, name: metrics}
+            env:
+            # Wire the Ray dashboard's Metrics tab to the cluster's Prometheus and
+            # Grafana. Without these, the time-series charts stay empty.
+            # HOST vars are in-cluster service DNS (the head talks to them).
+            - name: RAY_PROMETHEUS_HOST
+              value: "http://prometheus-stack-kube-prom-prometheus.prometheus-system.svc:9090"
+            - name: RAY_GRAFANA_HOST
+              value: "http://prometheus-stack-grafana.prometheus-system.svc:80"
+            # Datasource name must match the Grafana Prometheus datasource
+            # (kube-prometheus-stack names it "Prometheus").
+            - name: RAY_PROMETHEUS_NAME
+              value: "Prometheus"
+            # IFRAME host is what the browser loads the embedded panels from. Point it at
+            # your Grafana URL (localhost:3000 when you port-forward Grafana to 3000).
+            - name: RAY_GRAFANA_IFRAME_HOST
+              value: "http://localhost:3000"
+            # Ray Serve high-throughput ingress (Ray 2.56+). Needs haproxy in the
+            # image (see Dockerfile). Set on head and worker.
+            - name: RAY_SERVE_ENABLE_HA_PROXY
+              value: "1"
+            - name: RAY_SERVE_THROUGHPUT_OPTIMIZED
+              value: "1"
+            - name: RAY_SERVE_LLM_ENABLE_DIRECT_STREAMING
+              value: "1"
+            - name: VLLM_USE_RAY_V2_EXECUTOR_BACKEND
+              value: "1"
+            resources:
+              limits: {cpu: "4", memory: 16Gi}
+              requests: {cpu: "4", memory: 16Gi}
+            volumeMounts:
+            - name: app-code
+              mountPath: /home/ray/app
+          volumes:
+          - name: app-code
+            configMap:
+              name: qwen3-serve-code
+    workerGroupSpecs:
+    - groupName: tpu-group
+      replicas: 1
+      minReplicas: 1
+      maxReplicas: 1
+      numOfHosts: 1
+      rayStartParams: {}
+      template:
+        spec:
+          serviceAccountName: ${KSA_NAME}
+          containers:
+          - name: ray-worker
+            image: ${SERVE_IMAGE}
+            imagePullPolicy: IfNotPresent
+            resources:
+              limits: {google.com/tpu: "8", cpu: "24", memory: 200Gi}
+              requests: {google.com/tpu: "8", cpu: "24", memory: 200Gi}
+            env:
+            - name: JAX_PLATFORMS
+              value: "tpu,cpu"
+            - name: ENABLE_PJRT_COMPATIBILITY
+              value: "true"
+            # Ray Serve high-throughput ingress (Ray 2.56+). Needs haproxy in the
+            # image (see Dockerfile). Set on head and worker.
+            - name: RAY_SERVE_ENABLE_HA_PROXY
+              value: "1"
+            - name: RAY_SERVE_THROUGHPUT_OPTIMIZED
+              value: "1"
+            - name: RAY_SERVE_LLM_ENABLE_DIRECT_STREAMING
+              value: "1"
+            - name: VLLM_USE_RAY_V2_EXECUTOR_BACKEND
+              value: "1"
+            volumeMounts:
+            - name: app-code
+              mountPath: /home/ray/app
+          volumes:
+          - name: app-code
+            configMap:
+              name: qwen3-serve-code
+          nodeSelector:
+            cloud.google.com/gke-tpu-accelerator: tpu-v6e-slice
+            cloud.google.com/gke-tpu-topology: 2x4
+# [END gke_ai_ml_gke_ray_tpu_get_started_serve_rayservice]

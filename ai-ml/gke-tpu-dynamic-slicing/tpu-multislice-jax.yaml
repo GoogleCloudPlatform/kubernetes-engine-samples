@@ -1,0 +1,66 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: tpu-multislice-jax
+  annotations:
+    alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-tpu-slice
+spec:
+  failurePolicy:
+    maxRestarts: 3
+  replicatedJobs:
+  - name: slice-job
+    replicas: 2
+    template:
+      spec:
+        parallelism: 16
+        completions: 16
+        backoffLimit: 0
+        completionMode: Indexed
+        template:
+          metadata:
+            annotations:
+              # The shape of the slice
+              cloud.google.com/gke-tpu-slice-topology: 4x4x4
+          spec:
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
+            nodeSelector:
+              cloud.google.com/gke-tpu-topology: 4x4x4
+              cloud.google.com/gke-tpu-accelerator: tpu7x
+              # IMPORTANT: Do NOT put 'cloud.google.com/gke-tpu-slice' here manually.
+              # The exclusive-topology annotation handles the slice assignment automatically.
+            containers:
+            - name: jax-worker
+              image: python:3.12
+              securityContext:
+                privileged: true
+              ports:
+              - containerPort: 8471
+              command:
+              - bash
+              - -c
+              - |
+                set -ex
+                pip install -U --pre jax jaxlib libtpu requests -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+                # Verify JobSet injected the specific slice ID for this worker
+                echo "JobSet Index: $JOB_COMPLETION_INDEX"
+                python -c 'import jax; print("Total TPU devices:", jax.device_count())'
+              resources:
+                requests:
+                  google.com/tpu: 4
+                limits:
+                  google.com/tpu: 4

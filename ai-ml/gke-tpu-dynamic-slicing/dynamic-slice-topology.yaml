@@ -1,0 +1,69 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: Topology
+metadata:
+  name: superslice-topology
+spec:
+  levels:
+  # Label to identify the physical block a sub-block belongs to.
+  # Only sub-blocks from the same block can form a slice.
+  - nodeLabel: cloud.google.com/gce-topology-block
+  # Label to identify individual TPU sub-blocks (4x4x4 topology).
+  - nodeLabel: cloud.google.com/gke-tpu-partition-4x4x4-id
+  # Standard Kubernetes label for individual nodes.
+  # Required to assign Pods to specific VMs.
+  - nodeLabel: kubernetes.io/hostname
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: superslice-rf
+spec:
+  nodeLabels:
+    cloud.google.com/gke-tpu-accelerator: tpu7x
+  topologyName: superslice-topology
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: AdmissionCheck
+metadata:
+  name: superslice-ac
+spec:
+  controllerName: accelerator.gke.io/slice
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: cq
+spec:
+  namespaceSelector: {}
+  admissionChecks:
+  - superslice-ac
+  resourceGroups:
+  - coveredResources:
+    - google.com/tpu
+    flavors:
+    - name: superslice-rf
+      resources:
+      - name: google.com/tpu
+        nominalQuota: "999999"  # modeling unlimited quota
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: lq
+  namespace: default
+spec:
+  clusterQueue: cq

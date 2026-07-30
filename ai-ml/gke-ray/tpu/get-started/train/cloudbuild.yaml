@@ -1,0 +1,64 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Builds the Qwen3-4B DPO-on-TPU training image and stages the model weights to
+# GCS, in parallel. The RayCluster gcsfuse-mounts $_MODEL_BUCKET so the trainer
+# reads the safetensors as a local path.
+#
+# Run with
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_IMAGE=REGION-docker.pkg.dev/PROJECT_ID/ray-tpu/ray-tpu-train:v1,\
+# _MODEL_BUCKET=gs://BUCKET_NAME/models/qwen3-4b-2507 .
+substitutions:
+  _IMAGE: "REGION-docker.pkg.dev/PROJECT_ID/ray-tpu/ray-tpu-train:v1"
+  _MODEL_ID: "Qwen/Qwen3-4B-Instruct-2507"
+  _MODEL_BUCKET: "gs://PROJECT_ID-ray-tpu-data/models/qwen3-4b-2507"
+steps:
+  # Build the training image (starts immediately).
+  - id: build-image
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["-"]
+    args: ["build", "-t", "${_IMAGE}", "-f", "Dockerfile", "."]
+
+  # Download the model in parallel with the build. python:slim has no gcloud,
+  # so a separate cloud-sdk step does the upload.
+  - id: download-model
+    name: python:3.12-slim
+    waitFor: ["-"]
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        pip install -q -U "huggingface_hub[cli]" hf_transfer
+        export PATH="$$HOME/.local/bin:$$PATH"
+        export HF_HUB_ENABLE_HF_TRANSFER=1
+        # One --include per pattern (the flag takes a single glob each).
+        hf download "${_MODEL_ID}" \
+          --include "*.safetensors" --include "*.json" --include "*.model" --include "*.jinja" \
+          --local-dir /workspace/model
+  # Upload the staged model to GCS (after the download).
+  - id: stage-model
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: ["download-model"]
+    entrypoint: bash
+    args:
+      - -c
+      - gcloud storage cp -r /workspace/model/* "${_MODEL_BUCKET}/"
+images:
+  - "${_IMAGE}"
+timeout: 3600s
+options:
+  machineType: E2_HIGHCPU_8
+  diskSizeGb: "200"
