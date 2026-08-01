@@ -1,0 +1,24 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "chart.fullname" . }}-selfsigned-issuer
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "chart.fullname" . }}-certificate
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+  - '{{ include "chart.fullname" . }}-service.{{ .Release.Namespace }}.svc'
+  - '{{ include "chart.fullname" . }}-service.{{ .Release.Namespace }}.svc.local'
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: '{{ include "chart.fullname" . }}-selfsigned-issuer'
+  secretName: diagon-webhook-certificate

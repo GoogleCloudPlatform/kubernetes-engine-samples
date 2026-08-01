@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    control-plane: diagon-connection-operator
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.diagonConnectionOperator.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: connection-operator
+      control-plane: diagon-connection-operator
+    {{- include "chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: connection-operator
+        control-plane: diagon-connection-operator
+      {{- include "chart.selectorLabels" . | nindent 8 }}
+      annotations:
+        kubectl.kubernetes.io/default-container: controller
+    spec:
+      containers:
+      - args: {{- toYaml .Values.diagonConnectionOperator.controller.args | nindent 8 }}
+        command:
+        - /manager
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.diagonConnectionOperator.controller.image.repository }}:{{ .Values.diagonConnectionOperator.controller.image.tag
+          | default .Chart.AppVersion }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: controller
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources: {{- toYaml .Values.diagonConnectionOperator.controller.resources | nindent
+          10 }}
+        securityContext: {{- toYaml .Values.diagonConnectionOperator.controller.containerSecurityContext
+          | nindent 10 }}
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: '{{ .Values.diagonConnectionOperator.googleCloudMldiagnosticsProfiler.image.repository
+          }}:{{ .Values.diagonConnectionOperator.googleCloudMldiagnosticsProfiler.image.tag
+          | default .Chart.AppVersion }}'
+        name: google-cloud-mldiagnostics-profiler
+        ports:
+        - containerPort: 5001
+        resources: {}
+        securityContext: {{- toYaml .Values.diagonConnectionOperator.googleCloudMldiagnosticsProfiler.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-volume
+      securityContext: {{- toYaml .Values.diagonConnectionOperator.podSecurityContext |
+        nindent 8 }}
+      serviceAccountName: {{ include "chart.fullname" . }}
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - emptyDir: {}
+        name: tmp-volume
