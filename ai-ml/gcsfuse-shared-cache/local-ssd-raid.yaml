@@ -1,0 +1,76 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: gke-raid-disks
+  namespace: default
+  labels:
+    k8s-app: gke-raid-disks
+spec:
+  selector:
+    matchLabels:
+      name: gke-raid-disks
+  template:
+    metadata:
+      labels:
+        name: gke-raid-disks
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-local-nvme-ssd: "true"
+        node.kubernetes.io/instance-type: "c4-standard-4-lssd"
+      hostPID: true
+      containers:
+      - name: startup-script
+        image: registry.k8s.io/startup-script:v2
+        securityContext:
+          privileged: true
+        env:
+        - name: STARTUP_SCRIPT
+          value: |
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            devices=()
+            for ssd in /dev/disk/by-id/google-local-ssd-block*; do
+              if [ -e "${ssd}" ]; then
+                devices+=("${ssd}")
+              fi
+            done
+            if [ "${#devices[@]}" -eq 0 ]; then
+              echo "No Local NVMe SSD disks found."
+              exit 0
+            fi
+
+            seen_arrays=(/dev/md/*)
+            device=${seen_arrays[0]}
+            echo "Setting RAID array with Local SSDs on device ${device}"
+            if [ ! -e "$device" ]; then
+              device="/dev/md/0"
+              echo "y" | mdadm --create "${device}" --level=0 --force --raid-devices=${#devices[@]} "${devices[@]}"
+            fi
+
+            if ! tune2fs -l "${device}" ; then
+              echo "Formatting '${device}'"
+              mkfs.ext4 -F "${device}"
+            fi
+
+            mountpoint=/mnt/disks/raid/0
+            mkdir -p "${mountpoint}"
+            echo "Mounting '${device}' at '${mountpoint}'"
+            mount -o discard,defaults "${device}" "${mountpoint}"
+            chmod a+w "${mountpoint}"
