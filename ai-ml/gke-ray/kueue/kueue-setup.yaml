@@ -1,0 +1,94 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_ray_kueue_setup]
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: reservation-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-nodepool: gpu-pool-reservation
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: dws-flex-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-nodepool: gpu-pool-dws-flex
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: spot-flavor
+spec:
+  nodeLabels:
+    cloud.google.com/gke-nodepool: gpu-pool-spot
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: default-cpu-flavor
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: cluster-queue
+spec:
+  namespaceSelector: {} # Match all namespaces
+  resourceGroups:
+  - coveredResources: ["nvidia.com/gpu", "cpu", "memory"]
+    flavors:
+    - name: default-cpu-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: "0"
+      - name: "cpu"
+        nominalQuota: "8"
+      - name: "memory"
+        nominalQuota: "32Gi"
+    - name: reservation-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: "1"
+      - name: "cpu"
+        nominalQuota: "4"
+      - name: "memory"
+        nominalQuota: "15Gi"
+    - name: dws-flex-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: "1"
+      - name: "cpu"
+        nominalQuota: "4"
+      - name: "memory"
+        nominalQuota: "15Gi"
+    - name: spot-flavor
+      resources:
+      - name: "nvidia.com/gpu"
+        nominalQuota: "1"
+      - name: "cpu"
+        nominalQuota: "4"
+      - name: "memory"
+        nominalQuota: "15Gi"
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: user-queue
+  namespace: default
+spec:
+  clusterQueue: cluster-queue
+# [END gke_ai_ml_ray_kueue_setup]

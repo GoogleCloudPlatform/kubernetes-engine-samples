@@ -1,0 +1,129 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_ray_ephemeral_job]
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: ephemeral-gpu-job
+  labels:
+    # Route this job through Kueue
+    kueue.x-k8s.io/queue-name: user-queue
+spec:
+  # The Python command to run
+  entrypoint: |
+    python -c "
+    import ray, time, socket
+    ray.init()
+    print('Cluster resources:', ray.cluster_resources())
+    @ray.remote(num_gpus=1)
+    def gpu_task(task_id):
+        ip = socket.gethostbyname(socket.gethostname())
+        print(f'Task {task_id} running on node with IP: {ip}')
+        time.sleep(5)
+        return ip
+    futures = [gpu_task.remote(i) for i in range(3)]
+    results = ray.get(futures)
+    print('Tasks successfully executed on nodes:', set(results))
+    "
+  # Automatically delete the RayCluster after the job finishes
+  shutdownAfterJobFinishes: true
+  rayClusterSpec:
+    rayVersion: '2.9.0'
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+      template:
+        spec:
+          containers:
+          - name: ray-head
+            image: rayproject/ray:2.9.0
+            resources:
+              requests:
+                cpu: "1"
+                memory: "4Gi"
+              limits:
+                cpu: "1"
+                memory: "4Gi"
+    workerGroupSpecs:
+    # Worker Group 1: Reservation GPU capacity
+    - groupName: worker-group-reservation
+      replicas: 1
+      minReplicas: 1
+      maxReplicas: 1
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            cloud.google.com/gke-nodepool: gpu-pool-reservation
+            cloud.google.com/gke-accelerator: nvidia-tesla-t4
+          containers:
+          - name: ray-worker
+            image: rayproject/ray:2.9.0
+            resources:
+              requests:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+              limits:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+    # Worker Group 2: DWS Flex GPU capacity
+    - groupName: worker-group-dws-flex
+      replicas: 1
+      minReplicas: 1
+      maxReplicas: 1
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            cloud.google.com/gke-nodepool: gpu-pool-dws-flex
+            cloud.google.com/gke-accelerator: nvidia-tesla-t4
+          containers:
+          - name: ray-worker
+            image: rayproject/ray:2.9.0
+            resources:
+              requests:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+              limits:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+    # Worker Group 3: Spot GPU capacity
+    - groupName: worker-group-spot
+      replicas: 1
+      minReplicas: 1
+      maxReplicas: 1
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            cloud.google.com/gke-nodepool: gpu-pool-spot
+            cloud.google.com/gke-accelerator: nvidia-tesla-t4
+          containers:
+          - name: ray-worker
+            image: rayproject/ray:2.9.0
+            resources:
+              requests:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+              limits:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+# [END gke_ai_ml_ray_ephemeral_job]
