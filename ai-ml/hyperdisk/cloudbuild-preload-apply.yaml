@@ -1,0 +1,97 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+# This step clones the repository containing the manifests into the working directory.
+  - name: 'gcr.io/cloud-builders/git'
+    id: 'Clone repo'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        git clone -b hyperdiskml-preload-model --single-branch https://github.com/epam/kubernetes-engine-samples.git
+
+# This step creates the StorageClass for Hyperdisk ML, PVC with read-write-once mode, and a job for weights download.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        ls -la
+        gcloud container clusters get-credentials ${_CLUSTER_NAME} --location=${_REGION}
+        kubectl create secret generic hf-secret --from-literal=hf_api_token=${_HF_TOKEN} --dry-run=client -o yaml | kubectl apply -f -
+        kubectl create -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-ml-storage-class.yaml
+        kubectl create -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-producer-pvc.yaml
+        kubectl apply -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-preload-job-${_CLUSTER_TYPE}.yaml
+
+# This step waits for the job to finish before proceeding to the next step.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    id: 'check_job_run'
+    args:
+      - '-c'
+      - |
+        echo "Waiting for job to complete"
+        while true; do
+          if [[ "$(kubectl get jobs producer-job -o=jsonpath='{.status.succeeded}')" == "1" ]]; then
+            echo "Job completed successfully."
+            break
+          fi
+          echo "Job is not yet complete. Waiting..."
+          sleep 30
+        done
+# This step prepares the snapshot for the future PVs.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    waitFor:
+      - 'check_job_run'
+    args:
+      - '-c'
+      - |
+        kubectl apply -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-disk-image-vsc.yaml
+        kubectl apply -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-snapshot.yaml
+
+# This step waits until the snapshot is ready to use.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    id: 'check_snapshot_readiness'
+    args:
+      - '-c'
+      - |
+        echo "Waiting for VolumeSnapshot to be ready..."
+        while [[ "$(kubectl get volumesnapshot hyperdisk-snapshot -o=jsonpath='{.status.readyToUse}')" != "true" ]]; do
+          echo "Snapshot not ready. Waiting..."
+          sleep 30
+        done
+        echo "Snapshot is ready to use!"
+
+# This step creates a multi-zonal StorageClass, PVC, and applies the deployment with the inference server.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    waitFor:
+      - 'check_snapshot_readines'
+    args:
+      - '-c'
+      - |
+        kubectl apply -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-ml-multi-zone.yaml
+        kubectl apply -f kubernetes-engine-samples/ai-ml/hyperdisk/hyperdisk-consumer-pvc.yaml
+        sleep 180
+        if [ "${_CLUSTER_TYPE}" = "autopilot" ]; then
+          sed "s|<DISK_IMAGE_NAME>|${_DISK_IMAGE}|g; s|<PROJECT_ID>|${_PROJECT_ID}|g" kubernetes-engine-samples/ai-ml/hyperdisk/model-deployment-${_CLUSTER_TYPE}.yaml | kubectl apply -f -
+        elif [ "${_CLUSTER_TYPE}" = "standard" ]; then
+          kubectl apply -f kubernetes-engine-samples/ai-ml/hyperdisk/model-deployment-${_CLUSTER_TYPE}.yaml
+        else
+          echo "Error: Unknown cluster type '${_CLUSTER_TYPE}'"
+          exit 1
+        fi
