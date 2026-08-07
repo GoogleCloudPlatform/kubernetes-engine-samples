@@ -74,6 +74,26 @@ rules:
   - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: slice-controller
+    control-plane: controller-manager
+  name: slice-controller-webhook-secrets-role
+  namespace: slice-controller-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
@@ -83,29 +103,11 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - nodes
   - pods
   verbs:
   - get
   - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - update
   - watch
 - apiGroups:
   - accelerator.gke.io
@@ -124,6 +126,14 @@ rules:
   resources:
   - slices/finalizers
   verbs:
+  - update
+- apiGroups:
+  - accelerator.gke.io
+  resources:
+  - slices/status
+  verbs:
+  - get
+  - patch
   - update
 - apiGroups:
   - admissionregistration.k8s.io
@@ -145,6 +155,15 @@ rules:
   - update
   - watch
 - apiGroups:
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+  - watch
+- apiGroups:
   - jobset.x-k8s.io
   resources:
   - jobsets
@@ -155,19 +174,16 @@ rules:
   - update
   - watch
 - apiGroups:
-  - leaderworkerset.x-k8s.io
+  - kueue.x-k8s.io
   resources:
-  - leaderworkersets
+  - admissionchecks
   verbs:
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - kueue.x-k8s.io
   resources:
-  - admissionchecks
   - admissionchecks/status
   - workloads/status
   verbs:
@@ -180,6 +196,16 @@ rules:
   - workloads
   verbs:
   - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - leaderworkerset.x-k8s.io
+  resources:
+  - leaderworkersets
+  verbs:
   - get
   - list
   - patch
@@ -231,6 +257,24 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: slice-controller-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: slice-controller-controller-manager
+  namespace: slice-controller-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: slice-controller
+    control-plane: controller-manager
+  name: slice-controller-webhook-secrets-rolebinding
+  namespace: slice-controller-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: slice-controller-webhook-secrets-role
 subjects:
 - kind: ServiceAccount
   name: slice-controller-controller-manager
@@ -340,10 +384,15 @@ spec:
         - --health-probe-bind-address=:8081
         - --zap-log-level=3
         - --feature-gates=UseRetryMechanismForSliceCreation=true
-        - --activation-timeout=6m
+        - --activation-timeout=60m
+        - --kube-api-qps=100
+        - --kube-api-burst=200
+        - --default-slice-health-node-affinity=HEALTHY_AND_DEGRADED
+        - --reuse-slices=true
+        - --add-preferred-node-affinity=true
         command:
         - /manager
-        image: tpuongke/kueue-slice-controller:latest
+        image: tpuongke/kueue-slice-controller:v0.9
         livenessProbe:
           httpGet:
             path: /healthz
@@ -363,10 +412,10 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 12000m
+            cpu: 12
             memory: 32Gi
           requests:
-            cpu: 8000m
+            cpu: 8
             memory: 16Gi
         securityContext:
           allowPrivilegeEscalation: false
