@@ -16,7 +16,7 @@
 # Phase 2: Distributed VLA fine-tuning (PI0.5, 1000 steps).
 #
 # Reference node shape: 1 x g4-standard-384
-#   8 x NVIDIA RTX PRO 6000 | 384 vCPUs | 1.4 TB host RAM
+#   8 x NVIDIA RTX PRO 6000 (96 GB VRAM each) | 384 vCPUs | ~1.5 TB host RAM
 #
 # Worker group below requests the whole node: 8 GPUs / 128 vCPUs / 512 GiB,
 # giving one Ray Train DDP worker per GPU (--num-workers 8).

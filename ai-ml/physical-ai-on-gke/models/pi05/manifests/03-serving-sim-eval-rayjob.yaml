@@ -16,7 +16,7 @@
 # Phase 3: Ray Serve policy + parallel Franka sim eval + DDP retraining.
 #
 # Reference node shape: 1 x g4-standard-384
-#   8 x NVIDIA RTX PRO 6000 | 384 vCPUs | 1.4 TB host RAM
+#   8 x NVIDIA RTX PRO 6000 (96 GB VRAM each) | 384 vCPUs | ~1.5 TB host RAM
 #
 # Worker group requests the whole node: 8 GPUs / 128 vCPUs / 512 GiB.
 # GPU 0 hosts the Ray Serve replica (0.5 GPU) alongside sim worker 0; sim

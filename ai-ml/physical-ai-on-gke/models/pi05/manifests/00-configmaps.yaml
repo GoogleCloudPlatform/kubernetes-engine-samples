@@ -138,17 +138,19 @@ data:
 
     No script hardcodes a GPU count or a machine type. Every worker count is
     derived from the live Ray cluster at runtime, so the same scripts run unchanged
-    on any of the validated GKE shapes:
+    on other GKE GPU shapes. The shape this sample was validated on is:
 
-        8 GPUs    = 1 x g4-standard-384  (8 x NVIDIA RTX PRO 6000 on ONE node -- the
-                                          reference config: 384 vCPUs, 1.4 TB host RAM)
-        4 GPUs    = 1 x g2-standard-96   (4 x NVIDIA L4 on ONE node)
-        2-8 GPUs  = 2-8 x g2-standard-24 (1 GPU per node)
+        8 GPUs = 1 x g4-standard-384  (8 x NVIDIA RTX PRO 6000 on ONE node:
+                                       96 GB VRAM per GPU, 384 vCPUs,
+                                       ~1.5 TB host RAM)
 
     GPU count is not the binding constraint -- *host* RAM is. Phase 3 needs roughly
     48 GB of host RAM per GPU, so small single-GPU shapes with 32 GB or less get
     through Phases 1-2 and are then OOM-killed in Phase 3. Pick the machine type on
-    host RAM; the reference `g4-standard-384` node provides ~175 GB per GPU.
+    host RAM: the reference `g4-standard-384` node provides ~190 GB of host RAM per
+    GPU, well clear of that floor. Note this is host RAM, which is distinct from the
+    96 GB of VRAM on each GPU -- observed peak VRAM use in Phase 2 is only ~8.9 GB
+    per GPU, which is why host RAM runs out first.
 
     That is also why this module reports GPUs *per node* as well as the total: model
     staging and host-memory budgeting are per node, while train and sim worker
@@ -181,13 +183,13 @@ data:
 
         Returns a dict::
 
-            {"gpus": 4, "cpus": 48, "nodes": 1, "gpu_nodes": 1,
-             "accelerator": "L4",
-             "per_node": [{"host": ..., "gpus": 4, "cpus": 48,
-                           "memory_gib": 134.2, "accelerator": "L4"}, ...]}
+            {"gpus": 8, "cpus": 384, "nodes": 1, "gpu_nodes": 1,
+             "accelerator": "RTX-PRO-6000",
+             "per_node": [{"host": ..., "gpus": 8, "cpus": 384,
+                           "memory_gib": 1383.5, "accelerator": "RTX-PRO-6000"}, ...]}
 
         `accelerator` comes from Ray's `accelerator_type:<NAME>` node resource, so
-        the notebooks can *report* the GPU model without ever pinning one.
+        the phase scripts can *report* the GPU model without ever pinning one.
         """
         ray = _ray()
         res = ray.cluster_resources()
@@ -230,7 +232,7 @@ data:
 
 
     def gpus_per_node():
-        """Max GPUs on any single GPU node (8 on g4-standard-384, 1 on g2-standard-24)."""
+        """Max GPUs on any single GPU node (8 on the reference g4-standard-384)."""
         per_node = topology()["per_node"]
         return max((d["gpus"] for d in per_node), default=1)
 

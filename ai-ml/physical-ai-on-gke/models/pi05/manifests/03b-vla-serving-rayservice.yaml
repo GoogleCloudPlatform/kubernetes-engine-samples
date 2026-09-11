@@ -16,7 +16,7 @@
 # Phase 3b: Persistent 24/7 RayService serving the fine-tuned PI0.5 policy.
 #
 # Reference node shape: 1 x g4-standard-384
-#   8 x NVIDIA RTX PRO 6000 | 384 vCPUs | 1.4 TB host RAM
+#   8 x NVIDIA RTX PRO 6000 (96 GB VRAM each) | 384 vCPUs | ~1.5 TB host RAM
 #
 # Serving needs only 1 GPU (8 vCPUs / 32 GiB), leaving the remaining 7 GPUs on
 # the node free for other workloads.

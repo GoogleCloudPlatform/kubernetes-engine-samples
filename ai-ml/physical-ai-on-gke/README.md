@@ -12,7 +12,7 @@ The benchmarks and recordings in this repository were captured on the following 
 Any GKE cluster meeting the [Prerequisites](#prerequisites) can run this sample.
 
 * **GKE Cluster**: `us-central1`, Ray Operator (KubeRay) and Cloud Storage FUSE CSI add-ons enabled
-* **Node Pool**: Single node `g4-standard-384` with **8 x NVIDIA RTX PRO 6000 GPUs**, 384 vCPUs, 1.4 TB host RAM
+* **Node Pool**: Single node `g4-standard-384` with **8 x NVIDIA RTX PRO 6000 GPUs** (96 GB VRAM each), 384 vCPUs, ~1.5 TB host RAM
 * **Persistent Storage**: Google Cloud Storage via GCS FUSE CSI driver mounted at `/checkpoint` (`physical-ai-checkpoint-pvc`)
 * **Container Images**: Public `rayproject/ray:2.55.1-py311` (CPU) and `rayproject/ray:2.55.1-py311-gpu` (GPU); PyTorch and the VLA stack are installed at pod startup by [`setup_vla_deps.sh`](models/pi05/tools/setup_vla_deps.sh)
 
