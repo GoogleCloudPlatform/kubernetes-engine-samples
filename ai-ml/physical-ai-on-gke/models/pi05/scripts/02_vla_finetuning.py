@@ -117,9 +117,9 @@ def ensure_vla_deps_on_node():
     except ImportError:
         pass
     import subprocess
-    script = "/checkpoint/physical-ai/tools/setup_vla_deps.sh"
+    script = "/app/tools/setup_vla_deps.sh"
     if not os.path.exists(script):
-        script = "/app/tools/setup_vla_deps.sh"
+        script = "/checkpoint/physical-ai/tools/setup_vla_deps.sh"
     subprocess.run(["bash", script], check=True)
     return "installed"
 

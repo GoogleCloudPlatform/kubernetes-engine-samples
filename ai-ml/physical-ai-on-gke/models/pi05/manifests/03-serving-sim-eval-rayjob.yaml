@@ -53,8 +53,6 @@ spec:
             ray.io/node-type: head
         spec:
           serviceAccountName: workload-identity-k8s-sa
-          nodeSelector:
-            cloud.google.com/gke-nodepool: g4-384-pool
           tolerations:
             - key: "nvidia.com/gpu"
               operator: "Exists"
@@ -63,7 +61,7 @@ spec:
             fsGroup: 100
           containers:
             - name: ray-head
-              image: us-central1-docker.pkg.dev/northam-ce-mlai-tpu/ray-gke-demo-flex/ray-train:latest
+              image: rayproject/ray:2.55.1-py311-gpu
               imagePullPolicy: IfNotPresent
               resources:
                 limits:
@@ -91,7 +89,7 @@ spec:
           volumes:
             - name: gcs-fuse-checkpoint-vol
               persistentVolumeClaim:
-                claimName: checkpoint-data-pmotgi-tpu-v7x-04a179d1-pvc
+                claimName: physical-ai-checkpoint-pvc
             - name: scripts-volume
               configMap:
                 name: physical-ai-scripts
@@ -115,8 +113,6 @@ spec:
               ray.io/node-type: worker
           spec:
             serviceAccountName: workload-identity-k8s-sa
-            nodeSelector:
-              cloud.google.com/gke-nodepool: g4-384-pool
             tolerations:
               - key: "nvidia.com/gpu"
                 operator: "Exists"
@@ -125,7 +121,7 @@ spec:
               fsGroup: 100
             containers:
               - name: ray-worker
-                image: us-central1-docker.pkg.dev/northam-ce-mlai-tpu/ray-gke-demo-flex/ray-train:latest
+                image: rayproject/ray:2.55.1-py311-gpu
                 imagePullPolicy: IfNotPresent
                 resources:
                   limits:
@@ -146,7 +142,7 @@ spec:
             volumes:
               - name: gcs-fuse-checkpoint-vol
                 persistentVolumeClaim:
-                  claimName: checkpoint-data-pmotgi-tpu-v7x-04a179d1-pvc
+                  claimName: physical-ai-checkpoint-pvc
               - name: scripts-volume
                 configMap:
                   name: physical-ai-scripts

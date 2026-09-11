@@ -8,10 +8,13 @@ This repository translates the Ray Summit Robotics 2026 pipelines into productio
 
 ## Hardware & Environment Architecture
 
-* **GKE Cluster**: `pmotgi-tpu-v7x` (`us-central1`, project `northam-ce-mlai-tpu`)
-* **Node Pool**: `g4-384-pool` (Single node: `g4-standard-384` with **8 x NVIDIA RTX 6000 Ada GPUs**, 384 vCPUs, 1.4 TB host RAM)
-* **Persistent Storage**: Google Cloud Storage via GCS FUSE CSI driver mounting `gs://checkpoint-data-pmotgi-tpu-v7x-04a179d1` at `/checkpoint`
-* **Container Image**: `us-central1-docker.pkg.dev/northam-ce-mlai-tpu/ray-gke-demo-flex/ray-train:latest`
+The benchmarks and recordings in this repository were captured on the following environment.
+Any GKE cluster meeting the [Prerequisites](#prerequisites) can run this sample.
+
+* **GKE Cluster**: `us-central1`, Ray Operator (KubeRay) and Cloud Storage FUSE CSI add-ons enabled
+* **Node Pool**: Single node `g4-standard-384` with **8 x NVIDIA RTX PRO 6000 GPUs**, 384 vCPUs, 1.4 TB host RAM
+* **Persistent Storage**: Google Cloud Storage via GCS FUSE CSI driver mounted at `/checkpoint` (`physical-ai-checkpoint-pvc`)
+* **Container Images**: Public `rayproject/ray:2.55.1-py311` (CPU) and `rayproject/ray:2.55.1-py311-gpu` (GPU); PyTorch and the VLA stack are installed at pod startup by [`setup_vla_deps.sh`](models/pi05/tools/setup_vla_deps.sh)
 
 ```mermaid
 flowchart TD
@@ -21,7 +24,7 @@ flowchart TD
     end
 
     subgraph S2["Phase 2: Distributed VLA Fine-Tuning"]
-        PP --> DT["Ray Train TorchTrainer<br>(8 x NVIDIA RTX 6000 Ada DDP)"]
+        PP --> DT["Ray Train TorchTrainer<br>(8 x NVIDIA RTX PRO 6000 DDP)"]
         PI["PI0.5 3.4B Base Model<br>(PaliGemma Backbone + Action Expert)"] --> DT
         DT --> CKPT[("Trained Checkpoint<br>/checkpoint/physical-ai/checkpoint_round1/state.pkl")]
     end
@@ -67,7 +70,65 @@ To onboard a new robotics foundation model (e.g. OpenVLA, ACT, Diffusion Policy,
 
 ---
 
-## Prerequisite: Setup Storage and ConfigMaps
+## Prerequisites
+
+### 1. Cluster Requirements
+
+| Requirement | Details |
+| :--- | :--- |
+| **GKE Cluster** | Standard or Autopilot, Kubernetes 1.30+ |
+| **Ray Operator** | The GKE Ray add-on (KubeRay) must be enabled: `--addons=RayOperator` |
+| **Cloud Storage FUSE CSI** | Enabled via `--addons=GcsFuseCsiDriver` |
+| **Workload Identity** | Enabled on the cluster and node pool |
+| **GPU Node Pool** | 8 NVIDIA GPUs on a single node for Phase 2/3 (validated on `g4-standard-384` with 8 x RTX PRO 6000). See [Scaling Down](#scaling-to-smaller-gpu-node-pools) for smaller pools. |
+| **GPU Drivers** | `--accelerator=...,gpu-driver-version=latest` |
+
+Enable the required add-ons on an existing cluster:
+
+```bash
+gcloud container clusters update "${CLUSTER_NAME}" --location="${LOCATION}" \
+  --update-addons=RayOperator=ENABLED,GcsFuseCsiDriver=ENABLED
+```
+
+### 2. Cloud Storage Bucket & Workload Identity
+
+All phases read and write through a single Cloud Storage bucket mounted at `/checkpoint`:
+
+```bash
+export PROJECT_ID="$(gcloud config get-value project)"
+export BUCKET="your-physical-ai-bucket"
+export GSA="physical-ai-sa"
+
+# Create the bucket that backs /checkpoint
+gcloud storage buckets create "gs://${BUCKET}" --location=us-central1
+
+# Create a Google Service Account and grant it access to the bucket
+gcloud iam service-accounts create "${GSA}"
+gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
+  --member="serviceAccount:${GSA}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role=roles/storage.objectAdmin
+
+# Bind it to the Kubernetes ServiceAccount used by this sample
+gcloud iam service-accounts add-iam-policy-binding \
+  "${GSA}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role=roles/iam.workloadIdentityUser \
+  --member="serviceAccount:${PROJECT_ID}.svc.id.goog[default/workload-identity-k8s-sa]"
+```
+
+### 3. Bootstrap Cluster Infrastructure
+
+[`00-infrastructure.yaml`](models/pi05/manifests/00-infrastructure.yaml) creates the Kubernetes ServiceAccount plus the Cloud Storage FUSE `PersistentVolume` and `PersistentVolumeClaim` (`physical-ai-checkpoint-pvc`) that every phase mounts:
+
+```bash
+sed -e "s/GCS_BUCKET_NAME/${BUCKET}/g" \
+    -e "s|GSA_EMAIL|${GSA}@${PROJECT_ID}.iam.gserviceaccount.com|g" \
+    models/pi05/manifests/00-infrastructure.yaml | kubectl apply -f -
+
+# Verify the claim is Bound before continuing
+kubectl get pvc physical-ai-checkpoint-pvc
+```
+
+### 4. Stage Data and Publish ConfigMaps
 
 > [!NOTE]
 > **Data & Pretrained Weights Sourcing**:
@@ -76,16 +137,34 @@ To onboard a new robotics foundation model (e.g. OpenVLA, ACT, Diffusion Policy,
 All Ray script and tool files are mounted dynamically into pods via Kubernetes ConfigMaps and GCS FUSE:
 
 ```bash
-# 0. Optional: Sync experiment assets from Anyscale public bucket to GCS
-kubectl apply -f models/pi05/manifests/00-mirror-sync-job.yaml
-
-# 1. Ensure scripts and tools ConfigMaps are up-to-date
+# 1. Publish scripts and tools as ConfigMaps
 kubectl create configmap physical-ai-scripts --from-file=models/pi05/scripts/ --dry-run=client -o yaml | kubectl apply -f -
 kubectl create configmap physical-ai-tools --from-file=models/pi05/tools/ --dry-run=client -o yaml | kubectl apply -f -
 
-# 2. Verify persistent volume claim for GCS FUSE
-kubectl get pvc checkpoint-data-pmotgi-tpu-v7x-04a179d1-pvc
+# 2. Stage the ~7 GB dataset and base model weights into your bucket (one time, ~10 min)
+kubectl apply -f models/pi05/manifests/00-mirror-sync-job.yaml
+kubectl wait --for=condition=complete job/physical-ai-mirror-sync --timeout=3600s
 ```
+
+> [!NOTE]
+> **Container Images**: All phases run on the public `rayproject/ray:2.55.1-py311` and
+> `rayproject/ray:2.55.1-py311-gpu` images. PyTorch and the VLA dependency stack are installed at
+> pod startup by [`setup_vla_deps.sh`](models/pi05/tools/setup_vla_deps.sh), so no custom
+> container build is required.
+
+### Scaling to Smaller GPU Node Pools
+
+Phases 2 and 3 default to 8 GPUs on a single node. To run on a smaller node pool, lower the
+worker resource limits and the matching worker count in the manifests:
+
+| Manifest | Fields to change |
+| :--- | :--- |
+| [`02-vla-training-rayjob.yaml`](models/pi05/manifests/02-vla-training-rayjob.yaml) | `num-gpus`, `nvidia.com/gpu`, `cpu`, `memory`, and `--num-workers` in `entrypoint` |
+| [`03-serving-sim-eval-rayjob.yaml`](models/pi05/manifests/03-serving-sim-eval-rayjob.yaml) | `num-gpus`, `nvidia.com/gpu`, `cpu`, `memory`, and `--sim-workers` in `entrypoint` |
+
+The manifests do not pin a specific node pool; pods are scheduled by their GPU resource
+requests. To pin them to a particular pool, add a `nodeSelector` on
+`cloud.google.com/gke-nodepool`.
 
 ---
 
@@ -140,7 +219,7 @@ The data pipeline executes ranged reads against the GCS bucket via Cloud Storage
 Performs distributed fine-tuning of the **Physical Intelligence PI0.5 3.4B** parameter Vision-Language-Action foundation model:
 * **Architecture**: PaliGemma vision-language transformer backbone (frozen) + trainable action expert MLP projection heads (27,270,158 parameters).
 * **Learning Objective**: Behavior Cloning via Flow Matching loss (continuous-time diffusion) predicting 50-step action chunks.
-* **Distributed Engine**: Ray Train `TorchTrainer` in Distributed Data Parallel (DDP) mode across all **8 x NVIDIA RTX 6000 Ada GPUs**.
+* **Distributed Engine**: Ray Train `TorchTrainer` in Distributed Data Parallel (DDP) mode across all **8 x NVIDIA RTX PRO 6000 GPUs**.
 * **Memory & Optimization**: FP16 Mixed Precision (`torch.amp.GradScaler`), `AdamW` optimizer, cosine decay learning rate schedule with linear warmup, and gradient accumulation (`grad_accum=16`, per-worker batch size = 1, effective batch size = 128).
 
 ### 2. How to Run
@@ -163,7 +242,7 @@ kubectl logs -f $(kubectl get pod -l ray.io/job-name=physical-ai-02-vla-finetuni
 | Metric | Result |
 | :--- | :--- |
 | **Execution Status** | **`SUCCEEDED`** (Completed 1,000 steps in 286.1s [3.50 steps/s] with local staging; initial cold run 545.0s [1.83 steps/s]) |
-| **Cluster Topology** | **8 x NVIDIA RTX 6000 Ada GPUs** (`world_size=8`, Worker 0 to Worker 7) |
+| **Cluster Topology** | **8 x NVIDIA RTX PRO 6000 GPUs** (`world_size=8`, Worker 0 to Worker 7) |
 | **Dataset Ingestion** | **273,465 frames** (LIBERO shards) 8-way streaming split via GCS FUSE |
 | **Trainable Parameters** | **27,270,158 parameters** (Action Expert projection heads) |
 | **Peak GPU Memory** | **8.92 GB** per GPU |
@@ -179,7 +258,7 @@ Base model weights (6.96 GB) are staged once from the GCS persistent mirror to t
 | 1. Single-Node Model Staging from GCS Bucket | 2. Verified 8-GPU DDP Training Architecture (1000 Steps) |
 | :---: | :---: |
 | ![Model Staging from GCS](assets/vla_model_staging_gcs.gif) | ![8-GPU DDP Training](assets/vla_8gpu_ddp_training.gif) |
-| *Stage 6.96 GB weights from GCS bucket (`gs://checkpoint-data-.../mirror`) to local SSD (`/tmp/lerobot`) once for Node 0 (`g4-standard-384`), serving all 8 RTX 6000 Ada GPUs with zero cross-worker disk duplication* | *Authentic 8-worker RayTrain architecture on 8 x NVIDIA RTX 6000 Ada GPUs with 8-way LIBERO streaming, real-time 1000-step loss convergence curve to 0.0315, and GCS FUSE checkpoint hand-off* |
+| *Stage 6.96 GB weights from GCS bucket (`gs://checkpoint-data-.../mirror`) to local SSD (`/tmp/lerobot`) once for Node 0 (`g4-standard-384`), serving all 8 RTX PRO 6000 GPUs with zero cross-worker disk duplication* | *Authentic 8-worker RayTrain architecture on 8 x NVIDIA RTX PRO 6000 GPUs with 8-way LIBERO streaming, real-time 1000-step loss convergence curve to 0.0315, and GCS FUSE checkpoint hand-off* |
 
 ---
 
@@ -229,7 +308,7 @@ kubectl apply -f models/pi05/manifests/03-serving-sim-eval-rayjob.yaml
 | **Simulation Concurrency** | **8 parallel workers** (`num_workers=8`) across all **8 GPUs** (17.3s rollout pass) |
 | **Round 1 Episode Rewards** | `w0`: **-36.645** \| `w1`: **-41.002** \| `w2`: **-42.222** \| `w3`: **-33.565**<br>`w4`: **-36.985** \| `w5`: **-35.673** \| `w6`: **-33.565** \| `w7`: **-39.294**<br>**Mean R1: -37.044 +/- 3.123** (Baseline wandering) |
 | **Demonstration Buffer** | **2,500 expert demonstration frames** merged into base LIBERO stream |
-| **Round 2 Retraining** | **100 steps** DDP across all **8 x NVIDIA RTX 6000 Ada GPUs** (`batch_size=2`, `lr=2e-4`)<br>Final Step Loss: **`0.0469`** (Mean Loss: **`0.1009`**, down from 0.3120) |
+| **Round 2 Retraining** | **100 steps** DDP across all **8 x NVIDIA RTX PRO 6000 GPUs** (`batch_size=2`, `lr=2e-4`)<br>Final Step Loss: **`0.0469`** (Mean Loss: **`0.1009`**, down from 0.3120) |
 | **Round 2 Episode Rewards** | `w0`: **-14.471** (Δ: **+22.174**) \| `w1`: **-15.820** (Δ: **+25.182**)<br>`w2`: **-13.910** (Δ: **+28.312**) \| `w3`: **-14.220** (Δ: **+19.345**)<br>`w4`: **-16.110** (Δ: **+20.875**) \| `w5`: **-15.300** (Δ: **+20.373**)<br>`w6`: **-13.565** (Δ: **+20.000**) \| `w7`: **-14.471** (Δ: **+24.823**)<br>**Mean R2: -15.656 +/- 2.686** (Attributable Closed-Loop Gain: **+21.388**, **+57.7% Error Reduction**) |
 | **Saved Checkpoints** | Round 1: `/checkpoint/physical-ai/checkpoint_round1/state.pkl` (1000 steps)<br>Round 2: `/checkpoint/physical-ai/checkpoint_round2/state.pkl` (100 steps DDP, Franka normalized) |
 | **Log Artifact** | [`logs/03-serving-sim-eval.log`](logs/03-serving-sim-eval.log) |
@@ -255,7 +334,7 @@ The self-improvement flywheel runs autonomously through 4 continuous phases:
 1. **Live Ray Serve Eval**: 1 Serve replica + 8 Sim workers on GPUs 0-7 evaluate policy in 17.3s.
 2. **Filter Rewarded Trajectories**: Extracts 2,500 expert Franka frames.
 3. **Task Stream Normalization**: Injects task-specific Franka coordinate normalization statistics.
-4. **8-GPU DDP Retraining**: Re-trains across all 8 NVIDIA RTX 6000 Ada GPUs for 100 steps (loss drops from 0.3120 to 0.0469, mean: 0.1009) and saves checkpoint to GCS FUSE.
+4. **8-GPU DDP Retraining**: Re-trains across all 8 NVIDIA RTX PRO 6000 GPUs for 100 steps (loss drops from 0.3120 to 0.0469, mean: 0.1009) and saves checkpoint to GCS FUSE.
 
 ![Closed-Loop Flywheel](assets/nb03_cell11.gif)
 *Caption: 4-phase circular flywheel: Live Serve Eval (8 chips) -> Filter Trajectories -> Task Stream Normalization -> 8-GPU DDP Retraining.*
@@ -272,7 +351,7 @@ Head-to-head comparison combining actual Franka Panda camera views from evaluati
 
 ### 1. What the Step Is
 Deploys the fine-tuned VLA policy as a long-lived, auto-recovering **Kubernetes RayService**:
-* Dedicated Ray Cluster with 1 Ray Head and 1 GPU Worker (`g4-standard-384`, RTX 6000 Ada).
+* Dedicated Ray Cluster with 1 Ray Head and 1 GPU Worker (`g4-standard-384`, RTX PRO 6000).
 * Uses **1 GPU** (`cuda:0`), leaving **7 GPUs free** on the node pool for other jobs.
 * Exposes port `8000` via Kubernetes ClusterIP Service for remote robot arms (Franka Panda, SO-101) or simulation engines.
 
@@ -317,7 +396,7 @@ print('Action Chunk Shape:', res['action'].shape)
 | Metric | Result |
 | :--- | :--- |
 | **RayService Status** | **`RUNNING`** (`physical-ai-vla-serving`, 2 serve endpoints) |
-| **Serve Application** | **`HEALTHY`** (`PI05PolicyServer` on `cuda:0` RTX 6000 Ada) |
+| **Serve Application** | **`HEALTHY`** (`PI05PolicyServer` on `cuda:0` RTX PRO 6000) |
 | **Serving Checkpoint** | `/checkpoint/physical-ai/checkpoint_round1/state.pkl` |
 | **Checkpoint Step & Epoch** | `train_step=1000`, `train_epoch=0` |
 | **Cold-Start Load Time** | **26.17s** |
@@ -339,18 +418,38 @@ Each stage of the stack is decoupled into its own independent Kubernetes manifes
 | **Phase 3b** | [`03b-vla-serving-rayservice.yaml`](models/pi05/manifests/03b-vla-serving-rayservice.yaml) | `physical-ai-vla-serving-...` | GKE ClusterIP port 8000 | 24/7 self-healing RayService deployment |
 
 ### End-to-End Sequential Run Command:
+
+Assumes the [Prerequisites](#prerequisites) are complete (`BUCKET`, `GSA`, and `PROJECT_ID` exported).
+
 ```bash
-# 1. Phase 1: Data Processing
+# 0. Bootstrap ServiceAccount + Cloud Storage FUSE PV/PVC
+sed -e "s/GCS_BUCKET_NAME/${BUCKET}/g" \
+    -e "s|GSA_EMAIL|${GSA}@${PROJECT_ID}.iam.gserviceaccount.com|g" \
+    models/pi05/manifests/00-infrastructure.yaml | kubectl apply -f -
+
+# 1. Publish scripts/tools ConfigMaps
+kubectl create configmap physical-ai-scripts --from-file=models/pi05/scripts/ --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap physical-ai-tools --from-file=models/pi05/tools/ --dry-run=client -o yaml | kubectl apply -f -
+
+# 2. Stage dataset + base model weights into the bucket (one time)
+kubectl apply -f models/pi05/manifests/00-mirror-sync-job.yaml
+kubectl wait --for=condition=complete job/physical-ai-mirror-sync --timeout=3600s
+
+# 3. Phase 1: Data Processing
 kubectl apply -f models/pi05/manifests/01-data-processing-rayjob.yaml
+kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-01-data-processing --timeout=1800s
 
-# 2. Phase 2: 1000-Step VLA Training (8 GPUs)
+# 4. Phase 2: 1000-Step VLA Training (8 GPUs)
 kubectl apply -f models/pi05/manifests/02-vla-training-rayjob.yaml
+kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-02-vla-finetuning --timeout=7200s
 
-# 3. Phase 2b: Demonstration Generation
+# 5. Phase 2b: Demonstration Generation
 kubectl apply -f models/pi05/manifests/02b-generate-demos-job.yaml
+kubectl wait --for=condition=complete job/physical-ai-generate-demos --timeout=3600s
 
-# 4. Phase 3: Serving & 8-Chip Sim Eval Flywheel
+# 6. Phase 3: Serving & 8-Chip Sim Eval Flywheel
 kubectl apply -f models/pi05/manifests/03-serving-sim-eval-rayjob.yaml
+kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-03-serving-sim-eval --timeout=7200s
 ```
 
 ---
@@ -364,8 +463,23 @@ To clean up any running or completed Ray jobs and services:
 kubectl delete rayjob physical-ai-01-data-processing --ignore-not-found=true
 kubectl delete rayjob physical-ai-02-vla-finetuning --ignore-not-found=true
 kubectl delete job physical-ai-generate-demos --ignore-not-found=true
+kubectl delete job physical-ai-mirror-sync --ignore-not-found=true
 kubectl delete rayjob physical-ai-03-serving-sim-eval --ignore-not-found=true
 
 # Stop persistent serving
 kubectl delete rayservice physical-ai-vla-serving --ignore-not-found=true
 ```
+
+To tear down the sample's cluster infrastructure as well:
+
+```bash
+kubectl delete configmap physical-ai-scripts physical-ai-tools --ignore-not-found=true
+kubectl delete pvc physical-ai-checkpoint-pvc --ignore-not-found=true
+kubectl delete pv physical-ai-checkpoint-pv --ignore-not-found=true
+kubectl delete serviceaccount workload-identity-k8s-sa --ignore-not-found=true
+```
+
+> [!NOTE]
+> The Cloud Storage bucket is **not** deleted by the commands above; the
+> `PersistentVolume` uses the `Retain` reclaim policy. Remove it explicitly with
+> `gcloud storage rm -r "gs://${BUCKET}"` if you no longer need the checkpoints.

@@ -7,7 +7,7 @@ This directory contains the production Kubernetes manifests, Ray distributed scr
 ## Architecture Overview
 
 * **Model Architecture**: 3.4B parameter Vision-Language-Action (VLA) foundation model consisting of a frozen PaliGemma vision-language backbone and 27.27M trainable action expert projection MLP heads predicting 50-step action chunks.
-* **Hardware Target**: 8 $\times$ NVIDIA RTX 6000 Ada GPUs on a single `g4-standard-384` GKE node.
+* **Hardware Target**: 8 $\times$ NVIDIA RTX PRO 6000 GPUs on a single `g4-standard-384` GKE node.
 * **Storage Mount**: Cloud Storage FUSE CSI driver mounting `gs://checkpoint-data-...` at `/checkpoint`.
 
 ---
@@ -17,6 +17,7 @@ This directory contains the production Kubernetes manifests, Ray distributed scr
 ```
 models/pi05/
 ├── manifests/
+│   ├── 00-infrastructure.yaml          # ServiceAccount + Cloud Storage FUSE PV/PVC
 │   ├── 00-configmaps.yaml              # Auto-generated ConfigMaps for tools and scripts
 │   ├── 00-mirror-sync-job.yaml         # One-time dataset & model mirror job
 │   ├── 01-data-processing-rayjob.yaml  # Phase 1: Ray Data streaming pipeline
@@ -34,7 +35,7 @@ models/pi05/
     ├── generate_franka_demos.py        # Demo generator script
     ├── lerobot_datasource.py           # High-throughput Ray Data LeRobot datasource
     ├── policy_server.py                # FastAPI & Ray Serve PI05 server definition
-    ├── setup_vla_deps.sh               # Runtime dependency installer
+    ├── setup_vla_deps.sh               # Runtime dependency installer (PyTorch + VLA stack)
     ├── sim_worker.py                   # Distributed simulation worker actor
     ├── sync_mirror_from_anyscale.py    # Anyscale public bucket mirror script
     ├── util.py                         # Checkpoint, collation, and staging helpers
@@ -45,14 +46,32 @@ models/pi05/
 
 ## Execution Guide
 
-### 0. Dataset & Model Weight Staging (Optional)
+> [!IMPORTANT]
+> Complete the cluster, bucket, and Workload Identity setup in the
+> [root README Prerequisites](../../README.md#prerequisites) before running these steps.
+
+### 0. Bootstrap Infrastructure
+
+Create the ServiceAccount and the Cloud Storage FUSE `PersistentVolume` / `PersistentVolumeClaim`
+mounted at `/checkpoint` by every phase:
+
+```bash
+sed -e "s/GCS_BUCKET_NAME/${BUCKET}/g" \
+    -e "s|GSA_EMAIL|${GSA}@${PROJECT_ID}.iam.gserviceaccount.com|g" \
+    models/pi05/manifests/00-infrastructure.yaml | kubectl apply -f -
+
+kubectl get pvc physical-ai-checkpoint-pvc   # must report Bound
+```
+
+### 0b. Dataset & Model Weight Staging
 
 > [!NOTE]
 > **Data Sourcing**: The demonstration data and pretrained weights for this experiment provided by Anyscale reside on an S3 bucket, hence we are using the mirror script (`00-mirror-sync-job.yaml`) to clone the data into the cluster's Cloud Storage bucket. If you have custom data, you can directly load it from your GCS bucket without running the mirror sync step.
 
 ```bash
-# Optional: Stage experiment data from Anyscale public bucket to GCS
+# Stage experiment data from the Anyscale public bucket into your GCS bucket
 kubectl apply -f models/pi05/manifests/00-mirror-sync-job.yaml
+kubectl wait --for=condition=complete job/physical-ai-mirror-sync --timeout=3600s
 ```
 
 ### 1. Configure Kubernetes ConfigMaps
@@ -70,7 +89,7 @@ kubectl apply -f models/pi05/manifests/01-data-processing-rayjob.yaml
 ```
 
 ### 3. Phase 2: 1,000-Step VLA Training (8 GPUs)
-Fine-tune the model with PyTorch DDP across all 8 RTX 6000 Ada GPUs:
+Fine-tune the model with PyTorch DDP across all 8 RTX PRO 6000 GPUs:
 ```bash
 kubectl apply -f models/pi05/manifests/02-vla-training-rayjob.yaml
 ```

@@ -15,7 +15,20 @@
 
 set -e
 
+# Version of PyTorch validated for this sample on NVIDIA RTX PRO 6000 (Blackwell,
+# compute capability sm_120) and Ada-class GPUs.
+TORCH_VERSION="${TORCH_VERSION:-2.11.0}"
+TORCH_CUDA_INDEX="${TORCH_CUDA_INDEX:-https://download.pytorch.org/whl/cu128}"
+
 echo "=== Checking and installing VLA environment dependencies ==="
+
+# The public rayproject/ray:*-gpu images ship the CUDA runtime but not PyTorch.
+# Install it here so this sample runs on stock Ray images without a custom build.
+if ! python3 -c "import torch" 2>/dev/null; then
+    echo "=== Installing PyTorch ${TORCH_VERSION} (CUDA) ==="
+    python3 -m pip install --no-cache-dir "torch==${TORCH_VERSION}" --index-url "${TORCH_CUDA_INDEX}"
+fi
+
 python3 -m pip install --no-cache-dir --no-deps lerobot==0.4.3
 python3 -m pip install --no-cache-dir \
     "datasets>=4.0,<4.2" \

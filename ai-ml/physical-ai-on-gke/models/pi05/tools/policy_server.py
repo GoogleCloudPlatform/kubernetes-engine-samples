@@ -53,18 +53,46 @@ Response:
 import io
 import os
 import pickle
+import subprocess
 import time
 from pathlib import Path
 
 import numpy as np
+
+
+def _bootstrap_vla_deps():
+    """Install PyTorch and the VLA stack if the base image does not ship them.
+
+    Ray Serve imports this module inside the replica, so this must run before
+    `torch` is imported. The public rayproject/ray:*-gpu images provide the CUDA
+    runtime but not PyTorch, which lets this sample run without a custom image.
+    """
+    try:
+        import torch  # noqa: F401
+        return
+    except ImportError:
+        pass
+
+    for script in ("/app/tools/setup_vla_deps.sh",
+                   "/checkpoint/physical-ai/tools/setup_vla_deps.sh"):
+        if os.path.exists(script):
+            print(f"[PI05Server] Bootstrapping dependencies via {script}...", flush=True)
+            subprocess.run(["bash", script], check=True)
+            return
+    raise RuntimeError("setup_vla_deps.sh not found; cannot install PyTorch/VLA dependencies.")
+
+
+_bootstrap_vla_deps()
+
 import torch
 from fastapi import FastAPI, Request, Response
 from ray import serve
 
 
-# Public mirror of the PI0.5 model (see 02_vla_finetuning.ipynb). Staged per node,
-# so no HF token or bucket credentials are needed at runtime.
-MODEL_S3_URI = "s3://anyscale-public-materials-use2/ray_summit_robotics_2026/pi05_libero_finetuned"
+# Fallback source for the PI0.5 weights: the Anyscale public bucket, which is hosted
+# on S3. Normally the weights are read from the GCS mirror under /checkpoint; this URI
+# is only used if that mirror is absent. Anonymous access, so no credentials are needed.
+ANYSCALE_MODEL_URI = "s3://anyscale-public-materials-use2/ray_summit_robotics_2026/pi05_libero_finetuned"
 
 
 # FastAPI app must live at module scope for Serve ingress to pick it up.
@@ -192,7 +220,7 @@ class PI05PolicyServer:
             shutil.copytree(str(mirror_path), str(self.base_model_dir), dirs_exist_ok=True)
             return
         import fsspec
-        fs, fs_path = fsspec.core.url_to_fs(MODEL_S3_URI)
+        fs, fs_path = fsspec.core.url_to_fs(ANYSCALE_MODEL_URI)
         fs.get(fs_path, str(self.base_model_dir), recursive=True)
 
     def _load_model(self):
