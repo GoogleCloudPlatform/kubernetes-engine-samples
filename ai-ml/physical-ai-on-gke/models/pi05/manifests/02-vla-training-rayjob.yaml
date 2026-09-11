@@ -46,7 +46,7 @@ spec:
       containers:
         - name: ray-job-submitter
           image: rayproject/ray:2.55.1-py311
-  entrypoint: bash -c "bash /app/tools/setup_vla_deps.sh && PYTHONPATH=/app:/app/tools:$PYTHONPATH python3 /app/scripts/02_vla_finetuning.py --dataset-uri /checkpoint/physical-ai/mirror/libero --storage-root /checkpoint/physical-ai --num-workers 8 --max-steps 1000 --round-name round1"
+  entrypoint: bash -c "bash /app/tools/setup_vla_deps.sh && PYTHONPATH=/app:/app/tools:$PYTHONPATH python3 /app/scripts/02_vla_finetuning.py --dataset-uri /checkpoint/physical-ai/mirror/libero --storage-root /checkpoint/physical-ai --num-workers 8 --max-steps 1000 --batch-size 16 --grad-accum 1 --lr 5e-5 --val-batches 8 --round-name round1"
   runtimeEnvYAML: |
     env_vars:
       HF_HUB_OFFLINE: "1"

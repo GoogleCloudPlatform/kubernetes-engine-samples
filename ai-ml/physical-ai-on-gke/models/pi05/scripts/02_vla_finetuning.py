@@ -173,6 +173,30 @@ def train_loop_per_worker(config):
         })
         return
 
+    # ---- "Before": held-out loss of the weights we are about to fine-tune ----
+    # This is the only honest baseline in the pipeline. Round 1 vs round 2 is
+    # fine-tuned vs more-fine-tuned; this is untouched vs fine-tuned, measured on
+    # episodes the optimizer never sees, with the same loss function both times.
+    val_batches = int(config.get("val_batches", 4))
+    val_seed = int(config.get("val_seed", 1234))
+    try:
+        val_shard = ray.train.get_dataset_shard("val") if val_batches > 0 else None
+    except Exception as e:
+        log.warning(f"No held-out validation shard available ({e}); skipping validation.")
+        val_shard = None
+
+    val_before = float("nan")
+    if val_shard is not None:
+        val_before = util.mean_across_workers(
+            util.eval_loss(policy, val_shard, preprocessor, max_len, batch_size,
+                           collate, max_batches=val_batches, seed=val_seed)
+        )
+        if rank == 0:
+            log.info(
+                f"[validation] held-out loss BEFORE fine-tuning: {val_before:.4f}  "
+                f"({val_batches} batches x {batch_size} samples x {num_workers} workers)"
+            )
+
     for epoch in range(start_epoch, num_epochs):
         optimizer.zero_grad(set_to_none=True)
         accum = 0
@@ -202,6 +226,21 @@ def train_loop_per_worker(config):
         if accum > 0:
             util.optimizer_step(policy, optimizer, scaler, scheduler)
 
+        # ---- "After": same held-out episodes, same seed, updated weights ----
+        val_after = float("nan")
+        if val_shard is not None:
+            val_after = util.mean_across_workers(
+                util.eval_loss(policy, val_shard, preprocessor, max_len, batch_size,
+                               collate, max_batches=val_batches, seed=val_seed)
+            )
+            if rank == 0:
+                delta = val_before - val_after
+                pct = (delta / val_before * 100.0) if val_before else float("nan")
+                log.info(
+                    f"[validation] held-out loss AFTER  fine-tuning: {val_after:.4f}  "
+                    f"(before={val_before:.4f}, improvement={delta:+.4f}, {pct:+.1f}%)"
+                )
+
         avg_loss = loss_sum / max(loss_count, 1)
         metrics = {
             "epoch": epoch,
@@ -209,6 +248,9 @@ def train_loop_per_worker(config):
             "loss": avg_loss,
             "lr": scheduler.get_last_lr()[0],
             "gpu_peak_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2),
+            "val_loss_before": val_before,
+            "val_loss_after": val_after,
+            "val_loss_delta": val_before - val_after,
         }
 
         if rank == 0:
@@ -259,6 +301,46 @@ def main():
         default="round1",
         help="Training round label (e.g. round1, round2)"
     )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=int(os.environ.get("BATCH_SIZE", "16")),
+        help=(
+            "Per-worker micro-batch size. The backbone is frozen and only the 4 "
+            "action-projection heads train, so a batch of 16 fits in roughly 40 GB "
+            "of the 96 GB per GPU."
+        )
+    )
+    parser.add_argument(
+        "--grad-accum",
+        type=int,
+        default=int(os.environ.get("GRAD_ACCUM", "1")),
+        help=(
+            "Micro-batches per optimizer update. Note that --max-steps counts "
+            "micro-batches, so the run performs max_steps/grad_accum updates: the "
+            "old defaults (batch_size=1, grad_accum=16) turned a 1000-step run into "
+            "just 62 weight updates over 1000 samples per worker, which is the main "
+            "reason the loss curve was so noisy. batch_size=16 with grad_accum=1 "
+            "keeps the same effective batch (16 x 8 workers = 128) while performing "
+            "1000 updates."
+        )
+    )
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=float(os.environ.get("LEARNING_RATE", "5e-5")),
+        help="AdamW learning rate (linear warmup -> cosine decay)"
+    )
+    parser.add_argument(
+        "--val-batches",
+        type=int,
+        default=int(os.environ.get("VAL_BATCHES", "8")),
+        help=(
+            "Held-out batches per worker used to measure loss before and after "
+            "fine-tuning. The row count is snapped up to a whole number of "
+            "episodes. Set 0 to disable validation."
+        )
+    )
     args = parser.parse_args()
 
     max_steps = args.max_steps if args.max_steps > 0 else None
@@ -274,6 +356,19 @@ def main():
     num_train_workers = args.num_workers or cluster.train_workers()
     log.info(f"Derived Ray Train workers: {num_train_workers}")
 
+    # Dependencies must be on every node BEFORE any Ray Data task is scheduled.
+    # The held-out split below calls split_at_indices() and materialize(), which
+    # execute the LeRobot read eagerly on Ray Data workers, and those readers
+    # import av to decode the episode videos. When this install ran later (just
+    # before trainer.fit) the lazy plan happened to defer the read until the
+    # training actors had installed deps themselves, so the ordering never
+    # mattered; with an eager split it does, and the readers die with
+    # ModuleNotFoundError: No module named 'av'.
+    log.info("Ensuring VLA dependencies across all nodes...")
+    util.stage_on_all_nodes(
+        ray, ensure_vla_deps_on_node, "VLA Dependencies", "all nodes", log_fn=log.info
+    )
+
     # Dataset Source & Stats
     source = LeRobotDatasource(args.dataset_uri)
     stats = {
@@ -286,14 +381,56 @@ def main():
 
     # Build streaming dataset
     ds = ray.data.read_datasource(source)
+
+    # Held-out split. LeRobot rows arrive in episode order, so taking the split
+    # off the front of the stream reserves whole episodes rather than scattered
+    # frames. That matters: consecutive frames within an episode are near
+    # duplicates, so a random frame-level split would leak each validation frame's
+    # neighbours into training and report a flatteringly low held-out loss.
+    #
+    # The requested row count is then snapped UP to a real episode boundary. A raw
+    # count almost always lands mid-episode, which puts the head of that episode in
+    # validation and its tail in training -- the exact leak the split exists to
+    # prevent, just smaller.
+    n_val = max(args.val_batches, 0) * args.batch_size * num_train_workers
+    if n_val > 0:
+        episode_ends = source.meta.episodes.column("_global_to_index").to_pylist()
+        snapped = next((e for e in episode_ends if e >= n_val), None)
+        if snapped is not None:
+            n_val_episodes = episode_ends.index(snapped) + 1
+            log.info(
+                f"Snapping held-out split {n_val} -> {snapped} rows "
+                f"({n_val_episodes} complete episodes) to avoid splitting an episode"
+            )
+            n_val = snapped
+
     if max_steps:
-        # Pre-limit streaming queue so readers do not overflow plasma store
-        ds = ds.limit(max_steps * 1 * num_train_workers + 32 * num_train_workers)
-    train_ds = (
-        ds
-        .map(rename_columns, fn_args=(camera_rename,))
-        .map_batches(transpose_images, batch_size=32, fn_args=(image_keys,))
-    )
+        # Pre-limit streaming queue so readers do not overflow plasma store.
+        # This budget is in ROWS, so it has to scale with batch_size -- it was
+        # previously hardcoded to a batch of 1, which silently starved the run of
+        # data the moment the batch size moved.
+        n_train = max_steps * args.batch_size * num_train_workers + 32 * num_train_workers
+        ds = ds.limit(n_train + n_val)
+
+    if n_val > 0:
+        val_raw, train_raw = ds.split_at_indices([n_val])
+    else:
+        val_raw, train_raw = None, ds
+
+    def prepare(dataset):
+        return (
+            dataset
+            .map(rename_columns, fn_args=(camera_rename,))
+            .map_batches(transpose_images, batch_size=32, fn_args=(image_keys,))
+        )
+
+    train_ds = prepare(train_raw)
+    # Materialised so the "before" and "after" passes iterate byte-identical rows.
+    # A re-executed streaming read offers no such guarantee, and any difference
+    # between the two passes lands directly in the delta we are trying to measure.
+    val_ds = prepare(val_raw).materialize() if val_raw is not None else None
+    if val_ds is not None:
+        log.info(f"Held-out validation split: {n_val} rows ({args.val_batches} batches/worker)")
 
     # Storage paths
     cluster_storage_root = Path(args.storage_root)
@@ -315,11 +452,7 @@ def main():
     local_model_dir = Path("/tmp/lerobot/pi05_libero_finetuned")
     local_base_dir = Path("/tmp/lerobot/pi05_base")
 
-    # Ensure dependencies and stage model weights to local disk across nodes
-    log.info("Ensuring VLA dependencies across all nodes...")
-    util.stage_on_all_nodes(
-        ray, ensure_vla_deps_on_node, "VLA Dependencies", "all nodes", log_fn=log.info
-    )
+    # Stage model weights to local disk across nodes (deps were installed above)
     log.info("Staging model checkpoints to local storage...")
     util.stage_on_all_nodes(
         ray, lambda: util.stage_model_to_local(model_uri, local_model_dir),
@@ -346,10 +479,12 @@ def main():
             "stats": stats,
             "total_rows": source.meta.total_frames,
             "num_epochs": 1,
-            "batch_size": 1,
-            "grad_accum": 16,
-            "lr": 5e-5,
+            "batch_size": args.batch_size,
+            "grad_accum": args.grad_accum,
+            "lr": args.lr,
             "warmup_frac": 0.1,
+            "val_batches": args.val_batches,
+            "val_seed": 1234,
             "max_len": 512,
             "max_train_steps": max_steps,
             "image_keys": image_keys,
@@ -370,7 +505,10 @@ def main():
             failure_config=ray.train.FailureConfig(max_failures=1),
             checkpoint_config=ray.train.CheckpointConfig(num_to_keep=1),
         ),
-        datasets={"train": train_ds},
+        datasets=(
+            {"train": train_ds, "val": val_ds} if val_ds is not None
+            else {"train": train_ds}
+        ),
     )
 
     t0 = time.time()
@@ -386,6 +524,19 @@ def main():
     log.info("=" * 60)
     log.info(f"Training completed in {duration:.1f} seconds")
     log.info(f"Checkpoint saved to: {checkpoint_target}")
+
+    m = result.metrics or {}
+    before, after = m.get("val_loss_before"), m.get("val_loss_after")
+    if before is not None and after is not None and before == before:  # NaN-safe
+        delta = before - after
+        pct = (delta / before * 100.0) if before else float("nan")
+        log.info("-" * 60)
+        log.info("HELD-OUT VALIDATION (episodes never seen by the optimizer)")
+        log.info(f"  before fine-tuning : {before:.4f}")
+        log.info(f"  after  fine-tuning : {after:.4f}")
+        log.info(f"  improvement        : {delta:+.4f}  ({pct:+.1f}%)")
+        log.info("-" * 60)
+
     log.info(f"Final Reported Metrics: {result.metrics}")
     log.info("=" * 60)
 

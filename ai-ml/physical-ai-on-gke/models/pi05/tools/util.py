@@ -329,6 +329,68 @@ def train_step(policy, batch, preprocessor, max_len, grad_accum, scaler):
     return float(loss.detach())
 
 
+def eval_loss(policy, shard, preprocessor, max_len, batch_size, collate,
+              max_batches=None, seed=1234):
+    """Mean forward-pass loss over a held-out shard. No gradients, no updates.
+
+    Seeding is not optional here. PI0.5 is a flow-matching policy: every forward
+    pass samples a random timestep and a random noise vector, so the loss is a
+    random variable even with the weights and the batch held fixed. Comparing an
+    unseeded "before" against an unseeded "after" measures that noise as much as
+    it measures learning. Re-seeding to the same value at the top of each pass
+    makes the two passes see an identical noise sequence, which turns the
+    comparison into a paired one and lets the delta be attributed to the weights.
+
+    ``max_batches`` bounds the pass so validation cost stays flat regardless of
+    how large the held-out split is.
+    """
+    was_training = policy.training
+    policy.eval()
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    total, count = 0.0, 0
+    try:
+        with torch.no_grad():
+            for i, batch in enumerate(
+                shard.iter_torch_batches(batch_size=batch_size, collate_fn=collate)
+            ):
+                if max_batches is not None and i >= max_batches:
+                    break
+                batch = preprocessor(batch)
+                batch = truncate_batch(batch, max_len)
+                batch.pop("task", None)
+                batch.pop("task_index", None)
+                batch.pop("action_is_pad", None)
+                with torch.autocast("cuda", torch.float16):
+                    out = policy(batch)
+                    loss = out.loss if hasattr(out, "loss") else out[0]
+                total += float(loss.detach())
+                count += 1
+    finally:
+        if was_training:
+            policy.train()
+
+    return (total / count) if count else float("nan")
+
+
+def mean_across_workers(value):
+    """Average a python float across all DDP ranks. Falls back to the local value.
+
+    Each rank validates its own shard, so a single rank's number describes only
+    the slice of held-out episodes it happened to receive.
+    """
+    try:
+        import torch.distributed as dist
+        if dist.is_available() and dist.is_initialized():
+            t = torch.tensor([float(value)], device="cuda")
+            dist.all_reduce(t, op=dist.ReduceOp.SUM)
+            return float(t.item()) / dist.get_world_size()
+    except Exception:
+        pass
+    return float(value)
+
+
 def optimizer_step(policy, optimizer, scaler, scheduler):
     """Unscale, clip grads, step optimizer + LR schedule."""
     scaler.unscale_(optimizer)

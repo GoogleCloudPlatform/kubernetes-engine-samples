@@ -64,6 +64,12 @@ logging.basicConfig(
 )
 log = logging.getLogger("physical_ai_serve_eval")
 
+# Round-2 retraining micro-batch size. This is referenced in two places -- the
+# Ray Data row budget and the TorchTrainer config -- and they must agree. When
+# they drifted apart (budget assumed 1, trainer used 2) the retraining loop ran
+# out of rows at roughly two thirds of its configured step count, silently.
+RETRAIN_BATCH_SIZE = 2
+
 APP_NAME = "pi05-policy"
 _SERVE_INSTANCE_IS_OURS = False
 
@@ -431,7 +437,7 @@ def run_training(ds, round_name, storage_root, base_model_dir, model_uri, base_u
         train_loop_config={
             "round_name": round_name,
             "stats": stats,
-            "batch_size": 2,
+            "batch_size": RETRAIN_BATCH_SIZE,
             "grad_accum": 2,
             "lr": 2e-4,
             "max_len": 512,
@@ -609,9 +615,16 @@ def main():
         return out
 
     num_train_workers = cluster.train_workers()
+    # The row budget must scale with the retraining batch size. It was hardcoded
+    # to 1 while RETRAIN_CONFIG uses batch_size=2, which handed the loop only half
+    # the rows it needed: a "100 step" round 2 actually exhausted its shard at
+    # ~66 steps. Keep this in sync with the batch_size in the retrain config.
     base_libero_ds = (
         ray.data.read_datasource(source)
-        .limit(args.retrain_steps * 1 * num_train_workers + 32 * num_train_workers)
+        .limit(
+            args.retrain_steps * RETRAIN_BATCH_SIZE * num_train_workers
+            + 32 * num_train_workers
+        )
         .map(rename_cols, fn_args=(camera_rename,))
         .map_batches(transpose_imgs, batch_size=32, fn_args=(image_keys,))
     )
