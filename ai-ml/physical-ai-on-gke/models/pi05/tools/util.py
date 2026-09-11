@@ -15,7 +15,7 @@
 """
 Training utilities for the VLA fine-tuning + closed-loop notebooks.
 
-Helpers shared across the course notebooks (02 fine-tuning, 03 serving +
+Helpers shared across the phase scripts (02 fine-tuning, 03 serving +
 sim eval). They live here so the notebooks stay focused on the Ray-specific
 orchestration, while this module owns the model plumbing.
 
@@ -437,7 +437,7 @@ def resume_would_skip_training(start_epoch, num_epochs):
     single-epoch job gives `for epoch in range(1, 1)` -- zero iterations. The
     loop body never executes, `metrics` is never assigned, no `ray.train.report`
     happens, and `TorchTrainer.fit()` hands back the PREVIOUS run's checkpoint
-    and metrics. The notebook then prints a plausible loss and a valid
+    and metrics. The caller then prints a plausible loss and a valid
     checkpoint path for training that did not occur.
 
     Resuming a finished run is legitimate; silently presenting it as a fresh
@@ -541,10 +541,10 @@ def wait_for_host_headroom(ray_module, need_mib=17_000, timeout_s=240,
     * `require_all=True` waits for EVERY GPU node, which is right before Ray
       Train, since it places one worker per GPU.
     * `per_gpu=True` (default) scales each node's budget by the workers that
-      will actually land on it, so a 4-GPU node asks for 4x what a single-GPU
+      will actually land on it, so an 8-GPU node asks for 8x what a single-GPU
       node does. Pass `per_gpu=False` for a flat per-node budget.
     * `num_workers` caps that multiplier at the number of workers the run
-      actually requests, so pinning a 4-GPU cluster to 2 workers budgets for 2.
+      actually requests, so pinning an 8-GPU cluster to 2 workers budgets for 2.
 
     Returns True once the cluster qualifies; False on timeout (caller decides).
     """

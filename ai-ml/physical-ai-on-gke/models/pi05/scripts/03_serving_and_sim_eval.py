@@ -416,7 +416,7 @@ def train_loop_per_worker(config):
             break
 
 
-def run_training(ds, round_name, storage_root, base_model_dir, model_uri, base_uri, stats, image_keys, max_steps=100, num_workers=4):
+def run_training(ds, round_name, storage_root, base_model_dir, model_uri, base_uri, stats, image_keys, max_steps=100, num_workers=8):
     cluster_storage_root = Path(storage_root)
     cluster_storage_root.mkdir(parents=True, exist_ok=True)
     prior_run = cluster_storage_root / f"vla-finetune-{round_name}"

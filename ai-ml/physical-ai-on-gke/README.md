@@ -32,7 +32,7 @@ flowchart TD
     subgraph S3["Phase 3: Serving & Closed-Loop Flywheel"]
         CKPT --> RS["Ray Serve Policy Deployment<br>(GPU 0: PI05PolicyServer /predict)"]
         RS <-->|"HTTP (obs / action chunk)"| SIM["8 Parallel Simulation Workers<br>(GPUs 0-7: Franka Arms in Parallel)"]
-        SIM --> TRAJ["Rollout Trajectories & GIFs<br>(Reward: -37.044 -> -15.656 (+57.7% gain))"]
+        SIM --> TRAJ["Rollout Trajectories & GIFs<br>(Per-worker rewards + head-to-head deltas)"]
         TRAJ --> FW["Data Flywheel Merge (ray.data.union)<br>2,500 Demonstration Frames + LIBERO"]
     end
 
@@ -150,7 +150,21 @@ kubectl wait --for=condition=complete job/physical-ai-mirror-sync --timeout=3600
 > **Container Images**: All phases run on the public `rayproject/ray:2.55.1-py311` and
 > `rayproject/ray:2.55.1-py311-gpu` images. PyTorch and the VLA dependency stack are installed at
 > pod startup by [`setup_vla_deps.sh`](models/pi05/tools/setup_vla_deps.sh), so no custom
-> container build is required.
+> container build is required. Expect **~3-4 minutes** of dependency installation on each
+> cold Ray cluster start (the CUDA PyTorch wheel alone is ~820 MB).
+>
+> The validated environment this reproduces is:
+> `torch 2.11.0+cu128`, `torchvision 0.26.0+cu128`, `transformers 4.53.3` (patched fork),
+> `accelerate 1.15.0`, `lerobot 0.4.3` (installed `--no-deps`), `numpy 1.26.4`.
+
+> [!WARNING]
+> **Do not let numpy 2.x into the image.** Ray's bundled `pandas`, `scipy` and the
+> `ray.data` / `ray.train` C extensions in this image are built against the numpy 1.x ABI.
+> If a transitive dependency upgrades numpy, every phase fails at import with
+> `ValueError: numpy.dtype size changed, may indicate binary incompatibility`.
+> `setup_vla_deps.sh` therefore pins `numpy>=1.26,<2` and caps
+> `opencv-python-headless<4.10` (the 4.10+ wheels require numpy 2). Keep those pins in
+> place if you add packages.
 
 ### Scaling to Smaller GPU Node Pools
 
@@ -171,7 +185,7 @@ requests. To pin them to a particular pool, add a `nodeSelector` on
 ## Phase 1: Robotics Data Pipeline (`01_robotics_data_pipelines`)
 
 ### 1. What the Step Is
-Streams high-dimensional robotics demonstration data (LIBERO format) directly from the GCS bucket (`gs://checkpoint-data-pmotgi-tpu-v7x-04a179d1/physical-ai/mirror/libero`) mounted via Cloud Storage FUSE at `/checkpoint/physical-ai/mirror/libero` without downloading datasets to local disks.
+Streams high-dimensional robotics demonstration data (LIBERO format) directly from the GCS bucket (`gs://<YOUR_BUCKET>/physical-ai/mirror/libero`) mounted via Cloud Storage FUSE at `/checkpoint/physical-ai/mirror/libero` without downloading datasets to local disks.
 * Decodes MP4 camera streams (`observation.images.image`, `observation.images.image2`) on-the-fly with PyAV.
 * Extracts 8-D robot joint state (`observation.state`) and chunks 7-D robot arm actions (`action`).
 * Benchmarks Ray Data partitioning modes (`sequential`, `file_group`, `episode`) across GKE CPU workers.
@@ -241,16 +255,23 @@ kubectl logs -f $(kubectl get pod -l ray.io/job-name=physical-ai-02-vla-finetuni
 ### 3. Verified Metrics from Cluster Run (1000 Steps on 8 GPUs)
 | Metric | Result |
 | :--- | :--- |
-| **Execution Status** | **`SUCCEEDED`** (Completed 1,000 steps in 286.1s [3.50 steps/s] with local staging; initial cold run 545.0s [1.83 steps/s]) |
+| **Execution Status** | **`SUCCEEDED`** (1,000 steps in **276.1s**, ~3.62 steps/s) |
 | **Cluster Topology** | **8 x NVIDIA RTX PRO 6000 GPUs** (`world_size=8`, Worker 0 to Worker 7) |
-| **Dataset Ingestion** | **273,465 frames** (LIBERO shards) 8-way streaming split via GCS FUSE |
+| **Dataset Ingestion** | **273,465 frames** across 1,693 episodes (LIBERO shards) 8-way streaming split via GCS FUSE |
 | **Trainable Parameters** | **27,270,158 parameters** (Action Expert projection heads) |
-| **Peak GPU Memory** | **8.92 GB** per GPU |
+| **Peak GPU Memory** | **8.9 GB** per GPU |
 | **Training Steps** | **1,000 steps** (Cosine learning rate decay to `0.00e+00`) |
-| **Loss Progression** | Step 10: `loss=0.7811`<br>Step 100: `loss=0.8708`<br>Step 250: `loss=0.3840`<br>Step 400: `loss=0.3167`<br>Step 580: `loss=0.0228` (intra-epoch minimum)<br>Step 800: `loss=0.0690`<br>Step 1000: `loss=0.7596` (epoch mean loss: `0.7596`) |
-| **Step Loss Convergence** | Frequent intra-step lows between **`0.0228`** and **`0.0571`** (significant policy refinement) |
-| **Saved Checkpoint** | `gs://checkpoint-data-pmotgi-tpu-v7x-04a179d1/physical-ai/checkpoint_round1/state.pkl` (24.80 MiB / 26,000,314 bytes) |
+| **Loss Progression** | Step 10: `1.7221`<br>Step 100: `0.8293`<br>Step 400: `0.6700`<br>Step 650: `2.5381` (noise spike)<br>Step 750: `0.0839`<br>Step 1000: `0.3232` |
+| **Smoothed Convergence** | Mean of first 10 logged points **`1.9179`** -> mean of last 10 **`0.3928`** |
+| **Loss Range** | Min `0.0446` / Max `4.6188` across 100 logged points |
+| **Saved Checkpoint** | `gs://<YOUR_BUCKET>/physical-ai/checkpoint_round1/state.pkl` (24.80 MiB / 26,000,314 bytes) |
 | **Log Artifact** | [`logs/02-vla-training.log`](logs/02-vla-training.log) |
+
+> [!NOTE]
+> The per-step loss is **noisy and non-monotonic** — individual steps range from
+> `0.0446` to `4.6188`. Judge convergence from the smoothed trend
+> (`1.9179` -> `0.3928`), not from any single step. This is expected for a
+> 1,000-step fine-tune on a 273k-frame stream with batch-level task diversity.
 
 ### 4. Visual Output: What Is Happening
 Base model weights (6.96 GB) are staged once from the GCS persistent mirror to the node's local NVMe disk, and all 8 DDP workers perform continuous all-reduce gradient synchronization over the demonstration shards:
@@ -258,7 +279,7 @@ Base model weights (6.96 GB) are staged once from the GCS persistent mirror to t
 | 1. Single-Node Model Staging from GCS Bucket | 2. Verified 8-GPU DDP Training Architecture (1000 Steps) |
 | :---: | :---: |
 | ![Model Staging from GCS](assets/vla_model_staging_gcs.gif) | ![8-GPU DDP Training](assets/vla_8gpu_ddp_training.gif) |
-| *Stage 6.96 GB weights from GCS bucket (`gs://checkpoint-data-.../mirror`) to local SSD (`/tmp/lerobot`) once for Node 0 (`g4-standard-384`), serving all 8 RTX PRO 6000 GPUs with zero cross-worker disk duplication* | *Authentic 8-worker RayTrain architecture on 8 x NVIDIA RTX PRO 6000 GPUs with 8-way LIBERO streaming, real-time 1000-step loss convergence curve to 0.0315, and GCS FUSE checkpoint hand-off* |
+| *Stage 6.96 GB weights from the GCS bucket (`gs://<YOUR_BUCKET>/physical-ai/mirror`) to local SSD (`/tmp/lerobot`) once for Node 0 (`g4-standard-384`), serving all 8 RTX PRO 6000 GPUs with zero cross-worker disk duplication* | *Authentic 8-worker RayTrain architecture on 8 x NVIDIA RTX PRO 6000 GPUs with 8-way LIBERO streaming, the real (noisy) 1000-step loss trajectory smoothing from 1.9179 to 0.3928, and GCS FUSE checkpoint hand-off* |
 
 ---
 
@@ -303,15 +324,30 @@ kubectl apply -f models/pi05/manifests/03-serving-sim-eval-rayjob.yaml
 | :--- | :--- |
 | **Execution Status** | **`SUCCEEDED`** (Completed across all 4 stages) |
 | **Cluster Allocation** | GPU 0: Ray Serve (`pi05-policy`, 0.5 GPU) + Sim Worker 0 (0.5 GPU)<br>GPUs 1–7: Sim Workers 1–7 (0.5 GPU each)<br>GPUs 0–7: 8-GPU DDP Retraining (1.0 GPU/worker) |
-| **Serve Cold-Start** | **28.1s** (Loaded 3.4B model weights into GPU 0) |
-| **Inference Latency** | **165 ms median** (318 ms p95) per 50-step action chunk `(50, 7)` |
-| **Simulation Concurrency** | **8 parallel workers** (`num_workers=8`) across all **8 GPUs** (17.3s rollout pass) |
-| **Round 1 Episode Rewards** | `w0`: **-36.645** \| `w1`: **-41.002** \| `w2`: **-42.222** \| `w3`: **-33.565**<br>`w4`: **-36.985** \| `w5`: **-35.673** \| `w6`: **-33.565** \| `w7`: **-39.294**<br>**Mean R1: -37.044 +/- 3.123** (Baseline wandering) |
-| **Demonstration Buffer** | **2,500 expert demonstration frames** merged into base LIBERO stream |
-| **Round 2 Retraining** | **100 steps** DDP across all **8 x NVIDIA RTX PRO 6000 GPUs** (`batch_size=2`, `lr=2e-4`)<br>Final Step Loss: **`0.0469`** (Mean Loss: **`0.1009`**, down from 0.3120) |
-| **Round 2 Episode Rewards** | `w0`: **-14.471** (Δ: **+22.174**) \| `w1`: **-15.820** (Δ: **+25.182**)<br>`w2`: **-13.910** (Δ: **+28.312**) \| `w3`: **-14.220** (Δ: **+19.345**)<br>`w4`: **-16.110** (Δ: **+20.875**) \| `w5`: **-15.300** (Δ: **+20.373**)<br>`w6`: **-13.565** (Δ: **+20.000**) \| `w7`: **-14.471** (Δ: **+24.823**)<br>**Mean R2: -15.656 +/- 2.686** (Attributable Closed-Loop Gain: **+21.388**, **+57.7% Error Reduction**) |
-| **Saved Checkpoints** | Round 1: `/checkpoint/physical-ai/checkpoint_round1/state.pkl` (1000 steps)<br>Round 2: `/checkpoint/physical-ai/checkpoint_round2/state.pkl` (100 steps DDP, Franka normalized) |
+| **Serve Cold-Start** | **~33s** (Loaded 3.4B model weights into GPU 0) |
+| **Inference Sanity Check** | Predicted action chunk shape `(50, 7)` |
+| **Simulation Concurrency** | **8 parallel workers** (`num_workers=8`) across all **8 GPUs**<br>Round 1 pass: **14.8s** · Round 2 pass: **14.4s** |
+| **Round 1 Episode Rewards** | `w0`: **-15.692** \| `w1`: **-15.612** \| `w2`: **-17.151** \| `w3`: **-16.645**<br>`w4`: **-15.886** \| `w5`: **-16.724** \| `w6`: **-14.536** \| `w7`: **-16.051**<br>**Mean R1: -16.037 +/- 0.763** |
+| **Demonstration Buffer** | **2,500 expert demonstration frames** merged into base LIBERO stream via `ray.data.union` |
+| **Round 2 Retraining** | **100 steps** DDP across all **8 x NVIDIA RTX PRO 6000 GPUs** (`batch_size=2`, `lr=2e-4`)<br>Reported final loss: **`0.0830`** · 8-worker mean at step 100: **`0.0495`** |
+| **Round 2 Episode Rewards** | `w0`: **-14.889** (Δ **+0.803**) \| `w1`: **-16.493** (Δ **-0.881**)<br>`w2`: **-18.612** (Δ **-1.461**) \| `w3`: **-16.109** (Δ **+0.537**)<br>`w4`: **-21.229** (Δ **-5.343**) \| `w5`: **-17.642** (Δ **-0.918**)<br>`w6`: **-18.557** (Δ **-4.022**) \| `w7`: **-17.189** (Δ **-1.137**)<br>**Mean R2: -17.590 +/- 1.805** (Mean Δ: **-1.553**, 2 of 8 workers improved) |
+| **Saved Checkpoints** | Round 1: `/checkpoint/physical-ai/checkpoint_round1/state.pkl` (1000 steps, 24.80 MiB)<br>Round 2: `/checkpoint/physical-ai/checkpoint_round2/state.pkl` (100 steps DDP, 24.80 MiB) |
 | **Log Artifact** | [`logs/03-serving-sim-eval.log`](logs/03-serving-sim-eval.log) |
+
+> [!IMPORTANT]
+> **Read the reward numbers as a variance measurement, not a performance claim.**
+> On this run the round-2 policy scored **-1.553 lower** than round 1, with only
+> 2 of 8 workers improving and a per-worker spread from `+0.803` to `-5.343`.
+> 100 retraining steps over 2,500 synthetic demonstrations is far too small a
+> signal to reliably beat a 1,000-step baseline, and the round-1 standard
+> deviation (`0.763`) is itself the same order as the delta.
+>
+> The purpose of Phase 3 in this sample is to demonstrate that the **closed-loop
+> machinery works end to end** — serve a policy, evaluate it with 8 parallel
+> simulators, filter and union the resulting trajectories back into the training
+> stream, retrain, and re-evaluate head-to-head on identical seeds. Treat the
+> reward table as the harness reporting honestly, and scale `--retrain-steps`
+> and `--sim-episodes` up substantially before drawing any quality conclusions.
 
 ### 4. Visual Output: What Is Happening
 
@@ -319,7 +355,7 @@ kubectl apply -f models/pi05/manifests/03-serving-sim-eval-rayjob.yaml
 On our single-node GKE cluster (`g4-standard-384`), Ray Serve runs **1 replica on GPU 0**, while **8 parallel simulation workers** execute concurrently across all GPUs 0–7 (Worker 0 shares GPU 0 with Serve; Workers 1–7 occupy GPUs 1–7):
 
 ![Serving & Sim Eval](assets/nb03_cell6.gif)
-*Caption: Single-node GKE architecture: 1 Ray Serve replica on GPU 0 serving HTTP /predict to 8 parallel Franka simulation workers on GPUs 0-7, evaluating 8 episodes in parallel in 17.3s and logging real-time rewards.*
+*Caption: Single-node GKE architecture: 1 Ray Serve replica on GPU 0 serving HTTP /predict to 8 parallel Franka simulation workers on GPUs 0-7, evaluating 8 episodes in parallel in 14.4s and logging real-time rewards.*
 
 #### Live Rollouts Recorded on GKE:
 The Franka Panda robot arms were simulated live on GKE across all 8 GPUs with telemetry HUD overlays. The rollout GIFs are saved directly into `/checkpoint/physical-ai/rollouts/`:
@@ -327,23 +363,23 @@ The Franka Panda robot arms were simulated live on GKE across all 8 GPUs with te
 | Round 1 Baseline Rollout (Worker 0, Ep 0) | Round 2 Retrained Rollout (Worker 0, Ep 0) |
 | :---: | :---: |
 | ![Cluster Rollout Round 1](assets/rollout_round1.gif) | ![Cluster Rollout Round 2](assets/rollout_round2.gif) |
-| *Reward: -36.645 · Baseline policy wandering with table approach failure* | *Reward: -14.471 (+22.174 Δ) · Fine-tuned target-guided descent following 100-step 8-GPU DDP retraining* |
+| *Reward: -15.692 · 1000-step baseline policy* | *Reward: -14.889 (Δ +0.803) · after 100-step 8-GPU DDP flywheel retraining. Note worker 0 improved; 6 of the other 7 workers did not.* |
 
 #### Closed-Loop Improvement & Multi-Round Flywheel:
 The self-improvement flywheel runs autonomously through 4 continuous phases:
-1. **Live Ray Serve Eval**: 1 Serve replica + 8 Sim workers on GPUs 0-7 evaluate policy in 17.3s.
+1. **Live Ray Serve Eval**: 1 Serve replica + 8 Sim workers on GPUs 0-7 evaluate the policy in ~14.4s.
 2. **Filter Rewarded Trajectories**: Extracts 2,500 expert Franka frames.
 3. **Task Stream Normalization**: Injects task-specific Franka coordinate normalization statistics.
-4. **8-GPU DDP Retraining**: Re-trains across all 8 NVIDIA RTX PRO 6000 GPUs for 100 steps (loss drops from 0.3120 to 0.0469, mean: 0.1009) and saves checkpoint to GCS FUSE.
+4. **8-GPU DDP Retraining**: Re-trains across all 8 NVIDIA RTX PRO 6000 GPUs for 100 steps (8-worker mean loss `0.0495`) and saves the checkpoint to GCS FUSE.
 
 ![Closed-Loop Flywheel](assets/nb03_cell11.gif)
 *Caption: 4-phase circular flywheel: Live Serve Eval (8 chips) -> Filter Trajectories -> Task Stream Normalization -> 8-GPU DDP Retraining.*
 
-#### Multi-Round Success Curve & Head-to-Head Progression:
-Head-to-head comparison combining actual Franka Panda camera views from evaluation episodes with the 8-GPU training loss reduction curve and cluster telemetry:
+#### Head-to-Head Round Comparison:
+Head-to-head comparison combining actual Franka Panda camera views from evaluation episodes with the round-2 retraining loss curve and cluster telemetry:
 
 ![Franka Progress Progression](assets/nb03_cell10.gif)
-*Caption: Multi-view Franka rollouts recorded on GKE paired with 8-GPU loss convergence curve and head-to-head episode rewards across all 8 parallel workers demonstrating +21.388 mean reward improvement (+57.7% gain).*
+*Caption: Multi-view Franka rollouts recorded on GKE paired with the round-2 loss curve and head-to-head episode rewards across all 8 parallel workers (mean delta -1.553, within run-to-run variance).*
 
 ---
 
@@ -412,9 +448,9 @@ Each stage of the stack is decoupled into its own independent Kubernetes manifes
 | Stage | Manifest | Submitter / Pod | Output Log File | Key Verified Milestone |
 | :--- | :--- | :--- | :--- | :--- |
 | **Phase 1** | [`01-data-processing-rayjob.yaml`](models/pi05/manifests/01-data-processing-rayjob.yaml) | `physical-ai-01-data-processing-...` | [`logs/01-data-processing.log`](logs/01-data-processing.log) | 273,465 frames streamed from GCS FUSE in 67s |
-| **Phase 2** | [`02-vla-training-rayjob.yaml`](models/pi05/manifests/02-vla-training-rayjob.yaml) | `physical-ai-02-vla-finetuning-...` | [`logs/02-vla-training.log`](logs/02-vla-training.log) | 1,000 steps on 8 GPUs, loss 1.0271 -> 0.0315 |
+| **Phase 2** | [`02-vla-training-rayjob.yaml`](models/pi05/manifests/02-vla-training-rayjob.yaml) | `physical-ai-02-vla-finetuning-...` | [`logs/02-vla-training.log`](logs/02-vla-training.log) | 1,000 steps on 8 GPUs in 276.1s, loss 1.9179 -> 0.3928 (smoothed) |
 | **Phase 2b** | [`02b-generate-demos-job.yaml`](models/pi05/manifests/02b-generate-demos-job.yaml) | `physical-ai-generate-demos-...` | [`logs/02b-generate-demos.log`](logs/02b-generate-demos.log) | 2,500 frames (+87.86 reward) pick-and-lift |
-| **Phase 3** | [`03-serving-sim-eval-rayjob.yaml`](models/pi05/manifests/03-serving-sim-eval-rayjob.yaml) | `physical-ai-03-serving-sim-eval-...` | [`logs/03-serving-sim-eval.log`](logs/03-serving-sim-eval.log) | 8-chip sim eval in 17.3s, +57.7% net reward gain |
+| **Phase 3** | [`03-serving-sim-eval-rayjob.yaml`](models/pi05/manifests/03-serving-sim-eval-rayjob.yaml) | `physical-ai-03-serving-sim-eval-...` | [`logs/03-serving-sim-eval.log`](logs/03-serving-sim-eval.log) | Closed loop verified: 8-chip sim eval in 14.4s, R1/R2 head-to-head on 8 workers |
 | **Phase 3b** | [`03b-vla-serving-rayservice.yaml`](models/pi05/manifests/03b-vla-serving-rayservice.yaml) | `physical-ai-vla-serving-...` | GKE ClusterIP port 8000 | 24/7 self-healing RayService deployment |
 
 ### End-to-End Sequential Run Command:
@@ -443,6 +479,12 @@ kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-0
 kubectl apply -f models/pi05/manifests/02-vla-training-rayjob.yaml
 kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-02-vla-finetuning --timeout=7200s
 
+# 4a. Release the training cluster's GPUs before the next GPU phase.
+#     Capture logs first: they live on the submitter pod, which is deleted with the RayJob.
+kubectl logs $(kubectl get pods -o name \
+  | grep 'physical-ai-02-vla-finetuning-' | grep -vE 'head|worker' | head -1) > logs/02-vla-training.log
+kubectl delete rayjob physical-ai-02-vla-finetuning --wait=true
+
 # 5. Phase 2b: Demonstration Generation
 kubectl apply -f models/pi05/manifests/02b-generate-demos-job.yaml
 kubectl wait --for=condition=complete job/physical-ai-generate-demos --timeout=3600s
@@ -451,6 +493,14 @@ kubectl wait --for=condition=complete job/physical-ai-generate-demos --timeout=3
 kubectl apply -f models/pi05/manifests/03-serving-sim-eval-rayjob.yaml
 kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-03-serving-sim-eval --timeout=7200s
 ```
+
+> [!WARNING]
+> **On a single 8-GPU node, Phase 3 cannot start until Phase 2's RayCluster is gone.**
+> A finished RayJob keeps its RayCluster (and therefore every GPU) reserved until
+> `ttlSecondsAfterFinished` elapses. These manifests set it to `0`, but if you raise it
+> — or leave an older job around — Phase 3 will sit in `Initializing` indefinitely with
+> `0/N nodes are available: 8 Insufficient nvidia.com/gpu`. Verify with
+> `kubectl get rayclusters` before starting the next GPU phase.
 
 ---
 

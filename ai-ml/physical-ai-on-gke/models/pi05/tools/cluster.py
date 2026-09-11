@@ -12,35 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Cluster shape helpers -- the one place the course reads the hardware.
+"""Cluster shape helpers -- the one place this sample reads the hardware.
 
-No notebook hardcodes a GPU count or an instance type. Every worker count is
-derived from the live cluster at runtime, so the same notebooks run unchanged
-on any of the validated shapes:
+No script hardcodes a GPU count or a machine type. Every worker count is
+derived from the live Ray cluster at runtime, so the same scripts run unchanged
+on any of the validated GKE shapes:
 
-    4 GPUs    = 1 x g4dn.12xlarge   (4 T4s on ONE node -- the reference config)
-    4 GPUs    = 1 x g6.12xlarge     (4 L4s on ONE node)
-    2-4 GPUs  = 2-4 x g7e.4xlarge   (1 GPU per node)
+    8 GPUs    = 1 x g4-standard-384  (8 x NVIDIA RTX PRO 6000 on ONE node -- the
+                                      reference config: 384 vCPUs, 1.4 TB host RAM)
+    4 GPUs    = 1 x g2-standard-96   (4 x NVIDIA L4 on ONE node)
+    2-8 GPUs  = 2-8 x g2-standard-24 (1 GPU per node)
 
-GPU count is not the binding constraint -- *host* RAM is. Notebook 03 needs
-~48 GB of host RAM per GPU, so the common 32 GB single-GPU shapes
-(g4dn.2xlarge, g5.2xlarge, g7.2xlarge) get through 00-02 on a fresh cluster and
-are then OOM-killed in 03. Pick the instance on host RAM; see "Instance types"
-in the README for the full table.
+GPU count is not the binding constraint -- *host* RAM is. Phase 3 needs roughly
+48 GB of host RAM per GPU, so small single-GPU shapes with 32 GB or less get
+through Phases 1-2 and are then OOM-killed in Phase 3. Pick the machine type on
+host RAM; the reference `g4-standard-384` node provides ~175 GB per GPU.
 
 That is also why this module reports GPUs *per node* as well as the total: model
 staging and host-memory budgeting are per node, while train and sim worker
 counts are per GPU.
 
-Usage in a notebook, after `ray.init(...)`:
+Usage, after `ray.init(...)`:
 
     from tools import cluster
-    cluster.describe()                       # print the shape + any warnings
+    cluster.describe()                            # print the shape + any warnings
     NUM_TRAIN_WORKERS = cluster.train_workers()   # one DDP worker per GPU
-    SIM_WORKERS       = cluster.sim_workers()      # one rollout per GPU node
+    SIM_WORKERS       = cluster.sim_workers()     # one rollout per GPU node
 
-Only depends on `ray` -- safe to import from any notebook, including the
-overview, without pulling in torch.
+Only depends on `ray` -- safe to import from anywhere without pulling in torch.
 """
 
 import os
@@ -109,7 +108,7 @@ def num_gpus(default=1):
 
 
 def gpus_per_node():
-    """Max GPUs on any single GPU node (4 on g6.12xlarge, 1 on g5.2xlarge)."""
+    """Max GPUs on any single GPU node (8 on g4-standard-384, 1 on g2-standard-24)."""
     per_node = topology()["per_node"]
     return max((d["gpus"] for d in per_node), default=1)
 
@@ -118,7 +117,7 @@ def train_workers(env_var="NUM_WORKERS", cap=None):
     """How many Ray Train workers to launch: one per GPU.
 
     `ScalingConfig(num_workers=train_workers())` is the whole scaling story --
-    2 GPUs, 4 GPUs, or 400 all take the same line. An explicit `NUM_WORKERS`
+    2 GPUs, 8 GPUs, or 400 all take the same line. An explicit `NUM_WORKERS`
     environment variable wins, so a run can be pinned smaller than the cluster.
     """
     override = os.environ.get(env_var)
@@ -129,7 +128,7 @@ def train_workers(env_var="NUM_WORKERS", cap=None):
 
 
 def sim_workers(reserve_for_serve=1, env_var="SIM_WORKERS"):
-    """Parallel Isaac Lab rollouts to fan out (notebook 03).
+    """Parallel Franka simulation rollouts to fan out (Phase 3).
 
     Two limits, and we take the smaller:
 
@@ -138,12 +137,13 @@ def sim_workers(reserve_for_serve=1, env_var="SIM_WORKERS"):
       `GPUs - reserve_for_serve`.
     * **Nodes.** One rollout per GPU node. Isaac Sim boots its own Kit runtime
       per process and shares an extension cache per node, so one boot at a time
-      per node is the arrangement this course is validated on.
+      per node is the arrangement this sample is validated on.
 
     That gives 1 rollout on a 2-GPU cluster, 3 across four single-GPU nodes, and
-    1 on a single 4-GPU node such as a g6.12xlarge. Set `SIM_WORKERS` to fan out
-    further on one node: startup is serialized by `franka_env.kit_startup_lock`,
+    1 on a single 8-GPU node such as a `g4-standard-384`. Set `SIM_WORKERS` to fan
+    out further on one node: startup is serialized by `franka_env.kit_startup_lock`,
     so the boots queue and the rollouts still run in parallel once they are up.
+    Phase 3 in this sample sets `SIM_WORKERS=8` to use all 8 GPUs on the node.
     """
     override = os.environ.get(env_var)
     if override:
@@ -156,8 +156,8 @@ def sim_workers(reserve_for_serve=1, env_var="SIM_WORKERS"):
 def describe(print_fn=print):
     """Print the cluster shape and the worker counts derived from it.
 
-    This is the 'what am I running on' cell every notebook opens with, in place
-    of a hardcoded 'you should see 2 GPUs'. Returns the topology dict.
+    This is the 'what am I running on' summary every phase opens with, in place
+    of a hardcoded 'you should see 8 GPUs'. Returns the topology dict.
     """
     topo = topology()
     accel = topo["accelerator"] or "unknown model"

@@ -36,9 +36,9 @@ manipulation.
 PROCESS MODEL
 -------------
 Isaac Sim's Kit engine uses its own event loop and conflicts with Ray's
-worker loop. The pattern used throughout this course: run this wrapper
+worker loop. The pattern used throughout this sample: run this wrapper
 inside a SUBPROCESS spawned by `tools/sim_worker.py` (itself launched as a Ray
-task from the serving + sim-eval notebook). The subprocess gets a clean
+task from the Phase 3 serving + sim-eval script). The subprocess gets a clean
 Python interpreter + event loop, and the AppLauncher boots into that.
 
 The `_launch_isaac_app` workaround pre-imports pinocchio before
@@ -68,7 +68,7 @@ import numpy as np
 #     ModuleNotFoundError: No module named 'omni.kit.usd'
 #
 # One GPU per sim worker means one worker per node on single-GPU instances, so
-# this only appears once a node carries several GPUs (4 on a g6.12xlarge). The
+# this only appears once a node carries several GPUs (8 on a g4-standard-384). The
 # fix is to let one process at a time through startup, which costs a boot in
 # series (~50 s each) and leaves the rollouts themselves fully parallel.
 _KIT_LOCK_PATH = os.environ.get(

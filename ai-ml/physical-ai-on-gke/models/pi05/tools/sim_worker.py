@@ -26,7 +26,7 @@ subprocess can't hold a Ray DeploymentHandle from outside Ray). Ray Serve
 exposes the policy at `http://HEAD:8000/predict`, and we POST a pickled obs
 dict and get a pickled action chunk back.
 
-Usage (invoked by the serving + sim-eval notebook, 03):
+Usage (invoked by the Phase 3 serving + sim-eval script, 03):
     python tools/sim_worker.py \
         --worker-id 0 \
         --policy-url http://10.0.18.189:8000 \
@@ -65,7 +65,7 @@ def save_gif(frames: List[np.ndarray], path: str, max_size: int = 256,
     """Save frames as a GIF, downscaled and palette-reduced to stay lightweight.
 
     Isaac renders full-resolution frames; embedding ~50 of them at native size
-    bloats the notebook to tens of MB per GIF. Two steps keep it small:
+    bloats the output to tens of MB per GIF. Two steps keep it small:
 
     1. thumbnail each frame to fit `max_size`, preserving aspect ratio, and
     2. quantize to a `colors`-entry palette and let GIF frame optimization drop
@@ -74,7 +74,7 @@ def save_gif(frames: List[np.ndarray], path: str, max_size: int = 256,
     The rollout scene is a grey floor with a dark cube and a light arm, so 64
     colors is visually indistinguishable from truecolor and roughly halves the
     bytes: a 50-frame episode goes from about 1.4 MB to 0.7 MB, which is the
-    same saving again in the notebook, since the GIF is embedded base64.
+    same saving again downstream, since the GIF is embedded base64.
     """
     from PIL import Image
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)

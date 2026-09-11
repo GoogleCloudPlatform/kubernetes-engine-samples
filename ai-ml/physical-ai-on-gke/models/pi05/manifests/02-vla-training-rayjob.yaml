@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# ---------------------------------------------------------------------------
+# Phase 2: Distributed VLA fine-tuning (PI0.5, 1000 steps).
+#
+# Reference node shape: 1 x g4-standard-384
+#   8 x NVIDIA RTX PRO 6000 | 384 vCPUs | 1.4 TB host RAM
+#
+# Worker group below requests the whole node: 8 GPUs / 128 vCPUs / 512 GiB,
+# giving one Ray Train DDP worker per GPU (--num-workers 8).
+# To run on a smaller node pool, lower num-gpus, nvidia.com/gpu, cpu, memory
+# and --num-workers together.
+# ---------------------------------------------------------------------------
 apiVersion: ray.io/v1
 kind: RayJob
 metadata:
@@ -24,7 +35,11 @@ metadata:
 spec:
   submissionMode: K8sJobMode
   shutdownAfterJobFinishes: true
-  ttlSecondsAfterFinished: 3600
+  # Release the RayCluster (and therefore all 8 GPUs) as soon as training
+  # finishes. A non-zero TTL keeps the GPUs reserved and prevents the Phase 3
+  # RayJob from scheduling on a single-node GPU cluster. Submitter pod logs are
+  # retained independently of the cluster, so `kubectl logs` still works after.
+  ttlSecondsAfterFinished: 0
   submitterPodTemplate:
     spec:
       restartPolicy: Never

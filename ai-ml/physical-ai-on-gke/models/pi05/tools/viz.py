@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tiny notebook visual helper. Import-safe on workers (no IPython at module level)."""
+"""Tiny visual helper. Import-safe on Ray workers (no IPython at module level)."""
 import base64
 import os
 
@@ -20,7 +20,7 @@ import os
 def show_gif(path, width=680, caption=None):
     """Display an animated GIF inline. Call at the TOP of a long-running cell
     so it animates while the cell works. No-op (with a note) if the file is
-    missing, so a partial checkout never breaks the notebook."""
+    missing, so a partial checkout never breaks the caller."""
     from IPython.display import HTML, display
 
     if not os.path.exists(path):

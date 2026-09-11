@@ -29,9 +29,9 @@ data:
     # See the License for the specific language governing permissions and
     # limitations under the License.
 
-    """Shared modules for the course notebooks.
+    """Shared modules for the Physical AI on GKE phase scripts.
 
-    Imported as a package so every notebook and every Ray worker resolves them the
+    Imported as a package so every phase script and every Ray worker resolves them the
     same way -- Ray puts the runtime_env working_dir (this repo root) on sys.path,
     so `from tools import util` works on the driver and on the workers alike.
 
@@ -134,35 +134,34 @@ data:
     # See the License for the specific language governing permissions and
     # limitations under the License.
 
-    """Cluster shape helpers -- the one place the course reads the hardware.
+    """Cluster shape helpers -- the one place this sample reads the hardware.
 
-    No notebook hardcodes a GPU count or an instance type. Every worker count is
-    derived from the live cluster at runtime, so the same notebooks run unchanged
-    on any of the validated shapes:
+    No script hardcodes a GPU count or a machine type. Every worker count is
+    derived from the live Ray cluster at runtime, so the same scripts run unchanged
+    on any of the validated GKE shapes:
 
-        4 GPUs    = 1 x g4dn.12xlarge   (4 T4s on ONE node -- the reference config)
-        4 GPUs    = 1 x g6.12xlarge     (4 L4s on ONE node)
-        2-4 GPUs  = 2-4 x g7e.4xlarge   (1 GPU per node)
+        8 GPUs    = 1 x g4-standard-384  (8 x NVIDIA RTX PRO 6000 on ONE node -- the
+                                          reference config: 384 vCPUs, 1.4 TB host RAM)
+        4 GPUs    = 1 x g2-standard-96   (4 x NVIDIA L4 on ONE node)
+        2-8 GPUs  = 2-8 x g2-standard-24 (1 GPU per node)
 
-    GPU count is not the binding constraint -- *host* RAM is. Notebook 03 needs
-    ~48 GB of host RAM per GPU, so the common 32 GB single-GPU shapes
-    (g4dn.2xlarge, g5.2xlarge, g7.2xlarge) get through 00-02 on a fresh cluster and
-    are then OOM-killed in 03. Pick the instance on host RAM; see "Instance types"
-    in the README for the full table.
+    GPU count is not the binding constraint -- *host* RAM is. Phase 3 needs roughly
+    48 GB of host RAM per GPU, so small single-GPU shapes with 32 GB or less get
+    through Phases 1-2 and are then OOM-killed in Phase 3. Pick the machine type on
+    host RAM; the reference `g4-standard-384` node provides ~175 GB per GPU.
 
     That is also why this module reports GPUs *per node* as well as the total: model
     staging and host-memory budgeting are per node, while train and sim worker
     counts are per GPU.
 
-    Usage in a notebook, after `ray.init(...)`:
+    Usage, after `ray.init(...)`:
 
         from tools import cluster
-        cluster.describe()                       # print the shape + any warnings
+        cluster.describe()                            # print the shape + any warnings
         NUM_TRAIN_WORKERS = cluster.train_workers()   # one DDP worker per GPU
-        SIM_WORKERS       = cluster.sim_workers()      # one rollout per GPU node
+        SIM_WORKERS       = cluster.sim_workers()     # one rollout per GPU node
 
-    Only depends on `ray` -- safe to import from any notebook, including the
-    overview, without pulling in torch.
+    Only depends on `ray` -- safe to import from anywhere without pulling in torch.
     """
 
     import os
@@ -231,7 +230,7 @@ data:
 
 
     def gpus_per_node():
-        """Max GPUs on any single GPU node (4 on g6.12xlarge, 1 on g5.2xlarge)."""
+        """Max GPUs on any single GPU node (8 on g4-standard-384, 1 on g2-standard-24)."""
         per_node = topology()["per_node"]
         return max((d["gpus"] for d in per_node), default=1)
 
@@ -240,7 +239,7 @@ data:
         """How many Ray Train workers to launch: one per GPU.
 
         `ScalingConfig(num_workers=train_workers())` is the whole scaling story --
-        2 GPUs, 4 GPUs, or 400 all take the same line. An explicit `NUM_WORKERS`
+        2 GPUs, 8 GPUs, or 400 all take the same line. An explicit `NUM_WORKERS`
         environment variable wins, so a run can be pinned smaller than the cluster.
         """
         override = os.environ.get(env_var)
@@ -251,7 +250,7 @@ data:
 
 
     def sim_workers(reserve_for_serve=1, env_var="SIM_WORKERS"):
-        """Parallel Isaac Lab rollouts to fan out (notebook 03).
+        """Parallel Franka simulation rollouts to fan out (Phase 3).
 
         Two limits, and we take the smaller:
 
@@ -260,12 +259,13 @@ data:
           `GPUs - reserve_for_serve`.
         * **Nodes.** One rollout per GPU node. Isaac Sim boots its own Kit runtime
           per process and shares an extension cache per node, so one boot at a time
-          per node is the arrangement this course is validated on.
+          per node is the arrangement this sample is validated on.
 
         That gives 1 rollout on a 2-GPU cluster, 3 across four single-GPU nodes, and
-        1 on a single 4-GPU node such as a g6.12xlarge. Set `SIM_WORKERS` to fan out
-        further on one node: startup is serialized by `franka_env.kit_startup_lock`,
+        1 on a single 8-GPU node such as a `g4-standard-384`. Set `SIM_WORKERS` to fan
+        out further on one node: startup is serialized by `franka_env.kit_startup_lock`,
         so the boots queue and the rollouts still run in parallel once they are up.
+        Phase 3 in this sample sets `SIM_WORKERS=8` to use all 8 GPUs on the node.
         """
         override = os.environ.get(env_var)
         if override:
@@ -278,8 +278,8 @@ data:
     def describe(print_fn=print):
         """Print the cluster shape and the worker counts derived from it.
 
-        This is the 'what am I running on' cell every notebook opens with, in place
-        of a hardcoded 'you should see 2 GPUs'. Returns the topology dict.
+        This is the 'what am I running on' summary every phase opens with, in place
+        of a hardcoded 'you should see 8 GPUs'. Returns the topology dict.
         """
         topo = topology()
         accel = topo["accelerator"] or "unknown model"
@@ -331,9 +331,9 @@ data:
     PROCESS MODEL
     -------------
     Isaac Sim's Kit engine uses its own event loop and conflicts with Ray's
-    worker loop. The pattern used throughout this course: run this wrapper
+    worker loop. The pattern used throughout this sample: run this wrapper
     inside a SUBPROCESS spawned by `tools/sim_worker.py` (itself launched as a Ray
-    task from the serving + sim-eval notebook). The subprocess gets a clean
+    task from the Phase 3 serving + sim-eval script). The subprocess gets a clean
     Python interpreter + event loop, and the AppLauncher boots into that.
 
     The `_launch_isaac_app` workaround pre-imports pinocchio before
@@ -363,7 +363,7 @@ data:
     #     ModuleNotFoundError: No module named 'omni.kit.usd'
     #
     # One GPU per sim worker means one worker per node on single-GPU instances, so
-    # this only appears once a node carries several GPUs (4 on a g6.12xlarge). The
+    # this only appears once a node carries several GPUs (8 on a g4-standard-384). The
     # fix is to let one process at a time through startup, which costs a boot in
     # series (~50 s each) and leaves the rollouts themselves fully parallel.
     _KIT_LOCK_PATH = os.environ.get(
@@ -2161,7 +2161,7 @@ data:
     """
     PI0.5 Policy Server via Ray Serve.
 
-    Loads the fine-tuned PI0.5 checkpoint produced by the fine-tuning notebook
+    Loads the fine-tuned PI0.5 checkpoint produced by the Phase 2 fine-tuning script
     (`02_vla_finetuning.ipynb`, written under `/mnt/cluster_storage/...`) and
     serves it behind an HTTP endpoint so Isaac Lab sim workers, running on a
     separate GPU, can query it over the network without ever loading the
@@ -2375,7 +2375,7 @@ data:
             if not self.checkpoint_path.exists():
                 raise FileNotFoundError(
                     f"Checkpoint not found at {self.checkpoint_path}. "
-                    "Run the fine-tuning notebook (02) first."
+                    "Run the Phase 2 fine-tuning job (02) first."
                 )
 
             with open(self.checkpoint_path, "rb") as f:
@@ -2597,13 +2597,34 @@ data:
 
     # The public rayproject/ray:*-gpu images ship the CUDA runtime but not PyTorch.
     # Install it here so this sample runs on stock Ray images without a custom build.
-    if ! python3 -c "import torch" 2>/dev/null; then
-        echo "=== Installing PyTorch ${TORCH_VERSION} (CUDA) ==="
-        python3 -m pip install --no-cache-dir "torch==${TORCH_VERSION}" --index-url "${TORCH_CUDA_INDEX}"
+    # torchvision is installed in the SAME pip invocation so that pip resolves a
+    # torch/torchvision pair that is binary compatible; lerobot imports torchvision
+    # transitively, so training fails without it.
+    if ! python3 -c "import torch, torchvision" 2>/dev/null; then
+        echo "=== Installing PyTorch ${TORCH_VERSION} + torchvision (CUDA) ==="
+        python3 -m pip install --no-cache-dir \
+            "torch==${TORCH_VERSION}" torchvision \
+            --index-url "${TORCH_CUDA_INDEX}"
     fi
 
+    # lerobot is installed with --no-deps to keep its pins from downgrading the
+    # CUDA-matched torch above, so its runtime requirements are listed explicitly
+    # here. Versions follow lerobot 0.4.3's own declared ranges.
+    #
+    # IMPORTANT: numpy is held at the 1.26.x that ships in the Ray image. Ray's own
+    # pandas/scipy/ray.data binaries are compiled against the numpy 1.x C ABI, so
+    # letting a transitive dependency pull numpy 2.x breaks `import ray.train` and
+    # `import ray.data` with "numpy.dtype size changed". opencv-python-headless
+    # >= 4.10 is the only dependency here that requires numpy 2, so it is capped to
+    # the last numpy-1-compatible release.
     python3 -m pip install --no-cache-dir --no-deps lerobot==0.4.3
     python3 -m pip install --no-cache-dir \
+        "numpy>=1.26,<2" \
+        "Pillow>=10.0" \
+        "accelerate>=1.10,<2.0" \
+        "einops>=0.8,<0.9" \
+        "opencv-python-headless>=4.9,<4.10" \
+        "termcolor>=2.4,<4" \
         "datasets>=4.0,<4.2" \
         "diffusers>=0.27.2,<0.36" \
         "draccus==0.10.0" \
@@ -2657,7 +2678,7 @@ data:
     exposes the policy at `http://HEAD:8000/predict`, and we POST a pickled obs
     dict and get a pickled action chunk back.
 
-    Usage (invoked by the serving + sim-eval notebook, 03):
+    Usage (invoked by the Phase 3 serving + sim-eval script, 03):
         python tools/sim_worker.py \
             --worker-id 0 \
             --policy-url http://10.0.18.189:8000 \
@@ -2696,7 +2717,7 @@ data:
         """Save frames as a GIF, downscaled and palette-reduced to stay lightweight.
 
         Isaac renders full-resolution frames; embedding ~50 of them at native size
-        bloats the notebook to tens of MB per GIF. Two steps keep it small:
+        bloats the output to tens of MB per GIF. Two steps keep it small:
 
         1. thumbnail each frame to fit `max_size`, preserving aspect ratio, and
         2. quantize to a `colors`-entry palette and let GIF frame optimization drop
@@ -2705,7 +2726,7 @@ data:
         The rollout scene is a grey floor with a dark cube and a light arm, so 64
         colors is visually indistinguishable from truecolor and roughly halves the
         bytes: a 50-frame episode goes from about 1.4 MB to 0.7 MB, which is the
-        same saving again in the notebook, since the GIF is embedded base64.
+        same saving again downstream, since the GIF is embedded base64.
         """
         from PIL import Image
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
@@ -3098,7 +3119,7 @@ data:
     """
     Training utilities for the VLA fine-tuning + closed-loop notebooks.
 
-    Helpers shared across the course notebooks (02 fine-tuning, 03 serving +
+    Helpers shared across the phase scripts (02 fine-tuning, 03 serving +
     sim eval). They live here so the notebooks stay focused on the Ray-specific
     orchestration, while this module owns the model plumbing.
 
@@ -3520,7 +3541,7 @@ data:
         single-epoch job gives `for epoch in range(1, 1)` -- zero iterations. The
         loop body never executes, `metrics` is never assigned, no `ray.train.report`
         happens, and `TorchTrainer.fit()` hands back the PREVIOUS run's checkpoint
-        and metrics. The notebook then prints a plausible loss and a valid
+        and metrics. The caller then prints a plausible loss and a valid
         checkpoint path for training that did not occur.
 
         Resuming a finished run is legitimate; silently presenting it as a fresh
@@ -3624,10 +3645,10 @@ data:
         * `require_all=True` waits for EVERY GPU node, which is right before Ray
           Train, since it places one worker per GPU.
         * `per_gpu=True` (default) scales each node's budget by the workers that
-          will actually land on it, so a 4-GPU node asks for 4x what a single-GPU
+          will actually land on it, so an 8-GPU node asks for 8x what a single-GPU
           node does. Pass `per_gpu=False` for a flat per-node budget.
         * `num_workers` caps that multiplier at the number of workers the run
-          actually requests, so pinning a 4-GPU cluster to 2 workers budgets for 2.
+          actually requests, so pinning an 8-GPU cluster to 2 workers budgets for 2.
 
         Returns True once the cluster qualifies; False on timeout (caller decides).
         """
@@ -3781,7 +3802,7 @@ data:
     # See the License for the specific language governing permissions and
     # limitations under the License.
 
-    """Tiny notebook visual helper. Import-safe on workers (no IPython at module level)."""
+    """Tiny visual helper. Import-safe on Ray workers (no IPython at module level)."""
     import base64
     import os
 
@@ -3789,7 +3810,7 @@ data:
     def show_gif(path, width=680, caption=None):
         """Display an animated GIF inline. Call at the TOP of a long-running cell
         so it animates while the cell works. No-op (with a note) if the file is
-        missing, so a partial checkout never breaks the notebook."""
+        missing, so a partial checkout never breaks the caller."""
         from IPython.display import HTML, display
 
         if not os.path.exists(path):
@@ -4852,7 +4873,7 @@ data:
                 break
 
 
-    def run_training(ds, round_name, storage_root, base_model_dir, model_uri, base_uri, stats, image_keys, max_steps=100, num_workers=4):
+    def run_training(ds, round_name, storage_root, base_model_dir, model_uri, base_uri, stats, image_keys, max_steps=100, num_workers=8):
         cluster_storage_root = Path(storage_root)
         cluster_storage_root.mkdir(parents=True, exist_ok=True)
         prior_run = cluster_storage_root / f"vla-finetune-{round_name}"

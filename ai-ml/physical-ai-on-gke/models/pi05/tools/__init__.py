@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Shared modules for the course notebooks.
+"""Shared modules for the Physical AI on GKE phase scripts.
 
-Imported as a package so every notebook and every Ray worker resolves them the
+Imported as a package so every phase script and every Ray worker resolves them the
 same way -- Ray puts the runtime_env working_dir (this repo root) on sys.path,
 so `from tools import util` works on the driver and on the workers alike.
 

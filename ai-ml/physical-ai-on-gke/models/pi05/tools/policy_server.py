@@ -15,7 +15,7 @@
 """
 PI0.5 Policy Server via Ray Serve.
 
-Loads the fine-tuned PI0.5 checkpoint produced by the fine-tuning notebook
+Loads the fine-tuned PI0.5 checkpoint produced by the Phase 2 fine-tuning script
 (`02_vla_finetuning.ipynb`, written under `/mnt/cluster_storage/...`) and
 serves it behind an HTTP endpoint so Isaac Lab sim workers, running on a
 separate GPU, can query it over the network without ever loading the
@@ -229,7 +229,7 @@ class PI05PolicyServer:
         if not self.checkpoint_path.exists():
             raise FileNotFoundError(
                 f"Checkpoint not found at {self.checkpoint_path}. "
-                "Run the fine-tuning notebook (02) first."
+                "Run the Phase 2 fine-tuning job (02) first."
             )
 
         with open(self.checkpoint_path, "rb") as f:
