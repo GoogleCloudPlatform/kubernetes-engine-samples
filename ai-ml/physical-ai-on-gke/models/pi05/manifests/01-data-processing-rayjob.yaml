@@ -1,0 +1,155 @@
+# Copyright 2026 Google LLC. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: physical-ai-01-data-processing
+  namespace: default
+  labels:
+    app.kubernetes.io/name: physical-ai-data-processing
+    app.kubernetes.io/component: data-pipeline
+    stage: phase-1-data-processing
+spec:
+  submissionMode: K8sJobMode
+  shutdownAfterJobFinishes: true
+  submitterPodTemplate:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ray-job-submitter
+          image: rayproject/ray:2.55.1-py311
+  entrypoint: bash -c "PYTHONPATH=/app:/app/tools:$PYTHONPATH python3 /app/scripts/01_robotics_data_pipelines.py --dataset-uri /checkpoint/physical-ai/mirror/libero --storage-root /checkpoint/physical-ai --batch-size 32 --sample-rows 10"
+  runtimeEnvYAML: |
+    env_vars:
+      HF_HUB_OFFLINE: "1"
+      HF_HUB_ENABLE_HF_TRANSFER: "1"
+      HF_HUB_DOWNLOAD_TIMEOUT: "60"
+      PYTHONPATH: "/app:/app/tools:$PYTHONPATH"
+    pip:
+      - av==15.1.0
+      - pyarrow>=14.0.0
+      - s3fs>=2024.1
+      - fsspec[s3]>=2024.1
+      - numpy>=1.26,<2
+  rayClusterSpec:
+    rayVersion: "2.55.1"
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: "0.0.0.0"
+        num-cpus: "16"
+      template:
+        metadata:
+          annotations:
+            gke-gcsfuse/volumes: "true"
+            gke-gcsfuse/mount-options: "uid=1000,gid=1000"
+          labels:
+            ray.io/node-type: head
+        spec:
+          serviceAccountName: workload-identity-k8s-sa
+          nodeSelector:
+            cloud.google.com/gke-nodepool: g4-384-pool
+          tolerations:
+            - key: "nvidia.com/gpu"
+              operator: "Exists"
+              effect: "NoSchedule"
+          securityContext:
+            fsGroup: 100
+          containers:
+            - name: ray-head
+              image: rayproject/ray:2.55.1-py311
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  cpu: "16"
+                  memory: "64Gi"
+                requests:
+                  cpu: "8"
+                  memory: "32Gi"
+              volumeMounts:
+                - name: gcs-fuse-checkpoint-vol
+                  mountPath: /checkpoint
+                - name: scripts-volume
+                  mountPath: /app/scripts
+                - name: tools-volume
+                  mountPath: /app/tools
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+          volumes:
+            - name: gcs-fuse-checkpoint-vol
+              persistentVolumeClaim:
+                claimName: checkpoint-data-pmotgi-tpu-v7x-04a179d1-pvc
+            - name: scripts-volume
+              configMap:
+                name: physical-ai-scripts
+            - name: tools-volume
+              configMap:
+                name: physical-ai-tools
+    workerGroupSpecs:
+      - groupName: data-workers
+        replicas: 2
+        minReplicas: 1
+        maxReplicas: 4
+        rayStartParams:
+          num-cpus: "32"
+        template:
+          metadata:
+            annotations:
+              gke-gcsfuse/volumes: "true"
+              gke-gcsfuse/mount-options: "uid=1000,gid=1000"
+            labels:
+              ray.io/node-type: worker
+          spec:
+            serviceAccountName: workload-identity-k8s-sa
+            nodeSelector:
+              cloud.google.com/gke-nodepool: g4-384-pool
+            tolerations:
+              - key: "nvidia.com/gpu"
+                operator: "Exists"
+                effect: "NoSchedule"
+            securityContext:
+              fsGroup: 100
+            containers:
+              - name: ray-worker
+                image: rayproject/ray:2.55.1-py311
+                imagePullPolicy: IfNotPresent
+                resources:
+                  limits:
+                    cpu: "32"
+                    memory: "128Gi"
+                  requests:
+                    cpu: "16"
+                    memory: "64Gi"
+                volumeMounts:
+                  - name: gcs-fuse-checkpoint-vol
+                    mountPath: /checkpoint
+                  - name: scripts-volume
+                    mountPath: /app/scripts
+                  - name: tools-volume
+                    mountPath: /app/tools
+            volumes:
+              - name: gcs-fuse-checkpoint-vol
+                persistentVolumeClaim:
+                  claimName: checkpoint-data-pmotgi-tpu-v7x-04a179d1-pvc
+              - name: scripts-volume
+                configMap:
+                  name: physical-ai-scripts
+              - name: tools-volume
+                configMap:
+                  name: physical-ai-tools

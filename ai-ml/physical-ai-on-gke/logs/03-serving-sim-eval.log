@@ -1,0 +1,1864 @@
+2026-09-10 13:01:47,622	INFO cli.py:41 -- [37mJob submission server address[39m: [1mhttp://physical-ai-03-serving-sim-eval-q2ngv-head-svc.default.svc.cluster.local:8265[22m
+2026-09-10 13:01:48,156	SUCC cli.py:65 -- [32m------------------------------------------------------------------[39m
+2026-09-10 13:01:48,156	SUCC cli.py:66 -- [32mJob 'physical-ai-03-serving-sim-eval-cvwwp' submitted successfully[39m
+2026-09-10 13:01:48,156	SUCC cli.py:67 -- [32m------------------------------------------------------------------[39m
+2026-09-10 13:01:48,156	INFO cli.py:326 -- [36mNext steps[39m
+2026-09-10 13:01:48,156	INFO cli.py:327 -- Query the logs of the job:
+2026-09-10 13:01:48,156	INFO cli.py:329 -- [1mray job logs physical-ai-03-serving-sim-eval-cvwwp[22m
+2026-09-10 13:01:48,156	INFO cli.py:331 -- Query the status of the job:
+2026-09-10 13:01:48,156	INFO cli.py:333 -- [1mray job status physical-ai-03-serving-sim-eval-cvwwp[22m
+2026-09-10 13:01:48,156	INFO cli.py:335 -- Request the job to be stopped:
+2026-09-10 13:01:48,157	INFO cli.py:337 -- [1mray job stop physical-ai-03-serving-sim-eval-cvwwp[22m
+2026-09-10 13:01:49,624	INFO cli.py:41 -- [37mJob submission server address[39m: [1mhttp://physical-ai-03-serving-sim-eval-q2ngv-head-svc.default.svc.cluster.local:8265[22m
+2026-09-10 13:01:47,922	INFO job_manager.py:580 -- Runtime env is setting up.
+Running entrypoint for job physical-ai-03-serving-sim-eval-cvwwp: bash -c "bash /app/tools/setup_vla_deps.sh && PYTHONPATH=/app:/app/tools: python3 /app/scripts/03_serving_and_sim_eval.py --storage-root /checkpoint/physical-ai --dataset-uri /checkpoint/physical-ai/mirror/libero --sim-workers 8 --sim-episodes 1 --max-sim-steps 100 --retrain-steps 100"
+=== Checking and installing VLA environment dependencies ===
+Collecting lerobot==0.4.3
+  Downloading lerobot-0.4.3-py3-none-any.whl.metadata (17 kB)
+Downloading lerobot-0.4.3-py3-none-any.whl (993 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 993.6/993.6 kB 28.5 MB/s eta 0:00:00
+Installing collected packages: lerobot
+Successfully installed lerobot-0.4.3
+Collecting datasets<4.2,>=4.0
+  Downloading datasets-4.1.1-py3-none-any.whl.metadata (18 kB)
+Collecting diffusers<0.36,>=0.27.2
+  Downloading diffusers-0.35.2-py3-none-any.whl.metadata (20 kB)
+Collecting draccus==0.10.0
+  Downloading draccus-0.10.0-py3-none-any.whl.metadata (24 kB)
+Collecting imageio==2.37.0 (from imageio[ffmpeg]==2.37.0)
+  Downloading imageio-2.37.0-py3-none-any.whl.metadata (5.2 kB)
+Collecting av==15.1.0
+  Downloading av-15.1.0-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (4.6 kB)
+Collecting num2words<0.6,>=0.5
+  Downloading num2words-0.5.14-py3-none-any.whl.metadata (13 kB)
+Collecting sentencepiece==0.2.2
+  Downloading sentencepiece-0.2.2-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (33 kB)
+Collecting s3fs>=2024.1
+  Downloading s3fs-2026.7.0-py3-none-any.whl.metadata (1.2 kB)
+Collecting fsspec>=2024.1 (from fsspec[s3]>=2024.1)
+  Downloading fsspec-2026.7.0-py3-none-any.whl.metadata (10 kB)
+Collecting pyserial<4,>=3.5
+  Downloading pyserial-3.5-py2.py3-none-any.whl.metadata (1.6 kB)
+Collecting deepdiff<9,>=7
+  Downloading deepdiff-8.6.2-py3-none-any.whl.metadata (8.8 kB)
+Collecting jsonlines<5,>=4
+  Downloading jsonlines-4.0.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting wandb<0.25,>=0.24
+  Downloading wandb-0.24.2-py3-none-manylinux_2_28_x86_64.whl.metadata (12 kB)
+Collecting mergedeep~=1.3 (from draccus==0.10.0)
+  Downloading mergedeep-1.3.4-py3-none-any.whl.metadata (4.3 kB)
+Requirement already satisfied: pyyaml~=6.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (6.0.3)
+Collecting pyyaml-include~=1.4 (from draccus==0.10.0)
+  Downloading pyyaml_include-1.4.1-py3-none-any.whl.metadata (1.3 kB)
+Collecting toml~=0.10 (from draccus==0.10.0)
+  Downloading toml-0.10.2-py2.py3-none-any.whl.metadata (7.1 kB)
+Collecting typing-inspect~=0.9.0 (from draccus==0.10.0)
+  Downloading typing_inspect-0.9.0-py3-none-any.whl.metadata (1.5 kB)
+Requirement already satisfied: numpy in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio==2.37.0->imageio[ffmpeg]==2.37.0) (1.26.4)
+Requirement already satisfied: pillow>=8.3.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio==2.37.0->imageio[ffmpeg]==2.37.0) (12.2.0)
+Collecting imageio-ffmpeg (from imageio[ffmpeg]==2.37.0)
+  Downloading imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Requirement already satisfied: psutil in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio[ffmpeg]==2.37.0) (5.9.6)
+Requirement already satisfied: filelock in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (3.17.0)
+Requirement already satisfied: pyarrow>=21.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (24.0.0)
+Collecting dill<0.4.1,>=0.3.0 (from datasets<4.2,>=4.0)
+  Downloading dill-0.4.0-py3-none-any.whl.metadata (10 kB)
+Requirement already satisfied: pandas in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (2.3.3)
+Requirement already satisfied: requests>=2.32.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (2.32.5)
+Requirement already satisfied: tqdm>=4.66.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (4.67.1)
+Requirement already satisfied: xxhash in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (3.7.0)
+Collecting multiprocess<0.70.17 (from datasets<4.2,>=4.0)
+  Downloading multiprocess-0.70.16-py311-none-any.whl.metadata (7.2 kB)
+Collecting fsspec>=2024.1 (from fsspec[s3]>=2024.1)
+  Downloading fsspec-2025.9.0-py3-none-any.whl.metadata (10 kB)
+Requirement already satisfied: huggingface-hub>=0.24.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (1.13.0)
+Requirement already satisfied: packaging in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (24.2)
+Requirement already satisfied: importlib_metadata in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (6.11.0)
+Requirement already satisfied: regex!=2019.12.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (2026.4.4)
+Requirement already satisfied: safetensors>=0.3.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (0.7.0)
+Collecting docopt>=0.6.2 (from num2words<0.6,>=0.5)
+  Downloading docopt-0.6.2.tar.gz (25 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting aiobotocore<4.0.0,>=2.19.0 (from s3fs>=2024.1)
+  Downloading aiobotocore-3.9.1-py3-none-any.whl.metadata (31 kB)
+INFO: pip is looking at multiple versions of s3fs to determine which version is compatible with other requirements. This could take a while.
+Collecting s3fs>=2024.1
+  Downloading s3fs-2026.6.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.4.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.3.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.2.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.1.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2025.12.0-py3-none-any.whl.metadata (1.2 kB)
+Collecting aiobotocore<3.0.0,>=2.5.4 (from s3fs>=2024.1)
+  Downloading aiobotocore-2.26.0-py3-none-any.whl.metadata (25 kB)
+Collecting s3fs>=2024.1
+  Downloading s3fs-2025.10.0-py3-none-any.whl.metadata (1.4 kB)
+INFO: pip is still looking at multiple versions of s3fs to determine which version is compatible with other requirements. This could take a while.
+  Downloading s3fs-2025.9.0-py3-none-any.whl.metadata (1.4 kB)
+Requirement already satisfied: aiohttp!=4.0.0a0,!=4.0.0a1 in /home/ray/anaconda3/lib/python3.11/site-packages (from s3fs>=2024.1) (3.13.3)
+Collecting orderly-set<6,>=5.4.1 (from deepdiff<9,>=7)
+  Downloading orderly_set-5.5.0-py3-none-any.whl.metadata (6.6 kB)
+Requirement already satisfied: attrs>=19.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from jsonlines<5,>=4) (25.1.0)
+Requirement already satisfied: click>=8.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (8.3.3)
+Requirement already satisfied: gitpython!=3.1.29,>=1.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (3.1.44)
+Requirement already satisfied: platformdirs in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (3.11.0)
+Requirement already satisfied: protobuf!=4.21.0,!=5.28.0,<7,>=3.19.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (4.25.8)
+Requirement already satisfied: pydantic<3 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (2.12.4)
+Requirement already satisfied: sentry-sdk>=2.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (2.59.0)
+Requirement already satisfied: typing-extensions<5,>=4.8 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (4.15.0)
+INFO: pip is looking at multiple versions of fsspec[s3] to determine which version is compatible with other requirements. This could take a while.
+Collecting fsspec[s3]>=2024.1
+  Downloading fsspec-2026.6.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.4.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.3.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.2.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.1.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2025.12.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2025.10.0-py3-none-any.whl.metadata (10 kB)
+INFO: pip is still looking at multiple versions of fsspec[s3] to determine which version is compatible with other requirements. This could take a while.
+Collecting aioitertools<1.0.0,>=0.5.1 (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1)
+  Downloading aioitertools-0.13.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting botocore<1.41.6,>=1.41.0 (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1)
+  Downloading botocore-1.41.5-py3-none-any.whl.metadata (5.9 kB)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (2.8.2)
+Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.0.1)
+Requirement already satisfied: multidict<7.0.0,>=6.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (6.0.5)
+Requirement already satisfied: wrapt<2.0.0,>=1.10.10 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.14.1)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.4.0)
+Requirement already satisfied: frozenlist>=1.1.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.4.1)
+Requirement already satisfied: propcache>=0.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (0.3.0)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.18.3)
+Requirement already satisfied: gitdb<5,>=4.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from gitpython!=3.1.29,>=1.0.0->wandb<0.25,>=0.24) (4.0.11)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.4.3)
+Requirement already satisfied: httpx<1,>=0.23.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.28.1)
+Requirement already satisfied: typer in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.24.1)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (0.6.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (2.41.5)
+Requirement already satisfied: typing-inspection>=0.4.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (0.4.2)
+Requirement already satisfied: charset_normalizer<4,>=2 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (3.7)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (1.26.19)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (2025.1.31)
+Collecting mypy-extensions>=0.3.0 (from typing-inspect~=0.9.0->draccus==0.10.0)
+  Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+Requirement already satisfied: zipp>=0.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from importlib_metadata->diffusers<0.36,>=0.27.2) (3.19.2)
+Requirement already satisfied: pytz>=2020.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from pandas->datasets<4.2,>=4.0) (2022.7.1)
+Requirement already satisfied: tzdata>=2022.7 in /home/ray/anaconda3/lib/python3.11/site-packages (from pandas->datasets<4.2,>=4.0) (2025.2)
+Requirement already satisfied: smmap<6,>=3.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from gitdb<5,>=4.0.1->gitpython!=3.1.29,>=1.0.0->wandb<0.25,>=0.24) (5.0.1)
+Requirement already satisfied: anyio in /home/ray/anaconda3/lib/python3.11/site-packages (from httpx<1,>=0.23.0->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (4.12.0)
+Requirement already satisfied: httpcore==1.* in /home/ray/anaconda3/lib/python3.11/site-packages (from httpx<1,>=0.23.0->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.0.9)
+Requirement already satisfied: h11>=0.16 in /home/ray/anaconda3/lib/python3.11/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.16.0)
+Requirement already satisfied: six>=1.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.1->aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.16.0)
+Requirement already satisfied: shellingham>=1.3.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.5.4)
+Requirement already satisfied: rich>=12.3.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (13.7.1)
+Requirement already satisfied: annotated-doc>=0.0.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from rich>=12.3.0->typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (2.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from rich>=12.3.0->typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (2.18.0)
+Requirement already satisfied: mdurl~=0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.1.2)
+Downloading draccus-0.10.0-py3-none-any.whl (71 kB)
+Downloading imageio-2.37.0-py3-none-any.whl (315 kB)
+Downloading av-15.1.0-cp311-cp311-manylinux_2_28_x86_64.whl (39.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 39.6/39.6 MB 8.8 MB/s eta 0:00:00
+Downloading sentencepiece-0.2.2-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (1.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 18.4 MB/s eta 0:00:00
+Downloading datasets-4.1.1-py3-none-any.whl (503 kB)
+Downloading diffusers-0.35.2-py3-none-any.whl (4.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.1/4.1 MB 19.3 MB/s eta 0:00:00
+Downloading num2words-0.5.14-py3-none-any.whl (163 kB)
+Downloading s3fs-2025.9.0-py3-none-any.whl (30 kB)
+Downloading fsspec-2025.9.0-py3-none-any.whl (199 kB)
+Downloading pyserial-3.5-py2.py3-none-any.whl (90 kB)
+Downloading deepdiff-8.6.2-py3-none-any.whl (91 kB)
+Downloading jsonlines-4.0.0-py3-none-any.whl (8.7 kB)
+Downloading wandb-0.24.2-py3-none-manylinux_2_28_x86_64.whl (23.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 23.0/23.0 MB 18.6 MB/s eta 0:00:00
+Downloading aiobotocore-2.26.0-py3-none-any.whl (87 kB)
+Downloading dill-0.4.0-py3-none-any.whl (119 kB)
+Downloading mergedeep-1.3.4-py3-none-any.whl (6.4 kB)
+Downloading multiprocess-0.70.16-py311-none-any.whl (143 kB)
+Downloading orderly_set-5.5.0-py3-none-any.whl (13 kB)
+Downloading pyyaml_include-1.4.1-py3-none-any.whl (19 kB)
+Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Downloading typing_inspect-0.9.0-py3-none-any.whl (8.8 kB)
+Downloading imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl (29.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 29.5/29.5 MB 18.6 MB/s eta 0:00:00
+Downloading aioitertools-0.13.0-py3-none-any.whl (24 kB)
+Downloading botocore-1.41.5-py3-none-any.whl (14.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 20.7 MB/s eta 0:00:00
+Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+Building wheels for collected packages: docopt
+  Building wheel for docopt (setup.py): started
+  Building wheel for docopt (setup.py): finished with status 'done'
+  Created wheel for docopt: filename=docopt-0.6.2-py2.py3-none-any.whl size=13783 sha256=31076e84ef7a46db8e96ccd921cb323d1d56731671f5cd02c0e51df0a6dfb51d
+  Stored in directory: /tmp/pip-ephem-wheel-cache-9g0f54qg/wheels/1a/b0/8c/4b75c4116c31f83c8f9f047231251e13cc74481cca4a78a9ce
+Successfully built docopt
+Installing collected packages: pyserial, docopt, toml, sentencepiece, pyyaml-include, orderly-set, num2words, mypy-extensions, mergedeep, jsonlines, imageio-ffmpeg, imageio, fsspec, dill, av, aioitertools, typing-inspect, multiprocess, deepdiff, botocore, wandb, draccus, aiobotocore, s3fs, diffusers, datasets
+  Attempting uninstall: sentencepiece
+    Found existing installation: sentencepiece 0.2.1
+    Uninstalling sentencepiece-0.2.1:
+      Successfully uninstalled sentencepiece-0.2.1
+  Attempting uninstall: fsspec
+    Found existing installation: fsspec 2023.12.1
+    Uninstalling fsspec-2023.12.1:
+      Successfully uninstalled fsspec-2023.12.1
+  Attempting uninstall: dill
+    Found existing installation: dill 0.4.1
+    Uninstalling dill-0.4.1:
+      Successfully uninstalled dill-0.4.1
+  Attempting uninstall: av
+    Found existing installation: av 17.0.1
+    Uninstalling av-17.0.1:
+      Successfully uninstalled av-17.0.1
+  Attempting uninstall: multiprocess
+    Found existing installation: multiprocess 0.70.19
+    Uninstalling multiprocess-0.70.19:
+      Successfully uninstalled multiprocess-0.70.19
+  Attempting uninstall: botocore
+    Found existing installation: botocore 1.32.7
+    Uninstalling botocore-1.32.7:
+      Successfully uninstalled botocore-1.32.7
+  Attempting uninstall: datasets
+    Found existing installation: datasets 4.8.5
+    Uninstalling datasets-4.8.5:
+      Successfully uninstalled datasets-4.8.5
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+lerobot 0.4.3 requires pynput<1.9.0,>=1.7.7, which is not installed.
+lerobot 0.4.3 requires rerun-sdk<0.27.0,>=0.24.0, which is not installed.
+lerobot 0.4.3 requires torchcodec<0.6.0,>=0.2.1; sys_platform != "win32" and (sys_platform != "linux" or (platform_machine != "aarch64" and platform_machine != "arm64" and platform_machine != "armv7l")) and (sys_platform != "darwin" or platform_machine != "x86_64"), which is not installed.
+boto3 1.29.7 requires botocore<1.33.0,>=1.32.7, but you have botocore 1.41.5 which is incompatible.
+lerobot 0.4.3 requires cmake<4.2.0,>=3.29.0.1, but you have cmake 4.3.2 which is incompatible.
+lerobot 0.4.3 requires huggingface-hub[cli,hf-transfer]<0.36.0,>=0.34.2, but you have huggingface-hub 1.13.0 which is incompatible.
+lerobot 0.4.3 requires opencv-python-headless<4.13.0,>=4.9.0, but you have opencv-python-headless 4.13.0.92 which is incompatible.
+lerobot 0.4.3 requires torch<2.8.0,>=2.2.1, but you have torch 2.11.0+cu128 which is incompatible.
+lerobot 0.4.3 requires torchvision<0.23.0,>=0.21.0, but you have torchvision 0.26.0+cu128 which is incompatible.
+trl 1.3.0 requires datasets>=4.7.0, but you have datasets 4.1.1 which is incompatible.
+vllm 0.20.0 requires protobuf!=6.30.*,!=6.31.*,!=6.32.*,!=6.33.0.*,!=6.33.1.*,!=6.33.2.*,!=6.33.3.*,!=6.33.4.*,>=5.29.6, but you have protobuf 4.25.8 which is incompatible.
+Successfully installed aiobotocore-2.26.0 aioitertools-0.13.0 av-15.1.0 botocore-1.41.5 datasets-4.1.1 deepdiff-8.6.2 diffusers-0.35.2 dill-0.4.0 docopt-0.6.2 draccus-0.10.0 fsspec-2025.9.0 imageio-2.37.0 imageio-ffmpeg-0.6.0 jsonlines-4.0.0 mergedeep-1.3.4 multiprocess-0.70.16 mypy-extensions-1.1.0 num2words-0.5.14 orderly-set-5.5.0 pyserial-3.5 pyyaml-include-1.4.1 s3fs-2025.9.0 sentencepiece-0.2.2 toml-0.10.2 typing-inspect-0.9.0 wandb-0.24.2
+=== Installing patched transformers fork ===
+Found existing installation: transformers 5.8.0
+Uninstalling transformers-5.8.0:
+  Successfully uninstalled transformers-5.8.0
+Found existing installation: tokenizers 0.22.2
+Uninstalling tokenizers-0.22.2:
+  Successfully uninstalled tokenizers-0.22.2
+Processing /checkpoint/physical-ai/wheels/transformers-4.53.3-py3-none-any.whl
+Requirement already satisfied: filelock in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (3.17.0)
+Collecting huggingface-hub<1.0,>=0.30.0 (from transformers==4.53.3)
+  Downloading huggingface_hub-0.36.2-py3-none-any.whl.metadata (15 kB)
+Requirement already satisfied: numpy>=1.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (1.26.4)
+Requirement already satisfied: packaging>=20.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (24.2)
+Requirement already satisfied: pyyaml>=5.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (2026.4.4)
+Requirement already satisfied: requests in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (2.32.5)
+Collecting tokenizers<0.22,>=0.21 (from transformers==4.53.3)
+  Downloading tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.7 kB)
+Requirement already satisfied: safetensors>=0.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (4.67.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.53.3) (2025.9.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.53.3) (1.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.53.3) (4.15.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (3.7)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (1.26.19)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (2025.1.31)
+Downloading huggingface_hub-0.36.2-py3-none-any.whl (566 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 566.4/566.4 kB 30.7 MB/s eta 0:00:00
+Downloading tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 74.0 MB/s eta 0:00:00
+Installing collected packages: huggingface-hub, tokenizers, transformers
+  Attempting uninstall: huggingface-hub
+    Found existing installation: huggingface_hub 1.13.0
+    Uninstalling huggingface_hub-1.13.0:
+      Successfully uninstalled huggingface_hub-1.13.0
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+lerobot 0.4.3 requires pynput<1.9.0,>=1.7.7, which is not installed.
+lerobot 0.4.3 requires rerun-sdk<0.27.0,>=0.24.0, which is not installed.
+lerobot 0.4.3 requires torchcodec<0.6.0,>=0.2.1; sys_platform != "win32" and (sys_platform != "linux" or (platform_machine != "aarch64" and platform_machine != "arm64" and platform_machine != "armv7l")) and (sys_platform != "darwin" or platform_machine != "x86_64"), which is not installed.
+lerobot 0.4.3 requires cmake<4.2.0,>=3.29.0.1, but you have cmake 4.3.2 which is incompatible.
+lerobot 0.4.3 requires huggingface-hub[cli,hf-transfer]<0.36.0,>=0.34.2, but you have huggingface-hub 0.36.2 which is incompatible.
+lerobot 0.4.3 requires opencv-python-headless<4.13.0,>=4.9.0, but you have opencv-python-headless 4.13.0.92 which is incompatible.
+lerobot 0.4.3 requires torch<2.8.0,>=2.2.1, but you have torch 2.11.0+cu128 which is incompatible.
+lerobot 0.4.3 requires torchvision<0.23.0,>=0.21.0, but you have torchvision 0.26.0+cu128 which is incompatible.
+trl 1.3.0 requires datasets>=4.7.0, but you have datasets 4.1.1 which is incompatible.
+trl 1.3.0 requires transformers>=4.56.2, but you have transformers 4.53.3 which is incompatible.
+vllm 0.20.0 requires protobuf!=6.30.*,!=6.31.*,!=6.32.*,!=6.33.0.*,!=6.33.1.*,!=6.33.2.*,!=6.33.3.*,!=6.33.4.*,>=5.29.6, but you have protobuf 4.25.8 which is incompatible.
+vllm 0.20.0 requires transformers!=5.0.*,!=5.1.*,!=5.2.*,!=5.3.*,!=5.4.*,!=5.5.0,>=4.56.0, but you have transformers 4.53.3 which is incompatible.
+Successfully installed huggingface-hub-0.36.2 tokenizers-0.21.4 transformers-4.53.3
+=== VLA dependencies ready ===
+2026-09-10 13:02:50,546 [INFO] Connecting to Ray cluster...
+2026-09-10 13:02:50,546	INFO worker.py:1679 -- Using address 10.4.4.77:6379 set in the environment variable RAY_ADDRESS
+2026-09-10 13:02:50,549	INFO worker.py:1829 -- Connecting to existing Ray cluster at address: 10.4.4.77:6379...
+2026-09-10 13:02:50,559	INFO worker.py:2018 -- Connected to Ray cluster. View the dashboard at [1m[32mhttp://10.4.4.77:8265 [39m[22m
+2026-09-10 13:02:50,573 [INFO] Cluster: 8 GPU(s) (RTX) across 1 GPU node(s), 136 CPUs total
+2026-09-10 13:02:50,573 [INFO]   physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g: 8 x RTX, 128 CPU, 512 GiB Ray memory
+2026-09-10 13:02:50,575 [INFO] Derived: train workers = 8, sim workers (nb03) = 1
+2026-09-10 13:02:50,575 [INFO] Derived Simulation Workers: 8
+2026-09-10 13:02:50,576 [INFO] Ensuring VLA dependencies across all nodes...
+2026-09-10 13:02:50,576 [INFO] Staging Staging VLA Dependencies -> all nodes ...
+2026-09-10 13:03:01,290 [INFO]   on head: === Checking and installing VLA environment dependencies ===
+Requirement already satisfied: lerobot==0.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (0.4.3)
+Requirement already satisfied: datasets<4.2,>=4.0 in /home/ray/anaconda3/lib/python3.11/site-packages (4.1.1)
+Requirement already satisfied: diffusers<0.36,>=0.27.2 in /home/ray/anaconda3/lib/python3.11/site-packages (0.35.2)
+Requirement already satisfied: draccus==0.10.0 in /home/ray/anaconda3/lib/python3.11/site-packages (0.10.0)
+Requirement already satisfied: imageio==2.37.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio[ffmpeg]==2.37.0) (2.37.0)
+Requirement already satisfied: av==15.1.0 in /home/ray/anaconda3/lib/python3.11/site-packages (15.1.0)
+Requirement already satisfied: num2words<0.6,>=0.5 in /home/ray/anaconda3/lib/python3.11/site-packages (0.5.14)
+Requirement already satisfied: sentencepiece==0.2.2 in /home/ray/anaconda3/lib/python3.11/site-packages (0.2.2)
+Requirement already satisfied: s3fs>=2024.1 in /home/ray/anaconda3/lib/python3.11/site-packages (2025.9.0)
+Requirement already satisfied: fsspec>=2024.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from fsspec[s3]>=2024.1) (2025.9.0)
+Requirement already satisfied: pyserial<4,>=3.5 in /home/ray/anaconda3/lib/python3.11/site-packages (3.5)
+Requirement already satisfied: deepdiff<9,>=7 in /home/ray/anaconda3/lib/python3.11/site-packages (8.6.2)
+Requirement already satisfied: jsonlines<5,>=4 in /home/ray/anaconda3/lib/python3.11/site-packages (4.0.0)
+Requirement already satisfied: wandb<0.25,>=0.24 in /home/ray/anaconda3/lib/python3.11/site-packages (0.24.2)
+Requirement already satisfied: mergedeep~=1.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (1.3.4)
+Requirement already satisfied: pyyaml~=6.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (6.0.3)
+Requirement already satisfied: pyyaml-include~=1.4 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (1.4.1)
+Requirement already satisfied: toml~=0.10 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (0.10.2)
+Requirement already satisfied: typing-inspect~=0.9.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (0.9.0)
+Requirement already satisfied: numpy in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio==2.37.0->imageio[ffmpeg]==2.37.0) (1.26.4)
+Requirement already satisfied: pillow>=8.3.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio==2.37.0->imageio[ffmpeg]==2.37.0) (12.2.0)
+Requirement already satisfied: imageio-ffmpeg in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio[ffmpeg]==2.37.0) (0.6.0)
+Requirement already satisfied: psutil in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio[ffmpeg]==2.37.0) (5.9.6)
+Requirement already satisfied: filelock in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (3.17.0)
+Requirement already satisfied: pyarrow>=21.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (24.0.0)
+Requirement already satisfied: dill<0.4.1,>=0.3.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (0.4.0)
+Requirement already satisfied: pandas in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (2.3.3)
+Requirement already satisfied: requests>=2.32.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (2.32.5)
+Requirement already satisfied: tqdm>=4.66.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (4.67.1)
+Requirement already satisfied: xxhash in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (3.7.0)
+Requirement already satisfied: multiprocess<0.70.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (0.70.16)
+Requirement already satisfied: huggingface-hub>=0.24.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (0.36.2)
+Requirement already satisfied: packaging in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (24.2)
+Requirement already satisfied: importlib_metadata in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (6.11.0)
+Requirement already satisfied: regex!=2019.12.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (2026.4.4)
+Requirement already satisfied: safetensors>=0.3.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (0.7.0)
+Requirement already satisfied: docopt>=0.6.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from num2words<0.6,>=0.5) (0.6.2)
+Requirement already satisfied: aiobotocore<3.0.0,>=2.5.4 in /home/ray/anaconda3/lib/python3.11/site-packages (from s3fs>=2024.1) (2.26.0)
+Requirement already satisfied: aiohttp!=4.0.0a0,!=4.0.0a1 in /home/ray/anaconda3/lib/python3.11/site-packages (from s3fs>=2024.1) (3.13.3)
+Requirement already satisfied: orderly-set<6,>=5.4.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from deepdiff<9,>=7) (5.5.0)
+Requirement already satisfied: attrs>=19.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from jsonlines<5,>=4) (25.1.0)
+Requirement already satisfied: click>=8.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (8.3.3)
+Requirement already satisfied: gitpython!=3.1.29,>=1.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (3.1.44)
+Requirement already satisfied: platformdirs in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (3.11.0)
+Requirement already satisfied: protobuf!=4.21.0,!=5.28.0,<7,>=3.19.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (4.25.8)
+Requirement already satisfied: pydantic<3 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (2.12.4)
+Requirement already satisfied: sentry-sdk>=2.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (2.59.0)
+Requirement already satisfied: typing-extensions<5,>=4.8 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (4.15.0)
+Requirement already satisfied: aioitertools<1.0.0,>=0.5.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (0.13.0)
+Requirement already satisfied: botocore<1.41.6,>=1.41.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.41.5)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (2.8.2)
+Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.0.1)
+Requirement already satisfied: multidict<7.0.0,>=6.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (6.0.5)
+Requirement already satisfied: wrapt<2.0.0,>=1.10.10 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.14.1)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.4.0)
+Requirement already satisfied: frozenlist>=1.1.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.4.1)
+Requirement already satisfied: propcache>=0.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (0.3.0)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.18.3)
+Requirement already satisfied: gitdb<5,>=4.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from gitpython!=3.1.29,>=1.0.0->wandb<0.25,>=0.24) (4.0.11)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.4.3)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (0.6.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (2.41.5)
+Requirement already satisfied: typing-inspection>=0.4.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (0.4.2)
+Requirement already satisfied: charset_normalizer<4,>=2 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (3.7)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (1.26.19)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (2025.1.31)
+Requirement already satisfied: mypy-extensions>=0.3.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from typing-inspect~=0.9.0->draccus==0.10.0) (1.1.0)
+Requirement already satisfied: zipp>=0.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from importlib_metadata->diffusers<0.36,>=0.27.2) (3.19.2)
+Requirement already satisfied: pytz>=2020.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from pandas->datasets<4.2,>=4.0) (2022.7.1)
+Requirement already satisfied: tzdata>=2022.7 in /home/ray/anaconda3/lib/python3.11/site-packages (from pandas->datasets<4.2,>=4.0) (2025.2)
+Requirement already satisfied: smmap<6,>=3.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from gitdb<5,>=4.0.1->gitpython!=3.1.29,>=1.0.0->wandb<0.25,>=0.24) (5.0.1)
+Requirement already satisfied: six>=1.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.1->aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.16.0)
+=== VLA dependencies ready ===
+
+2026-09-10 13:03:54,367 [INFO]   physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g: === Checking and installing VLA environment dependencies ===
+Collecting lerobot==0.4.3
+  Downloading lerobot-0.4.3-py3-none-any.whl.metadata (17 kB)
+Downloading lerobot-0.4.3-py3-none-any.whl (993 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 993.6/993.6 kB 29.7 MB/s eta 0:00:00
+Installing collected packages: lerobot
+Successfully installed lerobot-0.4.3
+Collecting datasets<4.2,>=4.0
+  Downloading datasets-4.1.1-py3-none-any.whl.metadata (18 kB)
+Collecting diffusers<0.36,>=0.27.2
+  Downloading diffusers-0.35.2-py3-none-any.whl.metadata (20 kB)
+Collecting draccus==0.10.0
+  Downloading draccus-0.10.0-py3-none-any.whl.metadata (24 kB)
+Collecting imageio==2.37.0 (from imageio[ffmpeg]==2.37.0)
+  Downloading imageio-2.37.0-py3-none-any.whl.metadata (5.2 kB)
+Collecting av==15.1.0
+  Downloading av-15.1.0-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (4.6 kB)
+Collecting num2words<0.6,>=0.5
+  Downloading num2words-0.5.14-py3-none-any.whl.metadata (13 kB)
+Collecting sentencepiece==0.2.2
+  Downloading sentencepiece-0.2.2-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (33 kB)
+Collecting s3fs>=2024.1
+  Downloading s3fs-2026.7.0-py3-none-any.whl.metadata (1.2 kB)
+Collecting fsspec>=2024.1 (from fsspec[s3]>=2024.1)
+  Downloading fsspec-2026.7.0-py3-none-any.whl.metadata (10 kB)
+Collecting pyserial<4,>=3.5
+  Downloading pyserial-3.5-py2.py3-none-any.whl.metadata (1.6 kB)
+Collecting deepdiff<9,>=7
+  Downloading deepdiff-8.6.2-py3-none-any.whl.metadata (8.8 kB)
+Collecting jsonlines<5,>=4
+  Downloading jsonlines-4.0.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting wandb<0.25,>=0.24
+  Downloading wandb-0.24.2-py3-none-manylinux_2_28_x86_64.whl.metadata (12 kB)
+Collecting mergedeep~=1.3 (from draccus==0.10.0)
+  Downloading mergedeep-1.3.4-py3-none-any.whl.metadata (4.3 kB)
+Requirement already satisfied: pyyaml~=6.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from draccus==0.10.0) (6.0.3)
+Collecting pyyaml-include~=1.4 (from draccus==0.10.0)
+  Downloading pyyaml_include-1.4.1-py3-none-any.whl.metadata (1.3 kB)
+Collecting toml~=0.10 (from draccus==0.10.0)
+  Downloading toml-0.10.2-py2.py3-none-any.whl.metadata (7.1 kB)
+Collecting typing-inspect~=0.9.0 (from draccus==0.10.0)
+  Downloading typing_inspect-0.9.0-py3-none-any.whl.metadata (1.5 kB)
+Requirement already satisfied: numpy in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio==2.37.0->imageio[ffmpeg]==2.37.0) (1.26.4)
+Requirement already satisfied: pillow>=8.3.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio==2.37.0->imageio[ffmpeg]==2.37.0) (12.2.0)
+Collecting imageio-ffmpeg (from imageio[ffmpeg]==2.37.0)
+  Downloading imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Requirement already satisfied: psutil in /home/ray/anaconda3/lib/python3.11/site-packages (from imageio[ffmpeg]==2.37.0) (5.9.6)
+Requirement already satisfied: filelock in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (3.17.0)
+Requirement already satisfied: pyarrow>=21.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (24.0.0)
+Collecting dill<0.4.1,>=0.3.0 (from datasets<4.2,>=4.0)
+  Downloading dill-0.4.0-py3-none-any.whl.metadata (10 kB)
+Requirement already satisfied: pandas in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (2.3.3)
+Requirement already satisfied: requests>=2.32.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (2.32.5)
+Requirement already satisfied: tqdm>=4.66.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (4.67.1)
+Requirement already satisfied: xxhash in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (3.7.0)
+Collecting multiprocess<0.70.17 (from datasets<4.2,>=4.0)
+  Downloading multiprocess-0.70.16-py311-none-any.whl.metadata (7.2 kB)
+Collecting fsspec>=2024.1 (from fsspec[s3]>=2024.1)
+  Downloading fsspec-2025.9.0-py3-none-any.whl.metadata (10 kB)
+Requirement already satisfied: huggingface-hub>=0.24.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (1.13.0)
+Requirement already satisfied: packaging in /home/ray/anaconda3/lib/python3.11/site-packages (from datasets<4.2,>=4.0) (24.2)
+Requirement already satisfied: importlib_metadata in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (6.11.0)
+Requirement already satisfied: regex!=2019.12.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (2026.4.4)
+Requirement already satisfied: safetensors>=0.3.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from diffusers<0.36,>=0.27.2) (0.7.0)
+Collecting docopt>=0.6.2 (from num2words<0.6,>=0.5)
+  Downloading docopt-0.6.2.tar.gz (25 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting aiobotocore<4.0.0,>=2.19.0 (from s3fs>=2024.1)
+  Downloading aiobotocore-3.9.1-py3-none-any.whl.metadata (31 kB)
+INFO: pip is looking at multiple versions of s3fs to determine which version is compatible with other requirements. This could take a while.
+Collecting s3fs>=2024.1
+  Downloading s3fs-2026.6.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.4.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.3.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.2.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2026.1.0-py3-none-any.whl.metadata (1.2 kB)
+  Downloading s3fs-2025.12.0-py3-none-any.whl.metadata (1.2 kB)
+Collecting aiobotocore<3.0.0,>=2.5.4 (from s3fs>=2024.1)
+  Downloading aiobotocore-2.26.0-py3-none-any.whl.metadata (25 kB)
+Collecting s3fs>=2024.1
+  Downloading s3fs-2025.10.0-py3-none-any.whl.metadata (1.4 kB)
+INFO: pip is still looking at multiple versions of s3fs to determine which version is compatible with other requirements. This could take a while.
+  Downloading s3fs-2025.9.0-py3-none-any.whl.metadata (1.4 kB)
+Requirement already satisfied: aiohttp!=4.0.0a0,!=4.0.0a1 in /home/ray/anaconda3/lib/python3.11/site-packages (from s3fs>=2024.1) (3.13.3)
+Collecting orderly-set<6,>=5.4.1 (from deepdiff<9,>=7)
+  Downloading orderly_set-5.5.0-py3-none-any.whl.metadata (6.6 kB)
+Requirement already satisfied: attrs>=19.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from jsonlines<5,>=4) (25.1.0)
+Requirement already satisfied: click>=8.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (8.3.3)
+Requirement already satisfied: gitpython!=3.1.29,>=1.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (3.1.44)
+Requirement already satisfied: platformdirs in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (3.11.0)
+Requirement already satisfied: protobuf!=4.21.0,!=5.28.0,<7,>=3.19.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (4.25.8)
+Requirement already satisfied: pydantic<3 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (2.12.4)
+Requirement already satisfied: sentry-sdk>=2.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (2.59.0)
+Requirement already satisfied: typing-extensions<5,>=4.8 in /home/ray/anaconda3/lib/python3.11/site-packages (from wandb<0.25,>=0.24) (4.15.0)
+INFO: pip is looking at multiple versions of fsspec[s3] to determine which version is compatible with other requirements. This could take a while.
+Collecting fsspec[s3]>=2024.1
+  Downloading fsspec-2026.6.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.4.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.3.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.2.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2026.1.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2025.12.0-py3-none-any.whl.metadata (10 kB)
+  Downloading fsspec-2025.10.0-py3-none-any.whl.metadata (10 kB)
+INFO: pip is still looking at multiple versions of fsspec[s3] to determine which version is compatible with other requirements. This could take a while.
+Collecting aioitertools<1.0.0,>=0.5.1 (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1)
+  Downloading aioitertools-0.13.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting botocore<1.41.6,>=1.41.0 (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1)
+  Downloading botocore-1.41.5-py3-none-any.whl.metadata (5.9 kB)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (2.8.2)
+Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.0.1)
+Requirement already satisfied: multidict<7.0.0,>=6.0.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (6.0.5)
+Requirement already satisfied: wrapt<2.0.0,>=1.10.10 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.14.1)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.4.0)
+Requirement already satisfied: frozenlist>=1.1.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.4.1)
+Requirement already satisfied: propcache>=0.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (0.3.0)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->s3fs>=2024.1) (1.18.3)
+Requirement already satisfied: gitdb<5,>=4.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from gitpython!=3.1.29,>=1.0.0->wandb<0.25,>=0.24) (4.0.11)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.4.3)
+Requirement already satisfied: httpx<1,>=0.23.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.28.1)
+Requirement already satisfied: typer in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.24.1)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (0.6.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (2.41.5)
+Requirement already satisfied: typing-inspection>=0.4.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from pydantic<3->wandb<0.25,>=0.24) (0.4.2)
+Requirement already satisfied: charset_normalizer<4,>=2 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (3.7)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (1.26.19)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests>=2.32.2->datasets<4.2,>=4.0) (2025.1.31)
+Collecting mypy-extensions>=0.3.0 (from typing-inspect~=0.9.0->draccus==0.10.0)
+  Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+Requirement already satisfied: zipp>=0.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from importlib_metadata->diffusers<0.36,>=0.27.2) (3.19.2)
+Requirement already satisfied: pytz>=2020.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from pandas->datasets<4.2,>=4.0) (2022.7.1)
+Requirement already satisfied: tzdata>=2022.7 in /home/ray/anaconda3/lib/python3.11/site-packages (from pandas->datasets<4.2,>=4.0) (2025.2)
+Requirement already satisfied: smmap<6,>=3.0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from gitdb<5,>=4.0.1->gitpython!=3.1.29,>=1.0.0->wandb<0.25,>=0.24) (5.0.1)
+Requirement already satisfied: anyio in /home/ray/anaconda3/lib/python3.11/site-packages (from httpx<1,>=0.23.0->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (4.12.0)
+Requirement already satisfied: httpcore==1.* in /home/ray/anaconda3/lib/python3.11/site-packages (from httpx<1,>=0.23.0->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.0.9)
+Requirement already satisfied: h11>=0.16 in /home/ray/anaconda3/lib/python3.11/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.16.0)
+Requirement already satisfied: six>=1.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.1->aiobotocore<3.0.0,>=2.5.4->s3fs>=2024.1) (1.16.0)
+Requirement already satisfied: shellingham>=1.3.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (1.5.4)
+Requirement already satisfied: rich>=12.3.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (13.7.1)
+Requirement already satisfied: annotated-doc>=0.0.2 in /home/ray/anaconda3/lib/python3.11/site-packages (from typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from rich>=12.3.0->typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (2.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from rich>=12.3.0->typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (2.18.0)
+Requirement already satisfied: mdurl~=0.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->huggingface-hub>=0.24.0->datasets<4.2,>=4.0) (0.1.2)
+Downloading draccus-0.10.0-py3-none-any.whl (71 kB)
+Downloading imageio-2.37.0-py3-none-any.whl (315 kB)
+Downloading av-15.1.0-cp311-cp311-manylinux_2_28_x86_64.whl (39.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 39.6/39.6 MB 163.5 MB/s eta 0:00:00
+Downloading sentencepiece-0.2.2-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (1.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 106.9 MB/s eta 0:00:00
+Downloading datasets-4.1.1-py3-none-any.whl (503 kB)
+Downloading diffusers-0.35.2-py3-none-any.whl (4.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.1/4.1 MB 120.2 MB/s eta 0:00:00
+Downloading num2words-0.5.14-py3-none-any.whl (163 kB)
+Downloading s3fs-2025.9.0-py3-none-any.whl (30 kB)
+Downloading fsspec-2025.9.0-py3-none-any.whl (199 kB)
+Downloading pyserial-3.5-py2.py3-none-any.whl (90 kB)
+Downloading deepdiff-8.6.2-py3-none-any.whl (91 kB)
+Downloading jsonlines-4.0.0-py3-none-any.whl (8.7 kB)
+Downloading wandb-0.24.2-py3-none-manylinux_2_28_x86_64.whl (23.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 23.0/23.0 MB 87.0 MB/s eta 0:00:00
+Downloading aiobotocore-2.26.0-py3-none-any.whl (87 kB)
+Downloading dill-0.4.0-py3-none-any.whl (119 kB)
+Downloading mergedeep-1.3.4-py3-none-any.whl (6.4 kB)
+Downloading multiprocess-0.70.16-py311-none-any.whl (143 kB)
+Downloading orderly_set-5.5.0-py3-none-any.whl (13 kB)
+Downloading pyyaml_include-1.4.1-py3-none-any.whl (19 kB)
+Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Downloading typing_inspect-0.9.0-py3-none-any.whl (8.8 kB)
+Downloading imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl (29.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 29.5/29.5 MB 86.5 MB/s eta 0:00:00
+Downloading aioitertools-0.13.0-py3-none-any.whl (24 kB)
+Downloading botocore-1.41.5-py3-none-any.whl (14.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 86.6 MB/s eta 0:00:00
+Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+Building wheels for collected packages: docopt
+  Building wheel for docopt (setup.py): started
+  Building wheel for docopt (setup.py): finished with status 'done'
+  Created wheel for docopt: filename=docopt-0.6.2-py2.py3-none-any.whl size=13783 sha256=dee69755fe4bc26da621d9b0611d52b66c9c51e38b667d79cab60ac494ac4d9e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-yjtdr7ar/wheels/1a/b0/8c/4b75c4116c31f83c8f9f047231251e13cc74481cca4a78a9ce
+Successfully built docopt
+Installing collected packages: pyserial, docopt, toml, sentencepiece, pyyaml-include, orderly-set, num2words, mypy-extensions, mergedeep, jsonlines, imageio-ffmpeg, imageio, fsspec, dill, av, aioitertools, typing-inspect, multiprocess, deepdiff, botocore, wandb, draccus, aiobotocore, s3fs, diffusers, datasets
+  Attempting uninstall: sentencepiece
+    Found existing installation: sentencepiece 0.2.1
+    Uninstalling sentencepiece-0.2.1:
+      Successfully uninstalled sentencepiece-0.2.1
+  Attempting uninstall: fsspec
+    Found existing installation: fsspec 2023.12.1
+    Uninstalling fsspec-2023.12.1:
+      Successfully uninstalled fsspec-2023.12.1
+  Attempting uninstall: dill
+    Found existing installation: dill 0.4.1
+    Uninstalling dill-0.4.1:
+      Successfully uninstalled dill-0.4.1
+  Attempting uninstall: av
+    Found existing installation: av 17.0.1
+    Uninstalling av-17.0.1:
+      Successfully uninstalled av-17.0.1
+  Attempting uninstall: multiprocess
+    Found existing installation: multiprocess 0.70.19
+    Uninstalling multiprocess-0.70.19:
+      Successfully uninstalled multiprocess-0.70.19
+  Attempting uninstall: botocore
+    Found existing installation: botocore 1.32.7
+    Uninstalling botocore-1.32.7:
+      Successfully uninstalled botocore-1.32.7
+  Attempting uninstall: datasets
+    Found existing installation: datasets 4.8.5
+    Uninstalling datasets-4.8.5:
+      Successfully uninstalled datasets-4.8.5
+Successfully installed aiobotocore-2.26.0 aioitertools-0.13.0 av-15.1.0 botocore-1.41.5 datasets-4.1.1 deepdiff-8.6.2 diffusers-0.35.2 dill-0.4.0 docopt-0.6.2 draccus-0.10.0 fsspec-2025.9.0 imageio-2.37.0 imageio-ffmpeg-0.6.0 jsonlines-4.0.0 mergedeep-1.3.4 multiprocess-0.70.16 mypy-extensions-1.1.0 num2words-0.5.14 orderly-set-5.5.0 pyserial-3.5 pyyaml-include-1.4.1 s3fs-2025.9.0 sentencepiece-0.2.2 toml-0.10.2 typing-inspect-0.9.0 wandb-0.24.2
+=== Installing patched transformers fork ===
+Found existing installation: transformers 5.8.0
+Uninstalling transformers-5.8.0:
+  Successfully uninstalled transformers-5.8.0
+Found existing installation: tokenizers 0.22.2
+Uninstalling tokenizers-0.22.2:
+  Successfully uninstalled tokenizers-0.22.2
+Processing /checkpoint/physical-ai/wheels/transformers-4.53.3-py3-none-any.whl
+Requirement already satisfied: filelock in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (3.17.0)
+Collecting huggingface-hub<1.0,>=0.30.0 (from transformers==4.53.3)
+  Downloading huggingface_hub-0.36.2-py3-none-any.whl.metadata (15 kB)
+Requirement already satisfied: numpy>=1.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (1.26.4)
+Requirement already satisfied: packaging>=20.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (24.2)
+Requirement already satisfied: pyyaml>=5.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (2026.4.4)
+Requirement already satisfied: requests in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (2.32.5)
+Collecting tokenizers<0.22,>=0.21 (from transformers==4.53.3)
+  Downloading tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.7 kB)
+Requirement already satisfied: safetensors>=0.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /home/ray/anaconda3/lib/python3.11/site-packages (from transformers==4.53.3) (4.67.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.53.3) (2025.9.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.53.3) (1.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /home/ray/anaconda3/lib/python3.11/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.53.3) (4.15.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (3.7)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (1.26.19)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ray/anaconda3/lib/python3.11/site-packages (from requests->transformers==4.53.3) (2025.1.31)
+Downloading huggingface_hub-0.36.2-py3-none-any.whl (566 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 566.4/566.4 kB 27.8 MB/s eta 0:00:00
+Downloading tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 116.2 MB/s eta 0:00:00
+Installing collected packages: huggingface-hub, tokenizers, transformers
+  Attempting uninstall: huggingface-hub
+    Found existing installation: huggingface_hub 1.13.0
+    Uninstalling huggingface_hub-1.13.0:
+      Successfully uninstalled huggingface_hub-1.13.0
+Successfully installed huggingface-hub-0.36.2 tokenizers-0.21.4 transformers-4.53.3
+=== VLA dependencies ready ===
+
+2026-09-10 13:03:54,367 [INFO] Staging model checkpoints to local storage...
+2026-09-10 13:03:54,367 [INFO] Staging Staging /checkpoint/physical-ai/mirror/pi05_libero_finetuned -> /tmp/lerobot/pi05_libero_finetuned ...
+2026-09-10 13:04:18,271 [INFO]   on head: copied from /checkpoint/physical-ai/mirror/pi05_libero_finetuned: /tmp/lerobot/pi05_libero_finetuned
+2026-09-10 13:04:25,674 [INFO]   physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g: copied from /checkpoint/physical-ai/mirror/pi05_libero_finetuned: /tmp/lerobot/pi05_libero_finetuned
+2026-09-10 13:04:25,674 [INFO] Staging Staging /checkpoint/physical-ai/mirror/pi05_base -> /tmp/lerobot/pi05_base ...
+2026-09-10 13:04:25,916 [INFO]   on head: copied from /checkpoint/physical-ai/mirror/pi05_base: /tmp/lerobot/pi05_base
+2026-09-10 13:04:26,075 [INFO]   physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g: copied from /checkpoint/physical-ai/mirror/pi05_base: /tmp/lerobot/pi05_base
+2026-09-10 13:04:26,076 [INFO] Staging PaliGemma Tokenizer -> ~/.cache/huggingface/hub ...
+2026-09-10 13:04:26,076 [INFO] Staging Staging PaliGemma Tokenizer -> ~/.cache/huggingface/hub ...
+2026-09-10 13:04:26,076 [INFO] Staging PaliGemma tokenizer from GCS mirror (/checkpoint/physical-ai/mirror/paligemma_tokenizer/hub) -> /home/ray/.cache/huggingface/hub...
+2026-09-10 13:04:27,994 [INFO] PaliGemma tokenizer cached successfully from GCS mirror.
+2026-09-10 13:04:27,994 [INFO]   on head: copied_from_gcs
+2026-09-10 13:04:29,538 [INFO]   physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g: copied_from_gcs
+2026-09-10 13:04:29,538 [INFO] ============================================================
+2026-09-10 13:04:29,538 [INFO] PHASE 3A: Evaluating Round 1 Policy in Simulation...
+2026-09-10 13:04:29,538 [INFO] ============================================================
+INFO 2026-09-10 13:04:29,539 serve 2059 -- Nothing to shut down. There's no Serve application running on this Ray cluster.
+2026-09-10 13:04:30,509 [INFO] released phase state on 1 GPU node(s)
+2026-09-10 13:04:30,514 [INFO] host headroom OK (at least one node): lowest is physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g with 1410658 MiB available (need 136000)
+2026-09-10 13:04:30,514 [INFO] [round1] Deploying PI05PolicyServer on Ray Serve...
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:04:32,267 proxy 10.4.4.77 -- Proxy starting on node 3acbce973eb95218c94e988c6d1454119e0e6127bad3b0ea2a01dcf4 (HTTP port: 8000).
+INFO 2026-09-10 13:04:32,325 serve 2059 -- Started Serve in namespace "serve".
+INFO 2026-09-10 13:04:32,342 serve 2059 -- Connecting to existing Serve app in namespace "serve". New http options will not be applied.
+WARNING 2026-09-10 13:04:32,342 serve 2059 -- The new client HTTP config differs from the existing one in the following fields: ['host']. The new HTTP config is ignored.
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:04:32,323 proxy 10.4.4.77 -- Got updated endpoints: {}.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:04:32,430 controller 3244 -- Deploying new version of Deployment(name='PI05PolicyServer', app='pi05-policy') (initial target replicas: 1).
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:04:32,432 proxy 10.4.4.77 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:04:32,437 proxy 10.4.4.77 -- Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x79130889a150>.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:04:32,532 controller 3244 -- Adding 1 replica to Deployment(name='PI05PolicyServer', app='pi05-policy').
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m [PI05Server] Loading checkpoint from /checkpoint/physical-ai/checkpoint_round1/state.pkl
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m [PI05Server]   trained for 1000 steps across 1 epoch(s)
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m [PI05Server]   trainable keys in checkpoint: 8
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m The PI05 model is a direct port of the OpenPI implementation. 
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m This implementation follows the original OpenPI structure for compatibility. 
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m Original implementation: https://github.com/Physical-Intelligence/openpi
+[36m(ServeController pid=3244)[0m WARNING 2026-09-10 13:05:02,561 controller 3244 -- Deployment 'PI05PolicyServer' in application 'pi05-policy' has 1 replicas that have taken more than 30s to initialize.
+[36m(ServeController pid=3244)[0m This may be caused by a slow __init__ or reconfigure method.
+[36m(ProxyActor pid=649, ip=10.4.4.76)[0m INFO 2026-09-10 13:04:34,932 proxy 10.4.4.76 -- Proxy starting on node 65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2 (HTTP port: 8000).
+[36m(ProxyActor pid=649, ip=10.4.4.76)[0m INFO 2026-09-10 13:04:35,024 proxy 10.4.4.76 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
+[36m(ProxyActor pid=649, ip=10.4.4.76)[0m INFO 2026-09-10 13:04:35,077 proxy 10.4.4.76 -- Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x7d6e7910fc90>.
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m Loading model from: /tmp/lerobot/pi05_libero_finetuned
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m ✓ Loaded state dict from model.safetensors
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m [PI05Server] Ready in 27.5s. action_dim=7, n_action_steps=50
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:05:07,178 proxy 10.4.4.77 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=[RoutePattern(methods=['GET', 'HEAD'], path='/docs'), RoutePattern(methods=['GET', 'HEAD'], path='/docs/oauth2-redirect'), RoutePattern(methods=['GET', 'HEAD'], path='/openapi.json'), RoutePattern(methods=['POST'], path='/predict'), RoutePattern(methods=['GET', 'HEAD'], path='/redoc'), RoutePattern(methods=['GET'], path='/stats')])}.
+INFO 2026-09-10 13:05:07,495 serve 2059 -- Application 'pi05-policy' is ready at http://0.0.0.0:8000/.
+2026-09-10 13:05:07,499 [INFO] [round1] Policy server ready at http://10.4.4.77:8000
+2026-09-10 13:05:07,901 [INFO] [round1] Sanity check passed. Predicted action shape: (50, 7)
+2026-09-10 13:05:07,901 [INFO] [round1] Launching 8 sim workers x 1 episodes...
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:07,900 pi05-policy_PI05PolicyServer 4vi371mo 1a7ff3d2-a51f-42b1-9531-1b789928980d -- POST /predict 200 395.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:08,988 pi05-policy_PI05PolicyServer 4vi371mo d0b73694-0035-4782-ade3-4cc0c26ec452 -- POST /predict 200 172.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:09,153 pi05-policy_PI05PolicyServer 4vi371mo 62469bdb-c931-43d4-a3d5-429997963b6d -- POST /predict 200 333.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:09,965 pi05-policy_PI05PolicyServer 4vi371mo 5b6a78e9-e8e8-477e-a174-844e0ea81794 -- POST /predict 200 1137.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:09,965 pi05-policy_PI05PolicyServer 4vi371mo e101f7b6-ee7b-4a20-8af5-385546b92079 -- POST /predict 200 1136.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:09,965 pi05-policy_PI05PolicyServer 4vi371mo 80cc2597-46e9-4a7f-8719-500cb65e99d2 -- POST /predict 200 1139.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:09,965 pi05-policy_PI05PolicyServer 4vi371mo 6c8c3d24-e8c8-4304-b28d-0f3ecdc1fefd -- POST /predict 200 1134.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:09,966 pi05-policy_PI05PolicyServer 4vi371mo 6a1cac81-91d2-4e44-8f46-fdc9dce495f0 -- POST /predict 200 1129.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:10,132 pi05-policy_PI05PolicyServer 4vi371mo 3bf1fd4c-eb58-4434-ba78-6ab075d40a84 -- POST /predict 200 424.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:10,295 pi05-policy_PI05PolicyServer 4vi371mo ea762210-73b4-4880-aa70-3e3742206afe -- POST /predict 200 405.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:10,462 pi05-policy_PI05PolicyServer 4vi371mo f8ad8f8c-cdeb-4a08-a675-f99ba3eafec1 -- POST /predict 200 404.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:10,788 pi05-policy_PI05PolicyServer 4vi371mo de2ddad6-21ae-430f-8e5e-fc1f8b7cf94e -- POST /predict 200 638.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:10,788 pi05-policy_PI05PolicyServer 4vi371mo 9492b551-1a32-4c13-8c73-9bc0b296811c -- POST /predict 200 526.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:10,953 pi05-policy_PI05PolicyServer 4vi371mo 7b5f2a68-e817-420c-b56b-eeb6793631ee -- POST /predict 200 640.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:11,762 pi05-policy_PI05PolicyServer 4vi371mo 248a5b82-a731-4c08-ba71-601221606036 -- POST /predict 200 1371.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:11,763 pi05-policy_PI05PolicyServer 4vi371mo d52209b3-36aa-45cb-b1f6-e87bee0d4ee4 -- POST /predict 200 1283.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:11,763 pi05-policy_PI05PolicyServer 4vi371mo 103037ee-3c7a-4fa9-89ce-cb0bb9692942 -- POST /predict 200 1225.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:11,763 pi05-policy_PI05PolicyServer 4vi371mo 1907f2da-ac98-4aff-b8d7-e62b7e149f26 -- POST /predict 200 1120.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:11,763 pi05-policy_PI05PolicyServer 4vi371mo 5a5febaa-3f25-46af-beff-0f7d6ae57248 -- POST /predict 200 1060.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:11,930 pi05-policy_PI05PolicyServer 4vi371mo 10040e4b-1394-4b41-801d-8d9df17af922 -- POST /predict 200 1124.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:12,254 pi05-policy_PI05PolicyServer 4vi371mo 7ab8bcfe-cc48-48af-875f-aac5b09b7b72 -- POST /predict 200 1427.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:12,254 pi05-policy_PI05PolicyServer 4vi371mo 22cd721a-3a27-4989-b69b-0262bacfb73f -- POST /predict 200 1283.2ms
+[36m(ProxyActor pid=649, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:07,178 proxy 10.4.4.76 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=[RoutePattern(methods=['GET', 'HEAD'], path='/docs'), RoutePattern(methods=['GET', 'HEAD'], path='/docs/oauth2-redirect'), RoutePattern(methods=['GET', 'HEAD'], path='/openapi.json'), RoutePattern(methods=['POST'], path='/predict'), RoutePattern(methods=['GET', 'HEAD'], path='/redoc'), RoutePattern(methods=['GET'], path='/stats')])}.
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:12,421 pi05-policy_PI05PolicyServer 4vi371mo db937b5d-b11a-4d83-a28d-3db9188e41ef -- POST /predict 200 506.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,228 pi05-policy_PI05PolicyServer 4vi371mo a9603811-2326-473e-93b1-91f15b46e18d -- POST /predict 200 1312.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,229 pi05-policy_PI05PolicyServer 4vi371mo 7ffb2050-7935-4f5c-84e8-0fc04610a9be -- POST /predict 200 1312.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,229 pi05-policy_PI05PolicyServer 4vi371mo f58efee4-a88e-444b-ba4d-1d825ea1e405 -- POST /predict 200 1312.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,229 pi05-policy_PI05PolicyServer 4vi371mo 3315c64f-b50e-4c8c-a620-15d30ef78222 -- POST /predict 200 1282.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,229 pi05-policy_PI05PolicyServer 4vi371mo 76f0c59c-8289-4d1e-ab96-c001399a6706 -- POST /predict 200 1153.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,393 pi05-policy_PI05PolicyServer 4vi371mo 493d416a-20ef-4879-8dcb-e8c6caff6bb4 -- POST /predict 200 1120.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,717 pi05-policy_PI05PolicyServer 4vi371mo cebf440e-bcd8-4c7d-8def-4d2ef208a13c -- POST /predict 200 1277.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,718 pi05-policy_PI05PolicyServer 4vi371mo 2646c5a4-85ab-474a-8136-43f3187adc49 -- POST /predict 200 1117.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:13,884 pi05-policy_PI05PolicyServer 4vi371mo 1c2284e3-8b95-43d3-b137-206eb6a8968f -- POST /predict 200 338.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:14,688 pi05-policy_PI05PolicyServer 4vi371mo 0c4df6f5-f687-4be0-851c-04045326b17c -- POST /predict 200 1143.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:14,689 pi05-policy_PI05PolicyServer 4vi371mo b97e7d72-4be2-4e98-a2c2-d6a3265f907a -- POST /predict 200 1142.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:14,689 pi05-policy_PI05PolicyServer 4vi371mo 39a4e89f-3696-4bbf-a8ef-5ccedc8a9c5f -- POST /predict 200 1143.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:14,689 pi05-policy_PI05PolicyServer 4vi371mo 729b5a4f-2520-45e9-8502-6ec32eeeef36 -- POST /predict 200 1116.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:14,690 pi05-policy_PI05PolicyServer 4vi371mo 0a99f889-ff26-4c0d-85b7-6485a2b9e973 -- POST /predict 200 1143.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:14,853 pi05-policy_PI05PolicyServer 4vi371mo 8410a453-660b-4876-a308-b9bb5cca143e -- POST /predict 200 1117.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:15,178 pi05-policy_PI05PolicyServer 4vi371mo e4612030-6898-45ac-9bfd-1f04b1aa7653 -- POST /predict 200 1276.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:15,179 pi05-policy_PI05PolicyServer 4vi371mo 17de320b-5ef3-49b0-92fd-e05150878c47 -- POST /predict 200 1116.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:15,347 pi05-policy_PI05PolicyServer 4vi371mo 55c3ac24-dccc-41e8-9c92-817aff80309b -- POST /predict 200 341.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,157 pi05-policy_PI05PolicyServer 4vi371mo d4836f3e-d47f-4523-8d59-a16bd69e899c -- POST /predict 200 1150.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,157 pi05-policy_PI05PolicyServer 4vi371mo 0a265c48-e282-4a6a-9036-b0ca244390ff -- POST /predict 200 1150.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,158 pi05-policy_PI05PolicyServer 4vi371mo 608ee265-2ad4-4cfb-9a6f-9342a3157df6 -- POST /predict 200 1151.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,158 pi05-policy_PI05PolicyServer 4vi371mo cdf506b5-905e-4580-a8b2-d3565b7c79fa -- POST /predict 200 1150.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,158 pi05-policy_PI05PolicyServer 4vi371mo 21b44776-4025-4940-b68c-f3178e11868f -- POST /predict 200 1124.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,321 pi05-policy_PI05PolicyServer 4vi371mo 0e08776d-6719-4685-97f8-bfa2043c241a -- POST /predict 200 1125.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,646 pi05-policy_PI05PolicyServer 4vi371mo e3736d97-0b9c-4ff5-812e-09df5d183430 -- POST /predict 200 1281.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,647 pi05-policy_PI05PolicyServer 4vi371mo 6f0c379f-6794-46a0-beb8-420290a28a36 -- POST /predict 200 1119.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:16,811 pi05-policy_PI05PolicyServer 4vi371mo 4d0a695e-727b-4175-9df7-945a0f4f4682 -- POST /predict 200 339.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:17,616 pi05-policy_PI05PolicyServer 4vi371mo 657accaf-6184-475a-a8b0-6ea345666ac8 -- POST /predict 200 1144.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:17,616 pi05-policy_PI05PolicyServer 4vi371mo 28b8ef20-8024-441e-b778-63e25fd2cb1f -- POST /predict 200 1144.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:17,617 pi05-policy_PI05PolicyServer 4vi371mo 058b0dcd-503a-491e-9ec6-29d0f5e734df -- POST /predict 200 1144.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:17,617 pi05-policy_PI05PolicyServer 4vi371mo 9511073d-b26e-4ba8-8755-101608e2a00c -- POST /predict 200 1144.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:17,618 pi05-policy_PI05PolicyServer 4vi371mo 99846e0e-0a22-45c9-b2e9-c15f303b6e2b -- POST /predict 200 1116.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:17,782 pi05-policy_PI05PolicyServer 4vi371mo 4da8234d-13c4-49ca-ad77-135ebb716473 -- POST /predict 200 1119.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:18,105 pi05-policy_PI05PolicyServer 4vi371mo d45c988c-dcf4-4cfa-af54-35833d5301ad -- POST /predict 200 1277.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:18,107 pi05-policy_PI05PolicyServer 4vi371mo d72b7d5e-bdae-4c38-b450-9fc1cb2a730c -- POST /predict 200 1117.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:18,273 pi05-policy_PI05PolicyServer 4vi371mo a9236078-d456-4563-9bf8-09e9dd963f05 -- POST /predict 200 341.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,078 pi05-policy_PI05PolicyServer 4vi371mo b35b7f7c-e9a4-49be-9393-03275a87cbf3 -- POST /predict 200 1145.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,079 pi05-policy_PI05PolicyServer 4vi371mo e2d55e49-7777-421b-880e-1087a7a3550b -- POST /predict 200 1145.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,079 pi05-policy_PI05PolicyServer 4vi371mo 856c4a29-b8b6-4dea-afd6-5700faf15da7 -- POST /predict 200 1145.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,079 pi05-policy_PI05PolicyServer 4vi371mo cada258c-a799-42b3-bbef-e08c9ebb96bd -- POST /predict 200 1146.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,080 pi05-policy_PI05PolicyServer 4vi371mo 9c36c2de-17c4-43d7-8885-224d8e881855 -- POST /predict 200 1118.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,243 pi05-policy_PI05PolicyServer 4vi371mo 3d17f35c-9bdf-49df-ab44-de5e20bdf2bc -- POST /predict 200 1131.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,567 pi05-policy_PI05PolicyServer 4vi371mo 5ec733fa-c5d5-474c-9c80-f42756c42f1b -- POST /predict 200 1443.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,567 pi05-policy_PI05PolicyServer 4vi371mo 7765a19b-8901-4312-96aa-4e13f2e256a2 -- POST /predict 200 1275.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:19,732 pi05-policy_PI05PolicyServer 4vi371mo e739c0bc-8bf5-4cd9-903c-f13658a695b2 -- POST /predict 200 499.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:20,538 pi05-policy_PI05PolicyServer 4vi371mo ec562df2-ede4-40d1-b77b-26ebbf2dfcad -- POST /predict 200 1305.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:20,539 pi05-policy_PI05PolicyServer 4vi371mo 3bfea518-6125-4335-92fc-af28b72c98cb -- POST /predict 200 1306.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:20,539 pi05-policy_PI05PolicyServer 4vi371mo a38a36ad-d6af-4632-8b6a-4eb7e7ffd722 -- POST /predict 200 1306.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:20,539 pi05-policy_PI05PolicyServer 4vi371mo 54b600c7-ba5c-42d4-b7fb-5e3cc996b649 -- POST /predict 200 1280.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:20,540 pi05-policy_PI05PolicyServer 4vi371mo 3de58382-6861-4d49-b06d-2bb6d61c9d4d -- POST /predict 200 1144.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:20,704 pi05-policy_PI05PolicyServer 4vi371mo e23c7edf-13d0-498f-aaa1-5e69f0172f02 -- POST /predict 200 1103.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,029 pi05-policy_PI05PolicyServer 4vi371mo a0424dae-dff4-4302-9107-e8f41f264b18 -- POST /predict 200 956.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,029 pi05-policy_PI05PolicyServer 4vi371mo c5a8c332-7a40-4162-aff8-5f67167dc391 -- POST /predict 200 1279.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,197 pi05-policy_PI05PolicyServer 4vi371mo 2ce7fab9-7cb2-44a6-848f-c3f1accd7f52 -- POST /predict 200 640.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,359 pi05-policy_PI05PolicyServer 4vi371mo 95cf7455-f035-463e-bb0c-14c81fc2dd2f -- POST /predict 200 785.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,525 pi05-policy_PI05PolicyServer 4vi371mo 7d58f7e6-6f9b-4d89-95d2-a78422dd3d99 -- POST /predict 200 477.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,690 pi05-policy_PI05PolicyServer 4vi371mo 9c16557a-1897-44c9-842c-4513f1466aa7 -- POST /predict 200 314.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=1119, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:21,873 pi05-policy_PI05PolicyServer 4vi371mo b18f7eb4-a864-44f0-879e-2fc8062b38ec -- POST /predict 200 164.9ms
+2026-09-10 13:05:22,884 [INFO] [round1] Simulation evaluation completed in 15.0s
+INFO 2026-09-10 13:05:22,892 serve 2059 -- Deleting app ['pi05-policy']
+[36m(ProxyActor pid=649, ip=10.4.4.76)[0m INFO 2026-09-10 13:05:22,942 proxy 10.4.4.76 -- Got updated endpoints: {}.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:05:23,043 controller 3244 -- Removing 1 replica from Deployment(name='PI05PolicyServer', app='pi05-policy').
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:05:23,045 controller 3244 -- Draining proxy on node '65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2'.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:05:25,080 controller 3244 -- Replica(id='4vi371mo', deployment='PI05PolicyServer', app='pi05-policy') is stopped.
+2026-09-10 13:05:26,080 [INFO] released phase state on 1 GPU node(s)
+2026-09-10 13:05:26,080 [INFO]   Worker 0 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-11.298, traj=/checkpoint/physical-ai/trajectories/round1/worker0_ep0_reward-11.298.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 1 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-15.310, traj=/checkpoint/physical-ai/trajectories/round1/worker1_ep0_reward-15.310.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 2 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-14.253, traj=/checkpoint/physical-ai/trajectories/round1/worker2_ep0_reward-14.253.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 3 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-14.817, traj=/checkpoint/physical-ai/trajectories/round1/worker3_ep0_reward-14.817.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 4 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-14.468, traj=/checkpoint/physical-ai/trajectories/round1/worker4_ep0_reward-14.468.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 5 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-10.730, traj=/checkpoint/physical-ai/trajectories/round1/worker5_ep0_reward-10.730.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 6 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-15.066, traj=/checkpoint/physical-ai/trajectories/round1/worker6_ep0_reward-15.066.pkl
+2026-09-10 13:05:26,080 [INFO]   Worker 7 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:05:26,080 [INFO]     ep0: steps=100, reward=-15.306, traj=/checkpoint/physical-ai/trajectories/round1/worker7_ep0_reward-15.306.pkl
+2026-09-10 13:05:26,080 [INFO] ============================================================
+2026-09-10 13:05:26,080 [INFO] PHASE 3B: Closed-Loop Data Flywheel: Merging Rewarded Trajectories...
+2026-09-10 13:05:26,080 [INFO] ============================================================
+2026-09-10 13:05:26,479 [INFO] LeRobotDatasource ready: 1 roots, 273465 total frames, 2 cameras ['observation.images.image', 'observation.images.image2'], mode='file_group'
+2026-09-10 13:05:26,502 [INFO] 37 tasks, 273465 total frames, 1 roots, 2 cameras
+2026-09-10 13:05:26,527 [INFO] Loading expert demonstrations from /checkpoint/physical-ai/franka_demos/expert_dataset.pkl...
+2026-09-10 13:05:28,327 [INFO] Loaded 2500 expert demonstration frames for task fine-tuning.
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-11.298.pkl (reward=-11.298)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-19.618.pkl (reward=-19.618)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-20.060.pkl (reward=-20.060)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-20.339.pkl (reward=-20.339)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-22.615.pkl (reward=-22.615)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-28.835.pkl (reward=-28.835)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep0_reward-36.645.pkl (reward=-36.645)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep1_reward-20.142.pkl (reward=-20.142)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep1_reward-20.802.pkl (reward=-20.802)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep1_reward-21.734.pkl (reward=-21.734)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep1_reward-21.928.pkl (reward=-21.928)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep1_reward-30.282.pkl (reward=-30.282)
+2026-09-10 13:05:28,364 [INFO]   DROP worker0_ep1_reward-33.719.pkl (reward=-33.719)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-15.310.pkl (reward=-15.310)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-20.919.pkl (reward=-20.919)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-21.162.pkl (reward=-21.162)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-21.351.pkl (reward=-21.351)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-21.834.pkl (reward=-21.834)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-25.849.pkl (reward=-25.849)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep0_reward-41.051.pkl (reward=-41.051)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep1_reward-19.827.pkl (reward=-19.827)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep1_reward-20.811.pkl (reward=-20.811)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep1_reward-21.796.pkl (reward=-21.796)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep1_reward-22.181.pkl (reward=-22.181)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep1_reward-32.315.pkl (reward=-32.315)
+2026-09-10 13:05:28,364 [INFO]   DROP worker1_ep1_reward-32.501.pkl (reward=-32.501)
+2026-09-10 13:05:28,364 [INFO]   DROP worker2_ep0_reward-14.253.pkl (reward=-14.253)
+2026-09-10 13:05:28,364 [INFO]   DROP worker3_ep0_reward-14.817.pkl (reward=-14.817)
+2026-09-10 13:05:28,364 [INFO]   DROP worker4_ep0_reward-14.468.pkl (reward=-14.468)
+2026-09-10 13:05:28,364 [INFO]   DROP worker5_ep0_reward-10.730.pkl (reward=-10.730)
+2026-09-10 13:05:28,364 [INFO]   DROP worker6_ep0_reward-15.066.pkl (reward=-15.066)
+2026-09-10 13:05:28,364 [INFO]   DROP worker7_ep0_reward-15.306.pkl (reward=-15.306)
+2026-09-10 13:05:28,364 [INFO] Extracted 2500 total demonstration & sim frames for training stream.
+2026-09-10 13:05:29,580	INFO __init__.py:56 -- Progress will be logged because stdout is a non-interactive terminal.
+2026-09-10 13:05:29,614	INFO logging_progress.py:174 -- ======= Running Dataset: dataset_4_0 =======
+2026-09-10 13:05:29,614	INFO logging_progress.py:225 -- Total Progress: 0/?
+2026-09-10 13:05:29,614	INFO logging_progress.py:227 -- Active & requested resources: 0/0 CPU, 0.0B/0.0B object store
+2026-09-10 13:05:29,614	INFO logging_progress.py:192 -- ============================================
+2026-09-10 13:05:29,622	INFO streaming_executor.py:294 -- ✔️  Dataset dataset_4_0 execution finished in 0.00 seconds
+2026-09-10 13:05:29,632 [INFO] Flywheel Mixed Dataset: shape: (5000, 6)
+╭──────────────────────────────────────────┬──────────────────────────────────────────┬──────────────────────────────────────────┬──────────────────────────────────────────┬──────────────────────────────┬──────────────────────────────────────────╮
+│ observation.images.image                 ┆ observation.images.image2                ┆ observation.state                        ┆ action                                   ┆ task                         ┆ action_is_pad                            │
+│ ---                                      ┆ ---                                      ┆ ---                                      ┆ ---                                      ┆ ---                          ┆ ---                                      │
+│ ArrowTensorTypeV2(shape=(3, 256, 256), … ┆ ArrowTensorTypeV2(shape=(3, 256, 256), … ┆ ArrowTensorTypeV2(shape=(8,), dtype=flo… ┆ ArrowTensorTypeV2(shape=(50, 7), dtype=… ┆ string                       ┆ ArrowTensorTypeV2(shape=(50,), dtype=bo… │
+╞══════════════════════════════════════════╪══════════════════════════════════════════╪══════════════════════════════════════════╪══════════════════════════════════════════╪══════════════════════════════╪══════════════════════════════════════════╡
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [ 1.7361976e-03 -7.9386526e-01 -3.01929… ┆ [[ 0.13034105 -0.14531736 -1.          … ┆ pick up the cube and lift it ┆ [False False False False False False Fa… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [ 0.00330029 -0.79560906 -0.0150193  -2… ┆ [[ 0.1147002  -0.12787928 -1.          … ┆ pick up the cube and lift it ┆ [False False False False False False Fa… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [ 0.00467669 -0.7971436  -0.0270193  -2… ┆ [[ 0.10093629 -0.11253376 -1.          … ┆ pick up the cube and lift it ┆ [False False False False False False Fa… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [ 0.00588793 -0.798494   -0.03901929 -2… ┆ [[ 0.08882403 -0.0990297  -1.          … ┆ pick up the cube and lift it ┆ [False False False False False False Fa… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [ 0.00695382 -0.7996823  -0.0510193  -2… ┆ [[ 0.07816494 -0.08714615 -1.          … ┆ pick up the cube and lift it ┆ [False False False False False False Fa… │
+│ …                                        ┆ …                                        ┆ …                                        ┆ …                                        ┆ …                            ┆ …                                        │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [-0.01951965 -0.7830432   0.00285765 -2… ┆ [[0.0000000e+00 0.0000000e+00 3.4865737… ┆ pick up the cube and lift it ┆ [False False False False False  True  T… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [-0.01951965 -0.7830432   0.00286184 -2… ┆ [[0.0000000e+00 0.0000000e+00 3.0678511… ┆ pick up the cube and lift it ┆ [False False False False  True  True  T… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [-0.01951965 -0.7830432   0.00286552 -2… ┆ [[0.0000000e+00 0.0000000e+00 2.6997924… ┆ pick up the cube and lift it ┆ [False False False  True  True  True  T… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [-0.01951965 -0.7830432   0.00286876 -2… ┆ [[0.0000000e+00 0.0000000e+00 2.3764372… ┆ pick up the cube and lift it ┆ [False False  True  True  True  True  T… │
+│ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [[[15 15 15 ... 15 15 15]   [15 15 15 .… ┆ [-0.01951965 -0.7830432   0.00287161 -2… ┆ [[0.000000e+00 0.000000e+00 2.091825e-0… ┆ pick up the cube and lift it ┆ [False  True  True  True  True  True  T… │
+╰──────────────────────────────────────────┴──────────────────────────────────────────┴──────────────────────────────────────────┴──────────────────────────────────────────┴──────────────────────────────┴──────────────────────────────────────────╯
+(Showing 10 of 5000 rows)
+2026-09-10 13:05:29,632 [INFO] ============================================================
+2026-09-10 13:05:29,632 [INFO] PHASE 3C: Retraining Policy on Closed-Loop Mixed Dataset (Round 2)...
+2026-09-10 13:05:29,632 [INFO] ============================================================
+2026-09-10 13:05:29,642 [INFO] Using target task Franka dataset stats for normalization:
+2026-09-10 13:05:29,642 [INFO]   action mean: [ 2.9162658e-04 -8.2101862e-05  7.6134443e-02  0.0000000e+00
+  0.0000000e+00  0.0000000e+00  9.3159997e-01]
+2026-09-10 13:05:29,642 [INFO]   action std:  [0.05       0.05       0.26440012 0.05       0.05       0.05
+ 0.36363995]
+2026-09-10 13:05:30,715 [INFO] released phase state on 1 GPU node(s)
+2026-09-10 13:05:30,719 [INFO] host headroom OK (all nodes): lowest is physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g with 1402793 MiB available (need 136000)
+[36m(TrainController pid=7363)[0m Requesting resources: {'GPU': 1} * 8
+[36m(TrainController pid=7363)[0m Attempting to start training worker group of size 8 with the following resources: [{'GPU': 1}] * 8
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:05:22,942 proxy 10.4.4.77 -- Got updated endpoints: {}.
+[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m Setting up process group for: env:// [rank=0, world_size=8]
+[36m(TrainController pid=7363)[0m Started training worker group of size 8: 
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5697) world_rank=0, local_rank=0, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5698) world_rank=1, local_rank=1, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5703) world_rank=2, local_rank=2, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5702) world_rank=3, local_rank=3, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5704) world_rank=4, local_rank=4, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5699) world_rank=5, local_rank=5, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5701) world_rank=6, local_rank=6, node_rank=0
+[36m(TrainController pid=7363)[0m - (ip=10.4.4.76, pid=5700) world_rank=7, local_rank=7, node_rank=0
+[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m The PI05 model is a direct port of the OpenPI implementation. 
+[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m This implementation follows the original OpenPI structure for compatibility. 
+[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m Original implementation: https://github.com/Physical-Intelligence/openpi
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:05:54,348 controller 3244 -- Removing drained proxy on node '65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2'.
+[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m The PI05 model is a direct port of the OpenPI implementation. [32m [repeated 7x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m This implementation follows the original OpenPI structure for compatibility. [32m [repeated 7x across cluster][0m
+[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m Original implementation: https://github.com/Physical-Intelligence/openpi[32m [repeated 7x across cluster][0m
+[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m Enabled gradient checkpointing for PI05Pytorch model
+[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m Loading model from: /tmp/lerobot/pi05_libero_finetuned
+[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m ✓ Loaded state dict from model.safetensors
+[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m Moving model to device: cuda:0
+[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m Wrapping provided model in DistributedDataParallel.
+
+[2m[36m(pid=7576) [0mRunning Dataset train_5_0.: 0.00 row [00:00, ? row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:00<?, ? row/s][A
+                                                                
+
+                                                                                
+[A[36m(SplitCoordinator pid=7576)[0m Starting execution of Dataset train_5_0. Full logs are in /tmp/ray/session_2026-09-10_13-01-30_948892_1/logs/ray-data
+
+[2m[36m(pid=7576) [0mRunning Dataset train_5_0.: 0.00 row [00:00, ? row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:00<?, ? row/s][A
+                                                                
+
+                                                                                
+[A[36m(SplitCoordinator pid=7576)[0m Execution plan of Dataset train_5_0: InputDataBuffer[Input] -> OutputSplitter[split(8, equal=True)]
+
+[2m[36m(pid=7576) [0mRunning Dataset train_5_0.: 0.00 row [00:00, ? row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:00<?, ? row/s][A
+                                                                
+
+                                                                                
+[A[36m(SplitCoordinator pid=7576)[0m [dataset]: A new progress UI is available. To enable, set `ray.data.DataContext.get_current().enable_rich_progress_bars = True` and `ray.data.DataContext.get_current().use_ray_tqdm = False`.
+
+[2m[36m(pid=7576) [0mRunning Dataset train_5_0.: 0.00 row [00:00, ? row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:00<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 0.00 row [00:01, ? row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:01, 842 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:01, 842 row/s]
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=10 loss=0.0338 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m Enabled gradient checkpointing for PI05Pytorch model[32m [repeated 7x across cluster][0m
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m Loading model from: /tmp/lerobot/pi05_libero_finetuned[32m [repeated 7x across cluster][0m
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m ✓ Loaded state dict from model.safetensors[32m [repeated 7x across cluster][0m
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=10 loss=0.1418 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=10 loss=0.0519 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=10 loss=0.0982 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=10 loss=0.2911 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=10 loss=0.0782 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=10 loss=0.1408 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+                                                                                                                                    
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=10 loss=0.0700 lr=2.00e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 931 row [00:03, 842 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:03<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:03, 230 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:03, 230 row/s]
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=20 loss=0.0266 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=20 loss=0.0796 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=20 loss=0.1052 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=20 loss=0.0262 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=20 loss=0.0086 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=20 loss=0.3388 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=20 loss=0.1944 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=20 loss=0.0330 lr=1.94e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.08k row [00:05, 230 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:05<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:05, 157 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:05, 157 row/s]
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=30 loss=0.0264 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=30 loss=0.0302 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=30 loss=0.0221 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=30 loss=0.0301 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=30 loss=0.1248 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=30 loss=0.0206 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=30 loss=0.0132 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+                                                                                                                                      
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=30 loss=0.0097 lr=1.77e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.24k row [00:08, 157 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:08<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.39k row [00:08, 111 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.39k row [00:08, 111 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=40 loss=0.0306 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=40 loss=0.0568 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=40 loss=0.0281 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=40 loss=0.0425 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=40 loss=0.0378 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=40 loss=0.2086 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=40 loss=0.2297 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=40 loss=0.0196 lr=1.50e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:10, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:10<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=50 loss=0.3991 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=50 loss=0.0212 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=50 loss=0.0184 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=50 loss=0.0659 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=50 loss=0.0606 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=50 loss=0.0165 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=50 loss=0.0441 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=50 loss=0.0124 lr=1.17e-04
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.54k row [00:13, 97.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:13<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.69k row [00:13, 81.6 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.69k row [00:13, 81.6 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=60 loss=0.0155 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=60 loss=0.0606 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=60 loss=0.0286 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=60 loss=0.0153 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=60 loss=0.0092 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=60 loss=0.0982 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=60 loss=0.1562 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=60 loss=0.0076 lr=8.26e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.84k row [00:15, 78.7 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:15<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=70 loss=0.1710 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=70 loss=0.0099 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=70 loss=0.0128 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=70 loss=0.0311 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=70 loss=0.0459 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=70 loss=0.0105 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=70 loss=0.0194 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=70 loss=0.3185 lr=5.00e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 1.99k row [00:18, 70.5 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:18<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=80 loss=0.0367 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=80 loss=0.0504 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=80 loss=0.0217 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=80 loss=0.0133 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=80 loss=0.0095 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=80 loss=0.0577 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=80 loss=0.0580 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=80 loss=0.0336 lr=2.34e-05
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.14k row [00:20, 69.9 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:20<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=90 loss=0.1844 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=90 loss=0.0237 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=90 loss=0.0297 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=90 loss=0.0158 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=90 loss=0.0412 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=90 loss=0.0258 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=90 loss=0.0236 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=90 loss=0.1247 lr=6.03e-06
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.28k row [00:23, 64.1 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:23<?, ? row/s][A
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:25, 64.4 row/s]
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:25, 64.4 row/s]
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m [round2] step=100 loss=0.0297 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5703, ip=10.4.4.76)[0m Reporting training result 1: TrainingReport(checkpoint=None, metrics={'epoch': 0, 'steps': 100, 'loss': 0.10118803231511266, 'lr': 0.0, 'gpu_peak_gb': 8.88}, validation=False) from rank 2
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5701, ip=10.4.4.76)[0m [round2] step=100 loss=0.0132 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5698, ip=10.4.4.76)[0m [round2] step=100 loss=0.0183 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5704, ip=10.4.4.76)[0m [round2] step=100 loss=0.1928 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5702, ip=10.4.4.76)[0m [round2] step=100 loss=0.0134 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m [round2] step=100 loss=0.0304 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5699, ip=10.4.4.76)[0m [round2] step=100 loss=0.0433 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m [round2] step=100 loss=0.0070 lr=0.00e+00
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m Checkpoint successfully created at: Checkpoint(filesystem=local, path=/checkpoint/physical-ai/vla-finetune-round2/checkpoint_2026-09-10_13-06-36.604730)
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+                                                                                                                                       
+
+                                                                                
+[A[36m(RayTrainWorker pid=5697, ip=10.4.4.76)[0m Reporting training result 1: TrainingReport(checkpoint=Checkpoint(filesystem=local, path=/checkpoint/physical-ai/vla-finetune-round2/checkpoint_2026-09-10_13-06-36.604730), metrics={'epoch': 0, 'steps': 100, 'loss': 0.08828437201213092, 'lr': 0.0, 'gpu_peak_gb': 8.88}, validation=False) from rank 0
+
+[2m[36m(pid=7576) [0mRunning Dataset: train_5_0. Active & requested resources: 0/0 CPU, 1.8GiB/0.0B object store: : 2.43k row [00:26, 64.4 row/s]
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:26<?, ? row/s][A
+[2m[36m(pid=7576) [0m✔️  Dataset train_5_0 execution finished in 29.57 seconds: : 2.43k row [00:29, 64.4 row/s]                                  
+[2m[36m(pid=7576) [0m✔️  Dataset train_5_0 execution finished in 29.57 seconds: : 2.55k row [00:29, 49.3 row/s]
+[2m[36m(pid=7576) [0m✔️  Dataset train_5_0 execution finished in 29.57 seconds: : 2.55k row [00:29, 49.3 row/s]
+[2m[36m(pid=7576) [0m✔️  Dataset train_5_0 execution finished in 29.57 seconds: : 2.55k row [00:29, 49.3 row/s]
+                                                                                                     
+
+                                                                                
+[A
+[2m[36m(pid=7576) [0m✔️  Dataset train_5_0 execution finished in 29.57 seconds: : 2.55k row [00:29, 86.3 row/s]
+
+
+[2m[36m(pid=7576) [0m- split(8, equal=True):   0%|          | 0.00/1.00 [00:29<?, ? row/s][A
+
+[2m[36m(pid=7576) [0m- split(8, equal=True): Tasks: 0; Actors: 0; Queued blocks: 0 (0.0B); Resources: 0.0 CPU, 1.8GiB object store; [0/257 objects local]:   0%|          | 0.00/1.00 [00:29<?, ? row/s][A
+
+[2m[36m(pid=7576) [0m- split(8, equal=True): Tasks: 0; Actors: 0; Queued blocks: 0 (0.0B); Resources: 0.0 CPU, 1.8GiB object store; [0/257 objects local]:   0%|          | 0.00/5.00k [00:29<?, ? row/s][A
+
+[2m[36m(pid=7576) [0m- split(8, equal=True): Tasks: 0; Actors: 0; Queued blocks: 0 (0.0B); Resources: 0.0 CPU, 1.8GiB object store; [0/257 objects local]: 100%|██████████| 5.00k/5.00k [00:29<00:00, 169 row/s][A
+
+[2m[36m(pid=7576) [0m- split(8, equal=True): Tasks: 0; Actors: 0; Queued blocks: 0 (0.0B); Resources: 0.0 CPU, 1.8GiB object store; [0/257 objects local]: 100%|██████████| 5.00k/5.00k [00:29<00:00, 169 row/s][A
+
+                                                                                                                                                                                                      
+[A
+[2m[36m(pid=7576) [0m- split(8, equal=True): Tasks: 0; Actors: 0; Queued blocks: 0 (0.0B); Resources: 0.0 CPU, 1.8GiB object store; [0/257 objects local]: 100%|██████████| 5.00k/5.00k [00:29<00:00, 169 row/s]
+[36m(SplitCoordinator pid=7576)[0m ✔️  Dataset train_5_0 execution finished in 29.57 seconds
+2026-09-10 13:06:41,645 [INFO] [round2] Saved stable checkpoint to: /checkpoint/physical-ai/checkpoint_round2/state.pkl
+2026-09-10 13:06:41,645 [INFO] Round 2 Retraining complete. Checkpoint: /checkpoint/physical-ai/checkpoint_round2/state.pkl
+2026-09-10 13:06:41,645 [INFO] Round 2 Metrics: {'epoch': 0, 'steps': 100, 'loss': 0.08828437201213092, 'lr': 0.0, 'gpu_peak_gb': 8.88}
+2026-09-10 13:06:41,645 [INFO] ============================================================
+2026-09-10 13:06:41,645 [INFO] PHASE 3D: Evaluating Round 2 Policy in Simulation (Head-to-Head)...
+2026-09-10 13:06:41,645 [INFO] ============================================================
+2026-09-10 13:06:41,835 [INFO] released phase state on 1 GPU node(s)
+2026-09-10 13:06:41,839 [INFO] host headroom OK (at least one node): lowest is physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g with 1401261 MiB available (need 136000)
+2026-09-10 13:06:41,840 [INFO] [round2] Deploying PI05PolicyServer on Ray Serve...
+INFO 2026-09-10 13:06:41,841 serve 2059 -- Connecting to existing Serve app in namespace "serve". New http options will not be applied.
+INFO 2026-09-10 13:06:41,856 serve 2059 -- Connecting to existing Serve app in namespace "serve". New http options will not be applied.
+WARNING 2026-09-10 13:06:41,856 serve 2059 -- The new client HTTP config differs from the existing one in the following fields: ['host']. The new HTTP config is ignored.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:06:41,941 controller 3244 -- Deploying new version of Deployment(name='PI05PolicyServer', app='pi05-policy') (initial target replicas: 1).
+[36m(RayTrainWorker pid=5700, ip=10.4.4.76)[0m Reporting training result 1: TrainingReport(checkpoint=None, metrics={'epoch': 0, 'steps': 100, 'loss': 0.0840065103629604, 'lr': 0.0, 'gpu_peak_gb': 8.88}, validation=False) from rank 7[32m [repeated 6x across cluster][0m
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:06:41,944 proxy 10.4.4.77 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:06:42,044 controller 3244 -- Adding 1 replica to Deployment(name='PI05PolicyServer', app='pi05-policy').
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8126, ip=10.4.4.76)[0m [PI05Server] Loading checkpoint from /checkpoint/physical-ai/checkpoint_round2/state.pkl
+[36m(ProxyActor pid=1489, ip=10.4.4.76)[0m INFO 2026-09-10 13:06:44,478 proxy 10.4.4.76 -- Proxy starting on node 65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2 (HTTP port: 8000).
+[36m(ProxyActor pid=1489, ip=10.4.4.76)[0m INFO 2026-09-10 13:06:44,581 proxy 10.4.4.76 -- Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x7d71b2743d10>.
+[36m(ServeController pid=3244)[0m ERROR 2026-09-10 13:06:44,602 controller 3244 -- Exception in Replica(id='mvy368d8', deployment='PI05PolicyServer', app='pi05-policy'), the replica will be stopped.
+[36m(ServeController pid=3244)[0m Traceback (most recent call last):
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/_private/deployment_state.py", line 1453, in check_ready
+[36m(ServeController pid=3244)[0m     ) = ray.get(self._ready_obj_ref)
+[36m(ServeController pid=3244)[0m         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/_private/auto_init_hook.py", line 22, in auto_init_wrapper
+[36m(ServeController pid=3244)[0m     return fn(*args, **kwargs)
+[36m(ServeController pid=3244)[0m            ^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/_private/client_mode_hook.py", line 107, in wrapper
+[36m(ServeController pid=3244)[0m     return func(*args, **kwargs)
+[36m(ServeController pid=3244)[0m            ^^^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/_private/worker.py", line 2965, in get
+[36m(ServeController pid=3244)[0m     values, debugger_breakpoint = worker.get_objects(
+[36m(ServeController pid=3244)[0m                                   ^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/_private/worker.py", line 1026, in get_objects
+[36m(ServeController pid=3244)[0m     raise value.as_instanceof_cause()
+[36m(ServeController pid=3244)[0m ray.exceptions.RayTaskError(RuntimeError): [36mray::ServeReplica:pi05-policy:PI05PolicyServer.initialize_and_get_metadata()[39m (pid=8126, ip=10.4.4.76, actor_id=6f61d46f46d6e86d511eb9fc02000000, repr=<ray.serve._private.replica.ServeReplica:pi05-policy:PI05PolicyServer object at 0x7a7ad16a8a10>)
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+[36m(ServeController pid=3244)[0m     return self.__get_result()
+[36m(ServeController pid=3244)[0m            ^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+[36m(ServeController pid=3244)[0m     raise self._exception
+[36m(ServeController pid=3244)[0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/_private/replica.py", line 2814, in initialize_and_get_metadata
+[36m(ServeController pid=3244)[0m     await self._replica_impl.initialize(deployment_config, rank, gang_context)
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/_private/replica.py", line 1783, in initialize
+[36m(ServeController pid=3244)[0m     raise RuntimeError(traceback.format_exc()) from None
+[36m(ServeController pid=3244)[0m RuntimeError: Traceback (most recent call last):
+[36m(ServeController pid=3244)[0m   File "/app/tools/policy_server.py", line 198, in _load_model
+[36m(ServeController pid=3244)[0m     state = _CPUUnpickler(f).load()
+[36m(ServeController pid=3244)[0m             ^^^^^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m OSError: [Errno 116] Stale file handle
+[36m(ServeController pid=3244)[0m 
+[36m(ServeController pid=3244)[0m During handling of the above exception, another exception occurred:
+[36m(ServeController pid=3244)[0m 
+[36m(ServeController pid=3244)[0m [36mray::ServeReplica:pi05-policy:PI05PolicyServer.initialize_and_get_metadata()[39m (pid=8126, ip=10.4.4.76, actor_id=6f61d46f46d6e86d511eb9fc02000000, repr=<ray.serve._private.replica.ServeReplica:pi05-policy:PI05PolicyServer object at 0x7a7ad16a8a10>)
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/_private/replica.py", line 1745, in initialize
+[36m(ServeController pid=3244)[0m     await self._user_callable_wrapper.initialize_callable()
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/_private/replica.py", line 3275, in initialize_callable
+[36m(ServeController pid=3244)[0m     await self._call_func_or_gen(
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/_private/replica.py", line 3221, in _call_func_or_gen
+[36m(ServeController pid=3244)[0m     result = await result
+[36m(ServeController pid=3244)[0m              ^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m   File "/home/ray/anaconda3/lib/python3.11/site-packages/ray/serve/api.py", line 428, in __init__
+[36m(ServeController pid=3244)[0m     cls.__init__(self, *args, **kwargs)
+[36m(ServeController pid=3244)[0m   File "/app/tools/policy_server.py", line 123, in __init__
+[36m(ServeController pid=3244)[0m     self._load_model()
+[36m(ServeController pid=3244)[0m   File "/app/tools/policy_server.py", line 201, in _load_model
+[36m(ServeController pid=3244)[0m     state = ray.cloudpickle.load(f)
+[36m(ServeController pid=3244)[0m             ^^^^^^^^^^^^^^^^^^^^^^^
+[36m(ServeController pid=3244)[0m OSError: [Errno 116] Stale file handle
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:06:44,606 controller 3244 -- Adding 1 replica to Deployment(name='PI05PolicyServer', app='pi05-policy').
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:06:44,710 controller 3244 -- Replica(id='mvy368d8', deployment='PI05PolicyServer', app='pi05-policy') is stopped.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:06:44,711 controller 3244 -- Draining proxy on node '65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2'.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:06:46,444 controller 3244 -- No longer draining proxy on node '65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2'.
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m [PI05Server]   trained for 100 steps across 1 epoch(s)
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m [PI05Server]   trainable keys in checkpoint: 8
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m The PI05 model is a direct port of the OpenPI implementation. 
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m This implementation follows the original OpenPI structure for compatibility. 
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m Original implementation: https://github.com/Physical-Intelligence/openpi
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m [PI05Server] Loading checkpoint from /checkpoint/physical-ai/checkpoint_round2/state.pkl
+[36m(ServeController pid=3244)[0m WARNING 2026-09-10 13:07:14,644 controller 3244 -- Deployment 'PI05PolicyServer' in application 'pi05-policy' has 1 replicas that have taken more than 30s to initialize.
+[36m(ServeController pid=3244)[0m This may be caused by a slow __init__ or reconfigure method.
+[36m(ProxyActor pid=1489, ip=10.4.4.76)[0m INFO 2026-09-10 13:06:44,545 proxy 10.4.4.76 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m Loading model from: /tmp/lerobot/pi05_libero_finetuned
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m ✓ Loaded state dict from model.safetensors
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m /app/tools/policy_server.py:254: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m   k: {sk: torch.as_tensor(sv, dtype=torch.float32) for sk, sv in v.items()}
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m [PI05Server] Ready in 27.5s. action_dim=7, n_action_steps=50
+[36m(ProxyActor pid=1489, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:17,295 proxy 10.4.4.76 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=[RoutePattern(methods=['GET', 'HEAD'], path='/docs'), RoutePattern(methods=['GET', 'HEAD'], path='/docs/oauth2-redirect'), RoutePattern(methods=['GET', 'HEAD'], path='/openapi.json'), RoutePattern(methods=['POST'], path='/predict'), RoutePattern(methods=['GET', 'HEAD'], path='/redoc'), RoutePattern(methods=['GET'], path='/stats')])}.
+INFO 2026-09-10 13:07:18,013 serve 2059 -- Application 'pi05-policy' is ready at http://0.0.0.0:8000/.
+2026-09-10 13:07:18,017 [INFO] [round2] Policy server ready at http://10.4.4.77:8000
+2026-09-10 13:07:18,400 [INFO] [round2] Sanity check passed. Predicted action shape: (50, 7)
+2026-09-10 13:07:18,400 [INFO] [round2] Launching 8 sim workers x 1 episodes...
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:18,399 pi05-policy_PI05PolicyServer cg98bor8 01abc685-023d-4425-9abd-0c9fc300b994 -- POST /predict 200 377.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:18,781 pi05-policy_PI05PolicyServer cg98bor8 18b928c8-312d-478b-89a9-4f5cf8648f63 -- POST /predict 200 172.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,921 pi05-policy_PI05PolicyServer cg98bor8 10e8daf7-8cc6-461d-bb70-5cef7105761f -- POST /predict 200 1312.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,922 pi05-policy_PI05PolicyServer cg98bor8 26a6cf20-2fa8-4cd2-87b1-29fc8bc956dd -- POST /predict 200 1312.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,922 pi05-policy_PI05PolicyServer cg98bor8 c4a4f35d-9465-42e9-92ae-ca7403ff2035 -- POST /predict 200 1312.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,922 pi05-policy_PI05PolicyServer cg98bor8 a0023e2d-d1d9-4242-b189-2858e584fa01 -- POST /predict 200 1308.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,922 pi05-policy_PI05PolicyServer cg98bor8 8cf5a445-f771-4fec-8f69-15d98f9f0f6f -- POST /predict 200 1310.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,922 pi05-policy_PI05PolicyServer cg98bor8 db3d49d9-8f03-4313-8e38-93abad182a99 -- POST /predict 200 1307.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:19,923 pi05-policy_PI05PolicyServer cg98bor8 55ff839c-3168-4037-ad80-b04a0145bd89 -- POST /predict 200 1307.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:20,092 pi05-policy_PI05PolicyServer cg98bor8 8d68f6c2-568c-44dd-ae72-989a7963a5a7 -- POST /predict 200 569.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:20,256 pi05-policy_PI05PolicyServer cg98bor8 a2d6a9e8-b972-41a6-915d-13c8010d2a2d -- POST /predict 200 244.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:20,578 pi05-policy_PI05PolicyServer cg98bor8 4b019e48-12b7-4ea8-9b9b-e7b1e552d50e -- POST /predict 200 638.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:20,579 pi05-policy_PI05PolicyServer cg98bor8 2f2cfbb3-45a1-4ef6-be45-3034986986dd -- POST /predict 200 510.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:20,743 pi05-policy_PI05PolicyServer cg98bor8 0ff00bbf-f6c4-45db-8d0e-a72759a39f5f -- POST /predict 200 543.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:21,543 pi05-policy_PI05PolicyServer cg98bor8 b88343f6-957c-4a88-8dfa-332d8edd94a1 -- POST /predict 200 1433.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:21,543 pi05-policy_PI05PolicyServer cg98bor8 676741ea-110d-4f81-a340-b2a16334e7b2 -- POST /predict 200 1270.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:21,543 pi05-policy_PI05PolicyServer cg98bor8 0dc82633-5c6b-46d2-9851-c399ffff1bc9 -- POST /predict 200 1108.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:21,543 pi05-policy_PI05PolicyServer cg98bor8 858e30f1-9acc-4d4e-a69b-7b2d0e9bc30c -- POST /predict 200 1208.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:21,544 pi05-policy_PI05PolicyServer cg98bor8 021d2a89-2ffe-434d-ad6b-caf3d9be418a -- POST /predict 200 1031.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:21,708 pi05-policy_PI05PolicyServer cg98bor8 ebd0ffb4-0dbd-43e7-8dfc-913729ca7f94 -- POST /predict 200 1112.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,028 pi05-policy_PI05PolicyServer cg98bor8 68a0152c-da34-452c-a6f2-94491ca3f24d -- POST /predict 200 1375.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,028 pi05-policy_PI05PolicyServer cg98bor8 a6f67352-e056-4529-8b62-e4a988516ba0 -- POST /predict 200 1268.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,191 pi05-policy_PI05PolicyServer cg98bor8 57e1957a-a81d-42ad-bf79-9fef31c83894 -- POST /predict 200 489.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,986 pi05-policy_PI05PolicyServer cg98bor8 03d914c4-79fe-4132-838a-958bb33c1fa4 -- POST /predict 200 1284.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,986 pi05-policy_PI05PolicyServer cg98bor8 3e0301e6-0d8b-46ec-8268-4520381a2408 -- POST /predict 200 1284.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,987 pi05-policy_PI05PolicyServer cg98bor8 b6d7ed1b-4ce6-4ef5-8c31-6401d3c91354 -- POST /predict 200 1284.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,987 pi05-policy_PI05PolicyServer cg98bor8 8597f94d-c92f-49c7-8528-be8d74c6f49c -- POST /predict 200 1260.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:22,987 pi05-policy_PI05PolicyServer cg98bor8 c9013ed2-969f-4149-a761-b1962e6d9a1a -- POST /predict 200 1125.2ms
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:07:17,296 proxy 10.4.4.77 -- Got updated endpoints: {Deployment(name='PI05PolicyServer', app='pi05-policy'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=[RoutePattern(methods=['GET', 'HEAD'], path='/docs'), RoutePattern(methods=['GET', 'HEAD'], path='/docs/oauth2-redirect'), RoutePattern(methods=['GET', 'HEAD'], path='/openapi.json'), RoutePattern(methods=['POST'], path='/predict'), RoutePattern(methods=['GET', 'HEAD'], path='/redoc'), RoutePattern(methods=['GET'], path='/stats')])}.
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:23,154 pi05-policy_PI05PolicyServer cg98bor8 99a3aa0d-3491-4dfd-8df6-798a55a7433c -- POST /predict 200 1090.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:23,475 pi05-policy_PI05PolicyServer cg98bor8 6d5c8b93-6352-4c06-9b30-27922cc81957 -- POST /predict 200 1429.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:23,476 pi05-policy_PI05PolicyServer cg98bor8 d2c208f2-c893-422c-aefd-e06e8274fc23 -- POST /predict 200 1267.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:23,640 pi05-policy_PI05PolicyServer cg98bor8 d2811479-9863-42f7-a2d6-df416aa601c0 -- POST /predict 200 491.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,441 pi05-policy_PI05PolicyServer cg98bor8 451f0797-8e63-4d9e-b84e-e2a7736cf675 -- POST /predict 200 1292.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,442 pi05-policy_PI05PolicyServer cg98bor8 4da69a73-0ea8-4db0-bd19-235e87031a87 -- POST /predict 200 1292.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,442 pi05-policy_PI05PolicyServer cg98bor8 e79a8995-f273-4b38-a495-dfb11ae71e3e -- POST /predict 200 1134.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,442 pi05-policy_PI05PolicyServer cg98bor8 03771259-21ce-4264-900f-ac83c6819276 -- POST /predict 200 1293.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,443 pi05-policy_PI05PolicyServer cg98bor8 fc797543-82ab-4b74-be91-0bcd3dffdb3a -- POST /predict 200 1271.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,608 pi05-policy_PI05PolicyServer cg98bor8 28acde5b-2fcd-4f5c-8512-0ddffa1753f9 -- POST /predict 200 1115.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,929 pi05-policy_PI05PolicyServer cg98bor8 0e105c80-ea85-481b-b8d2-fe21f549aa89 -- POST /predict 200 1419.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:24,930 pi05-policy_PI05PolicyServer cg98bor8 d40fbc51-10d5-4e41-99fd-3bcc825756f5 -- POST /predict 200 1272.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:25,095 pi05-policy_PI05PolicyServer cg98bor8 f56feea8-1fc2-412c-8b5c-121c0853fc6e -- POST /predict 200 495.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:25,894 pi05-policy_PI05PolicyServer cg98bor8 63ca13cd-d06d-4a94-abca-0257eb02a876 -- POST /predict 200 1293.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:25,894 pi05-policy_PI05PolicyServer cg98bor8 2c56def2-231d-4846-9a58-669431c1b3f5 -- POST /predict 200 1294.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:25,895 pi05-policy_PI05PolicyServer cg98bor8 90a87a1e-dad5-4133-99ff-cc87fd51ca79 -- POST /predict 200 1269.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:25,895 pi05-policy_PI05PolicyServer cg98bor8 48adeb9c-ffdd-4849-81c6-1b7310644d49 -- POST /predict 200 1294.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:25,895 pi05-policy_PI05PolicyServer cg98bor8 6e2fd087-f47f-481b-a7ee-2c479d776bdf -- POST /predict 200 1134.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:26,059 pi05-policy_PI05PolicyServer cg98bor8 2b81ebb1-24cd-4afe-8dbf-3577ffea91e7 -- POST /predict 200 1112.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:26,381 pi05-policy_PI05PolicyServer cg98bor8 bbb37f1b-80a7-482d-b1e9-2ded6a2c2b75 -- POST /predict 200 1415.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:26,382 pi05-policy_PI05PolicyServer cg98bor8 26a03d8e-4a02-4abf-94cd-7c33732273fa -- POST /predict 200 1269.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:26,546 pi05-policy_PI05PolicyServer cg98bor8 aa1e8d27-81b3-4c1e-9d63-3483e4cae011 -- POST /predict 200 491.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,342 pi05-policy_PI05PolicyServer cg98bor8 46efad90-a34e-4fb5-a606-0ab86244e229 -- POST /predict 200 1288.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,343 pi05-policy_PI05PolicyServer cg98bor8 a74463c6-4df7-422e-8a30-753aa880bc89 -- POST /predict 200 1287.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,343 pi05-policy_PI05PolicyServer cg98bor8 51b9e7d1-8e73-4baf-920f-a108edc8ffa3 -- POST /predict 200 1288.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,344 pi05-policy_PI05PolicyServer cg98bor8 4bb84a47-5481-42c9-b614-be7fb00d2e49 -- POST /predict 200 1267.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,344 pi05-policy_PI05PolicyServer cg98bor8 8bc2cd79-a816-4e7e-94e6-0038cb6d3b6b -- POST /predict 200 1128.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,510 pi05-policy_PI05PolicyServer cg98bor8 7d6d8b65-7459-4e61-8e83-bb98ded48460 -- POST /predict 200 1111.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,829 pi05-policy_PI05PolicyServer cg98bor8 e7b01b72-d7cb-4db8-80c3-2b67fb0585bc -- POST /predict 200 1414.8ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,830 pi05-policy_PI05PolicyServer cg98bor8 6492897f-0ed1-4645-ab9e-000cc53e529b -- POST /predict 200 1266.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:27,992 pi05-policy_PI05PolicyServer cg98bor8 65491675-b7fe-4ee0-871d-8379d26584c7 -- POST /predict 200 488.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:28,790 pi05-policy_PI05PolicyServer cg98bor8 f2155953-d831-4abd-84af-cb5e74e689e9 -- POST /predict 200 1286.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:28,791 pi05-policy_PI05PolicyServer cg98bor8 ff9fffa2-b915-493e-a8ee-38ba3889c06a -- POST /predict 200 1286.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:28,791 pi05-policy_PI05PolicyServer cg98bor8 ebe86387-e36c-4d54-82c9-cf143e12b674 -- POST /predict 200 1287.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:28,791 pi05-policy_PI05PolicyServer cg98bor8 44b488a8-3f7e-4405-843d-38bd2fa3f256 -- POST /predict 200 1129.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:28,791 pi05-policy_PI05PolicyServer cg98bor8 7eb8da90-1658-48ed-819d-1aaa8e75431a -- POST /predict 200 1265.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:28,959 pi05-policy_PI05PolicyServer cg98bor8 0ea02ae4-d42f-4731-8634-406b599e3c96 -- POST /predict 200 1094.4ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:29,279 pi05-policy_PI05PolicyServer cg98bor8 57d152c2-e98d-4553-a4f8-3e75d8e7c517 -- POST /predict 200 1433.1ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:29,280 pi05-policy_PI05PolicyServer cg98bor8 38bd11d7-9b8e-46bc-b497-299436cf4716 -- POST /predict 200 1271.5ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:29,444 pi05-policy_PI05PolicyServer cg98bor8 3572e357-ed42-4ae6-b6d6-18eb68ccc702 -- POST /predict 200 488.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,241 pi05-policy_PI05PolicyServer cg98bor8 c1790e60-a8e0-492f-a79e-b00a368ddb90 -- POST /predict 200 1285.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,241 pi05-policy_PI05PolicyServer cg98bor8 ac564feb-f61b-434d-b4db-02b4a1a04d9e -- POST /predict 200 1285.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,242 pi05-policy_PI05PolicyServer cg98bor8 fcd3eea7-1ac4-40df-aa05-2b6322d15eb2 -- POST /predict 200 1285.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,242 pi05-policy_PI05PolicyServer cg98bor8 0d409234-a07c-437d-9a83-28d960e2a078 -- POST /predict 200 1129.3ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,242 pi05-policy_PI05PolicyServer cg98bor8 f5df87a2-b2f6-48eb-a202-8dbe7a4e1775 -- POST /predict 200 1265.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,407 pi05-policy_PI05PolicyServer cg98bor8 1c867d99-4142-4b6e-a7b2-7e0955fb7f07 -- POST /predict 200 1110.6ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,727 pi05-policy_PI05PolicyServer cg98bor8 b3c5e765-d338-4b0a-a1ca-950bd2dbfad3 -- POST /predict 200 1412.2ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,728 pi05-policy_PI05PolicyServer cg98bor8 edc2ea70-0c10-415b-9497-69ba694bfd5d -- POST /predict 200 1265.7ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:30,893 pi05-policy_PI05PolicyServer cg98bor8 ec5d1e62-2642-493a-9833-a92ced4feb7a -- POST /predict 200 330.9ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:31,053 pi05-policy_PI05PolicyServer cg98bor8 df18a0af-cfad-4060-ad12-d51aff74e28b -- POST /predict 200 650.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:31,219 pi05-policy_PI05PolicyServer cg98bor8 0a6b809b-dbfb-4275-893d-6238cdef2264 -- POST /predict 200 472.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:31,378 pi05-policy_PI05PolicyServer cg98bor8 9869783c-96b7-4843-9ef7-fa1ca8c65d28 -- POST /predict 200 467.0ms
+[36m(ServeReplica:pi05-policy:PI05PolicyServer pid=8230, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:31,543 pi05-policy_PI05PolicyServer cg98bor8 8cca7f89-4020-492f-9058-ed84a43b76a0 -- POST /predict 200 470.8ms
+2026-09-10 13:07:32,769 [INFO] [round2] Simulation evaluation completed in 14.4s
+INFO 2026-09-10 13:07:32,776 serve 2059 -- Deleting app ['pi05-policy']
+[36m(ProxyActor pid=1489, ip=10.4.4.76)[0m INFO 2026-09-10 13:07:32,852 proxy 10.4.4.76 -- Got updated endpoints: {}.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:07:32,953 controller 3244 -- Removing 1 replica from Deployment(name='PI05PolicyServer', app='pi05-policy').
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:07:32,953 controller 3244 -- Draining proxy on node '65ae0e2c405e3431e8eb6d66bbe9cd47c50d144f8d238ab85456c4f2'.
+[36m(ServeController pid=3244)[0m INFO 2026-09-10 13:07:34,988 controller 3244 -- Replica(id='cg98bor8', deployment='PI05PolicyServer', app='pi05-policy') is stopped.
+2026-09-10 13:07:35,971 [INFO] released phase state on 1 GPU node(s)
+2026-09-10 13:07:35,972 [INFO]   Worker 0 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-14.271, traj=/checkpoint/physical-ai/trajectories/round2/worker0_ep0_reward-14.271.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 1 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-16.698, traj=/checkpoint/physical-ai/trajectories/round2/worker1_ep0_reward-16.698.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 2 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-16.185, traj=/checkpoint/physical-ai/trajectories/round2/worker2_ep0_reward-16.185.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 3 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-16.479, traj=/checkpoint/physical-ai/trajectories/round2/worker3_ep0_reward-16.479.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 4 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-14.637, traj=/checkpoint/physical-ai/trajectories/round2/worker4_ep0_reward-14.637.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 5 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-15.909, traj=/checkpoint/physical-ai/trajectories/round2/worker5_ep0_reward-15.909.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 6 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-15.723, traj=/checkpoint/physical-ai/trajectories/round2/worker6_ep0_reward-15.723.pkl
+2026-09-10 13:07:35,972 [INFO]   Worker 7 on physical-ai-03-serving-sim-eval-q2ngv-gpu-flywheel-worker-6ds2g exited with code 0
+2026-09-10 13:07:35,972 [INFO]     ep0: steps=100, reward=-20.809, traj=/checkpoint/physical-ai/trajectories/round2/worker7_ep0_reward-20.809.pkl
+2026-09-10 13:07:35,972 [INFO] ============================================================
+2026-09-10 13:07:35,972 [INFO] Closed-Loop Physical AI Head-to-Head Evaluation Summary:
+2026-09-10 13:07:35,972 [INFO] ============================================================
+2026-09-10 13:07:35,972 [INFO] Round 2 Training Loss: 0.0883
+2026-09-10 13:07:35,972 [INFO] Episode           R1 Reward   R2 Reward     Delta
+2026-09-10 13:07:35,972 [INFO] -------------------------------------------------------
+2026-09-10 13:07:35,972 [INFO] w0-ep0              -11.298     -14.271    -2.972
+2026-09-10 13:07:35,972 [INFO] w1-ep0              -15.310     -16.698    -1.389
+2026-09-10 13:07:35,972 [INFO] w2-ep0              -14.253     -16.185    -1.932
+2026-09-10 13:07:35,972 [INFO] w3-ep0              -14.817     -16.479    -1.661
+2026-09-10 13:07:35,972 [INFO] w4-ep0              -14.468     -14.637    -0.168
+2026-09-10 13:07:35,972 [INFO] w5-ep0              -10.730     -15.909    -5.179
+2026-09-10 13:07:35,972 [INFO] w6-ep0              -15.066     -15.723    -0.657
+2026-09-10 13:07:35,972 [INFO] w7-ep0              -15.306     -20.809    -5.502
+2026-09-10 13:07:35,972 [INFO] -------------------------------------------------------
+2026-09-10 13:07:35,972 [INFO] Mean                -13.906     -16.339    -2.433
+2026-09-10 13:07:35,972 [INFO] ============================================================
+2026-09-10 13:07:35,972 [INFO] Phase 3: Serving & Simulation Evaluation Flywheel complete.
+[36m(ProxyActor pid=3315)[0m INFO 2026-09-10 13:07:32,852 proxy 10.4.4.77 -- Got updated endpoints: {}.
+2026-09-10 13:07:41,143	SUCC cli.py:65 -- [32m-----------------------------------------------------[39m
+2026-09-10 13:07:41,143	SUCC cli.py:66 -- [32mJob 'physical-ai-03-serving-sim-eval-cvwwp' succeeded[39m
+2026-09-10 13:07:41,143	SUCC cli.py:67 -- [32m-----------------------------------------------------[39m

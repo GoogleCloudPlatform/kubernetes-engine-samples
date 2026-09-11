@@ -1,0 +1,87 @@
+2026-09-10 12:33:12,956	INFO cli.py:41 -- [37mJob submission server address[39m: [1mhttp://physical-ai-01-data-processing-jv8xf-head-svc.default.svc.cluster.local:8265[22m
+2026-09-10 12:33:13,386	SUCC cli.py:65 -- [32m-----------------------------------------------------------------[39m
+2026-09-10 12:33:13,386	SUCC cli.py:66 -- [32mJob 'physical-ai-01-data-processing-ggh7r' submitted successfully[39m
+2026-09-10 12:33:13,386	SUCC cli.py:67 -- [32m-----------------------------------------------------------------[39m
+2026-09-10 12:33:13,386	INFO cli.py:326 -- [36mNext steps[39m
+2026-09-10 12:33:13,386	INFO cli.py:327 -- Query the logs of the job:
+2026-09-10 12:33:13,386	INFO cli.py:329 -- [1mray job logs physical-ai-01-data-processing-ggh7r[22m
+2026-09-10 12:33:13,386	INFO cli.py:331 -- Query the status of the job:
+2026-09-10 12:33:13,387	INFO cli.py:333 -- [1mray job status physical-ai-01-data-processing-ggh7r[22m
+2026-09-10 12:33:13,387	INFO cli.py:335 -- Request the job to be stopped:
+2026-09-10 12:33:13,387	INFO cli.py:337 -- [1mray job stop physical-ai-01-data-processing-ggh7r[22m
+2026-09-10 12:33:14,892	INFO cli.py:41 -- [37mJob submission server address[39m: [1mhttp://physical-ai-01-data-processing-jv8xf-head-svc.default.svc.cluster.local:8265[22m
+2026-09-10 12:33:13,255	INFO job_manager.py:587 -- Runtime env is setting up.
+Running entrypoint for job physical-ai-01-data-processing-ggh7r: bash -c "PYTHONPATH=/app:/app/tools: python3 /app/scripts/01_robotics_data_pipelines.py --dataset-uri /checkpoint/physical-ai/mirror/libero --storage-root /checkpoint/physical-ai --batch-size 32 --sample-rows 10"
+2026-09-10 12:33:26,896 [INFO] Connecting to Ray cluster...
+2026-09-10 12:33:26,896	INFO worker.py:1672 -- Using address 10.4.4.69:6379 set in the environment variable RAY_ADDRESS
+2026-09-10 12:33:26,898	INFO worker.py:1814 -- Connecting to existing Ray cluster at address: 10.4.4.69:6379...
+2026-09-10 12:33:26,910	INFO worker.py:2003 -- Connected to Ray cluster. View the dashboard at [1m[32mhttp://10.4.4.69:8265 [39m[22m
+/home/ray/anaconda3/lib/python3.11/site-packages/ray/_private/worker.py:2051: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+  warnings.warn(
+2026-09-10 12:33:27,011 [INFO] Inspecting cluster topology...
+2026-09-10 12:33:27,013 [INFO] Cluster: 0 GPU(s) (unknown model) across 0 GPU node(s), 80 CPUs total
+2026-09-10 12:33:27,014 [INFO] Derived: train workers = 1, sim workers (nb03) = 1
+2026-09-10 12:33:27,014 [INFO] Connecting to LeRobot datasource at /checkpoint/physical-ai/mirror/libero...
+2026-09-10 12:33:27,557 [INFO] LeRobotDatasource ready: 1 roots, 273465 total frames, 2 cameras ['observation.images.image', 'observation.images.image2'], mode='file_group'
+2026-09-10 12:33:27,557 [INFO] ============================================================
+2026-09-10 12:33:27,557 [INFO] Dataset Root:   /checkpoint/physical-ai/mirror/libero
+2026-09-10 12:33:27,557 [INFO] Episodes:       1,693
+2026-09-10 12:33:27,557 [INFO] Total Frames:   273,465
+2026-09-10 12:33:27,557 [INFO] Camera Streams: ['observation.images.image', 'observation.images.image2']
+2026-09-10 12:33:27,557 [INFO] FPS:            10.0
+2026-09-10 12:33:27,557 [INFO] State Dim:      (8,)
+2026-09-10 12:33:27,557 [INFO] Action Dim:     (7,)
+2026-09-10 12:33:27,557 [INFO] ============================================================
+2026-09-10 12:33:27,557 [INFO] Evaluating partitioning modes for distributed reading...
+2026-09-10 12:33:27,620 [INFO] LeRobotDatasource ready: 1 roots, 273465 total frames, 2 cameras ['observation.images.image', 'observation.images.image2'], mode='sequential'
+2026-09-10 12:33:27,620 [INFO]   Partition mode 'sequential  ' ->     1 read tasks
+2026-09-10 12:33:27,673 [INFO] LeRobotDatasource ready: 1 roots, 273465 total frames, 2 cameras ['observation.images.image', 'observation.images.image2'], mode='file_group'
+2026-09-10 12:33:27,676 [INFO]   Partition mode 'file_group  ' ->    37 read tasks
+2026-09-10 12:33:27,752 [INFO] LeRobotDatasource ready: 1 roots, 273465 total frames, 2 cameras ['observation.images.image', 'observation.images.image2'], mode='episode'
+2026-09-10 12:33:27,787 [INFO]   Partition mode 'episode     ' ->  1693 read tasks
+2026-09-10 12:33:27,787 [INFO] Constructing streaming Ray Data transform pipeline...
+2026-09-10 12:33:27,791 [INFO] 37 tasks, 273465 total frames, 1 roots, 2 cameras
+2026-09-10 12:33:28,504 [INFO] 1 tasks, 273465 total frames, 1 roots, 2 cameras
+2026-09-10 12:33:28,507 [INFO] Pipeline defined: MapBatches(transpose_images)
++- Map(rename_columns)
+   +- Dataset(
+         num_rows=273465,
+         schema={
+            observation.state: list<element: float>,
+            action: list<element: float>,
+            timestamp: float,
+            frame_index: int64,
+            episode_index: int64,
+            index: int64,
+            task_index: int64,
+            observation.i...: ArrowVariableShapedTensorType(ndim=3, dtype=uint8),
+            observation.i...: ArrowVariableShapedTensorType(ndim=3, dtype=uint8),
+            task: string,
+            dataset_index: int32
+         }
+      )
+2026-09-10 12:33:28,507 [INFO] Streaming validation sample (10 rows)...
+2026-09-10 12:33:28,523 [INFO] 37 tasks, 273465 total frames, 1 roots, 2 cameras
+2026-09-10 12:33:28,578 [INFO] 37 tasks, 273465 total frames, 1 roots, 2 cameras
+2026-09-10 12:33:28,603	WARNING resource_manager.py:169 -- ⚠️  Ray's object store is configured to use only 30.0% of available memory (95.9GiB out of 320.0GiB total). For optimal Ray Data performance, we recommend setting the object store to at least 50% of available memory. You can do this by setting the 'object_store_memory' parameter when calling ray.init() or by setting the RAY_DEFAULT_OBJECT_STORE_MEMORY_PROPORTION environment variable.
+2026-09-10 12:33:28,604	WARNING __init__.py:28 -- Progress bars disabled. To enable, set `ray.data.DataContext.get_current().enable_progress_bars = True`.
+2026-09-10 12:33:38,092 [INFO] ------------------------------------------------------------
+2026-09-10 12:33:38,092 [INFO] Sample Batch Validated in 10.30s:
+2026-09-10 12:33:38,092 [INFO]   observation.state                shape=(10, 8)              dtype=float64
+2026-09-10 12:33:38,092 [INFO]   action                           shape=(10, 7)              dtype=float64
+2026-09-10 12:33:38,092 [INFO]   timestamp                        shape=(10,)                dtype=float64
+2026-09-10 12:33:38,092 [INFO]   frame_index                      shape=(10,)                dtype=int64
+2026-09-10 12:33:38,092 [INFO]   episode_index                    shape=(10,)                dtype=int64
+2026-09-10 12:33:38,092 [INFO]   index                            shape=(10,)                dtype=int64
+2026-09-10 12:33:38,092 [INFO]   task_index                       shape=(10,)                dtype=int64
+2026-09-10 12:33:38,092 [INFO]   observation.images.image         shape=(10, 3, 256, 256)    dtype=uint8
+2026-09-10 12:33:38,092 [INFO]   observation.images.image2        shape=(10, 3, 256, 256)    dtype=uint8
+2026-09-10 12:33:38,092 [INFO]   task                             shape=(10,)                dtype=<U66
+2026-09-10 12:33:38,092 [INFO]   dataset_index                    shape=(10,)                dtype=int64
+2026-09-10 12:33:38,092 [INFO] ------------------------------------------------------------
+2026-09-10 12:33:38,127 [WARNING] Could not generate sample stream GIF: No module named 'imageio'
+2026-09-10 12:33:38,536 [INFO] Dataset validation summary persisted to: /checkpoint/physical-ai/data_pipeline/dataset_summary.json
+2026-09-10 12:33:38,536 [INFO] Phase 1: Robotics Data Pipeline completed successfully.
+2026-09-10 12:33:44,022	SUCC cli.py:65 -- [32m----------------------------------------------------[39m
+2026-09-10 12:33:44,022	SUCC cli.py:66 -- [32mJob 'physical-ai-01-data-processing-ggh7r' succeeded[39m
+2026-09-10 12:33:44,022	SUCC cli.py:67 -- [32m----------------------------------------------------[39m
