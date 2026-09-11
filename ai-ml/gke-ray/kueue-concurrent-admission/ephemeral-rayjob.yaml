@@ -1,0 +1,84 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_kueue_concurrent_admission_ephemeral_rayjob]
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: ephemeral-gpu-job
+  labels:
+    # Kueue admits this RayJob through the LocalQueue defined in kueue-setup.yaml.
+    kueue.x-k8s.io/queue-name: user-queue
+spec:
+  entrypoint: |
+    python -c "
+    import ray, time, socket
+    ray.init()
+    print('Cluster resources:', ray.cluster_resources())
+    @ray.remote(num_gpus=1)
+    def gpu_task(task_id):
+        ip = socket.gethostbyname(socket.gethostname())
+        print(f'Task {task_id} running on node with IP: {ip}')
+        time.sleep(5)
+        return ip
+    futures = [gpu_task.remote(i) for i in range(3)]
+    results = ray.get(futures)
+    print('Tasks successfully executed on nodes:', set(results))
+    "
+  # Delete the RayCluster after the job finishes, which makes the job ephemeral.
+  shutdownAfterJobFinishes: true
+  rayClusterSpec:
+    rayVersion: '2.58.0'
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+      template:
+        spec:
+          tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+          containers:
+          - name: ray-head
+            image: rayproject/ray:2.58.0
+            resources:
+              requests:
+                cpu: "1"
+                memory: "2Gi"
+              limits:
+                cpu: "1"
+                memory: "2Gi"
+    workerGroupSpecs:
+    - groupName: worker-group
+      replicas: 3
+      minReplicas: 3
+      maxReplicas: 3
+      rayStartParams: {}
+      template:
+        spec:
+          nodeSelector:
+            cloud.google.com/gke-accelerator: nvidia-tesla-t4
+          containers:
+          - name: ray-worker
+            image: rayproject/ray:2.58.0
+            resources:
+              requests:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+              limits:
+                nvidia.com/gpu: "1"
+                cpu: "2"
+                memory: "8Gi"
+# [END gke_ai_ml_gke_ray_kueue_concurrent_admission_ephemeral_rayjob]

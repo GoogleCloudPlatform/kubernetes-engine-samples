@@ -1,0 +1,111 @@
+# Copyright 2026 Google LLC. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: jobset.x-k8s.io/v1alpha2
+kind: JobSet
+metadata:
+  name: llama3-1-8b-grpo-dws-2x2x1-training
+  namespace: default
+  annotations:
+    alpha.jobset.sigs.k8s.io/exclusive-topology: cloud.google.com/gke-nodepool
+    provreq.kueue.x-k8s.io/maxRunDurationSeconds: "86400"
+  labels:
+    kueue.x-k8s.io/queue-name: tpu7x-2x2x1-dws-queue
+    kueue.x-k8s.io/priority-class: high-priority
+spec:
+  suspend: true # Required: Kueue manages pod scheduling and unsuspends once DWS capacity is acquired
+  failurePolicy:
+    maxRestarts: 0
+  replicatedJobs:
+  - name: slice
+    template:
+      metadata:
+        labels:
+          app: llama3-1-8b-grpo-training
+      spec:
+        parallelism: 1
+        completions: 1
+        backoffLimit: 0
+        template:
+          metadata:
+            labels:
+              app: llama3-1-8b-grpo-training
+            annotations:
+              gke-gcsfuse/volumes: 'true'
+          spec:
+            restartPolicy: Never
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 100
+              fsGroup: 100
+            serviceAccountName: workload-identity-k8s-sa
+            automountServiceAccountToken: true
+            nodeSelector:
+              cloud.google.com/gke-nodepool: <USER_NODEPOOL_NAME>
+              cloud.google.com/gke-tpu-accelerator: tpu7x
+            tolerations:
+            - key: google.com/tpu
+              operator: Exists
+              effect: NoSchedule
+            - key: cloud.google.com/gke-queued
+              operator: Exists
+              effect: NoSchedule
+            containers:
+            - name: grpo-trainer
+              image: <YOUR_REGION>-docker.pkg.dev/<YOUR_PROJECT_ID>/<YOUR_REPO_NAME>/maxtext-grpo-runner:v2
+              securityContext:
+                privileged: true
+                runAsUser: 0
+                runAsGroup: 100
+              env:
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: hf_api_token
+              - name: VLLM_TARGET_DEVICE
+                value: "tpu"
+              - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+                value: "python"
+              - name: VLLM_NO_USAGE_STATS
+                value: "1"
+              - name: TF_CPP_MIN_LOG_LEVEL
+                value: "2"
+              command:
+              - python3
+              - -m
+              - maxtext.trainers.post_train.rl.train_rl
+              - maxtext/configs/post_train/rl.yml
+              - model_name=llama3.1-8b-Instruct
+              - tokenizer_path=meta-llama/Llama-3.1-8B-Instruct
+              - run_name=llama3-1-8b-grpo-training-run
+              - base_output_directory=/checkpoint/maxtext
+              - chips_per_vm=4
+              resources:
+                limits:
+                  google.com/tpu: '4'
+                requests:
+                  google.com/tpu: '4'
+              volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+              - mountPath: /checkpoint
+                name: gcs-input
+            volumes:
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: gcs-input
+              persistentVolumeClaim:
+                claimName: <YOUR_CHECKPOINT_PVC_NAME>
