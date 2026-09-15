@@ -50,7 +50,6 @@ This repository is organized to support multiple Vision-Language-Action (VLA) fo
 ```
 physical-ai-on-gke/
 ├── assets/                             # Output GIFs, rollout telemetry recordings, and diagrams
-├── logs/                               # Verified cluster execution logs from GKE runs
 ├── models/                             # Modular model implementations
 │   ├── pi05/                           # Physical Intelligence PI0.5 (3.4B VLA)
 │   │   ├── manifests/                  # KubeRay RayJob and RayService manifests
@@ -199,7 +198,7 @@ kubectl apply -f models/pi05/manifests/01-data-processing-rayjob.yaml
 To monitor execution and capture logs:
 ```bash
 kubectl get rayjob physical-ai-01-data-processing -w
-# Full execution log is captured in logs/01-data-processing.log
+# Tip: redirect the output to a local file to keep a full execution record
 ```
 
 ### 3. Verified Metrics from Cluster Run
@@ -211,7 +210,6 @@ kubectl get rayjob physical-ai-01-data-processing -w
 | **Partitioning Tasks** | `file_group`: **37 read tasks** \| `episode`: **1,693 read tasks** |
 | **Sample Validation Latency** | **8.43 seconds** (PyAV decoding + Arrow table assembly) |
 | **Batch Tensor Shapes** | Camera 1 & 2: `(10, 3, 256, 256)` uint8<br>State: `(10, 8)` float64<br>Action: `(10, 7)` float64 |
-| **Log Artifact** | [`logs/01-data-processing.log`](logs/01-data-processing.log) |
 
 ### 4. Visual Output: What Is Happening
 The data pipeline executes ranged reads against the GCS bucket via Cloud Storage FUSE, decodes H.264 video streams on-the-fly, and constructs unified multimodal training rows:
@@ -249,7 +247,7 @@ To follow training logs:
 ```bash
 # Follow submitter pod logs
 kubectl logs -f $(kubectl get pod -l ray.io/job-name=physical-ai-02-vla-finetuning,ray.io/node-type!=head,ray.io/node-type!=worker -o jsonpath='{.items[0].metadata.name}')
-# Full execution log is captured in logs/02-vla-training.log
+# Tip: redirect the output to a local file to keep a full execution record
 ```
 
 ### 3. Verified Metrics from Cluster Run (1000 Steps on 8 GPUs)
@@ -266,7 +264,6 @@ kubectl logs -f $(kubectl get pod -l ray.io/job-name=physical-ai-02-vla-finetuni
 | **Smoothed Convergence** | Mean of first 10 logged points **`0.4454`** -> mean of last 10 **`0.2574`** |
 | **Loss Range** | Min `0.0655` / Max `0.7071` across 100 logged points (stdev `0.1319`) |
 | **Saved Checkpoint** | `gs://<YOUR_BUCKET>/physical-ai/checkpoint_round1/state.pkl` (24.80 MiB / 26,000,315 bytes) |
-| **Log Artifact** | [`logs/02-vla-training.log`](logs/02-vla-training.log) |
 
 > [!IMPORTANT]
 > **The held-out validation row is the real before/after measurement in this
@@ -325,7 +322,6 @@ kubectl apply -f models/pi05/manifests/02b-generate-demos-job.yaml
 | **Total Frames** | **2,500 expert frames** (100 steps/episode) |
 | **Episode Reward** | **`+87.86`** (Approach -> Firm Grasp -> Vertical Lift to z=0.20m) |
 | **Storage Destination** | `/checkpoint/physical-ai/franka_demos/expert_dataset.pkl` (25 episodes, 2,500 frames) |
-| **Log Artifact** | [`logs/02b-generate-demos.log`](logs/02b-generate-demos.log) |
 
 ---
 
@@ -385,7 +381,6 @@ kubectl apply -f models/pi05/manifests/03-serving-sim-eval-rayjob.yaml
 | **Round 2 Retraining** | **100 steps** DDP across all **8 x NVIDIA RTX PRO 6000 GPUs** (`batch_size=2`, `grad_accum=2`, `lr=2e-4`)<br>Reported final loss: **`0.0847`** · 8-worker mean at step 100: **`0.0457`** · peak 8.88 GB |
 | **Round 2 Episode Rewards** | `w0`: **-14.598** (Δ **-12.941**) \| `w1`: **-18.739** (Δ **-3.267**)<br>`w2`: **-15.505** (Δ **-1.565**) \| `w3`: **-17.400** (Δ **-5.336**)<br>`w4`: **-15.396** (Δ **-2.405**) \| `w5`: **-15.921** (Δ **-4.593**)<br>`w6`: **-15.920** (Δ **-2.980**) \| `w7`: **-17.305** (Δ **-2.183**)<br>**Mean R2: -16.348 +/- 1.264** (Mean Δ: **-4.409**, **0 of 8** workers improved) |
 | **Saved Checkpoints** | Round 1: `/checkpoint/physical-ai/checkpoint_round1/state.pkl` (1000 steps, 24.80 MiB)<br>Round 2: `/checkpoint/physical-ai/checkpoint_round2/state.pkl` (100 steps DDP, 24.80 MiB) |
-| **Log Artifact** | [`logs/03-serving-sim-eval.log`](logs/03-serving-sim-eval.log) |
 
 > [!NOTE]
 > **Better Phase 2 training did move this number.** With the retuned 1,000-update
@@ -508,14 +503,14 @@ print('Action Chunk Shape:', res['action'].shape)
 
 ## Execution Architecture & Persistent Cluster Logs
 
-Each stage of the stack is decoupled into its own independent Kubernetes manifest, allowing engineers to run, inspect, and benchmark stages in isolation. Every job execution writes its full logs into the [`logs/`](logs/) directory:
+Each stage of the stack is decoupled into its own independent Kubernetes manifest, allowing engineers to run, inspect, and benchmark stages in isolation. Every job execution streams its full logs to the submitter pod, which you can capture locally with `kubectl logs`:
 
-| Stage | Manifest | Submitter / Pod | Output Log File | Key Verified Milestone |
+| Stage | Manifest | Submitter / Pod | Captured Output | Key Verified Milestone |
 | :--- | :--- | :--- | :--- | :--- |
-| **Phase 1** | [`01-data-processing-rayjob.yaml`](models/pi05/manifests/01-data-processing-rayjob.yaml) | `physical-ai-01-data-processing-...` | [`logs/01-data-processing.log`](logs/01-data-processing.log) | 273,465 frames streamed from GCS FUSE in 67s |
-| **Phase 2** | [`02-vla-training-rayjob.yaml`](models/pi05/manifests/02-vla-training-rayjob.yaml) | `physical-ai-02-vla-finetuning-...` | [`logs/02-vla-training.log`](logs/02-vla-training.log) | 1,000 updates on 8 GPUs in 1571.2s, loss 0.4454 -> 0.2574 (smoothed); held-out 0.5699 -> 0.1775 (+68.9%) |
-| **Phase 2b** | [`02b-generate-demos-job.yaml`](models/pi05/manifests/02b-generate-demos-job.yaml) | `physical-ai-generate-demos-...` | [`logs/02b-generate-demos.log`](logs/02b-generate-demos.log) | 2,500 frames (+87.86 reward) pick-and-lift |
-| **Phase 3** | [`03-serving-sim-eval-rayjob.yaml`](models/pi05/manifests/03-serving-sim-eval-rayjob.yaml) | `physical-ai-03-serving-sim-eval-...` | [`logs/03-serving-sim-eval.log`](logs/03-serving-sim-eval.log) | Closed loop verified: 8-chip sim eval in 14.3s, R1 -11.939 vs R2 -16.348 head-to-head on 8 workers |
+| **Phase 1** | [`01-data-processing-rayjob.yaml`](models/pi05/manifests/01-data-processing-rayjob.yaml) | `physical-ai-01-data-processing-...` | `01-data-processing.log` | 273,465 frames streamed from GCS FUSE in 67s |
+| **Phase 2** | [`02-vla-training-rayjob.yaml`](models/pi05/manifests/02-vla-training-rayjob.yaml) | `physical-ai-02-vla-finetuning-...` | `02-vla-training.log` | 1,000 updates on 8 GPUs in 1571.2s, loss 0.4454 -> 0.2574 (smoothed); held-out 0.5699 -> 0.1775 (+68.9%) |
+| **Phase 2b** | [`02b-generate-demos-job.yaml`](models/pi05/manifests/02b-generate-demos-job.yaml) | `physical-ai-generate-demos-...` | `02b-generate-demos.log` | 2,500 frames (+87.86 reward) pick-and-lift |
+| **Phase 3** | [`03-serving-sim-eval-rayjob.yaml`](models/pi05/manifests/03-serving-sim-eval-rayjob.yaml) | `physical-ai-03-serving-sim-eval-...` | `03-serving-sim-eval.log` | Closed loop verified: 8-chip sim eval in 14.3s, R1 -11.939 vs R2 -16.348 head-to-head on 8 workers |
 | **Phase 3b** | [`03b-vla-serving-rayservice.yaml`](models/pi05/manifests/03b-vla-serving-rayservice.yaml) | `physical-ai-vla-serving-...` | GKE ClusterIP port 8000 | 24/7 self-healing RayService deployment |
 
 ### End-to-End Sequential Run Command:
@@ -547,7 +542,7 @@ kubectl wait --for=jsonpath='{.status.jobStatus}'=SUCCEEDED rayjob/physical-ai-0
 # 4a. Release the training cluster's GPUs before the next GPU phase.
 #     Capture logs first: they live on the submitter pod, which is deleted with the RayJob.
 kubectl logs $(kubectl get pods -o name \
-  | grep 'physical-ai-02-vla-finetuning-' | grep -vE 'head|worker' | head -1) > logs/02-vla-training.log
+  | grep 'physical-ai-02-vla-finetuning-' | grep -vE 'head|worker' | head -1) > 02-vla-training.log
 kubectl delete rayjob physical-ai-02-vla-finetuning --wait=true
 
 # 5. Phase 2b: Demonstration Generation

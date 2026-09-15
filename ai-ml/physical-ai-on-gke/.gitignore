@@ -25,3 +25,7 @@ __pycache__/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local run logs (captured via kubectl logs, not checked in)
+logs/
+*.log
