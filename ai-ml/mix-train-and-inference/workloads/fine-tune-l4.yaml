@@ -46,7 +46,7 @@ spec:
       containers:
       - name: gpu-job
         imagePullPolicy: Always
-        image: us-docker.pkg.dev/google-samples/containers/gke/gemma-fine-tuning:v1.0.0
+        image: us-docker.pkg.dev/google-samples/containers/gke/gemma-fine-tuning:v1.1.0
         ports:
         - containerPort: 29500
         resources:
