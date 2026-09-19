@@ -1,0 +1,61 @@
+# Copyright 2026 Google LLC. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: physical-ai-generate-demos
+  namespace: default
+  labels:
+    app.kubernetes.io/name: physical-ai-generate-demos
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+        gke-gcsfuse/mount-options: "uid=1000,gid=1000"
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: workload-identity-k8s-sa
+      securityContext:
+        fsGroup: 100
+      containers:
+        - name: demo-generator
+          image: rayproject/ray:2.55.1-py311
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              pip install --no-cache-dir Pillow numpy torch
+              python3 /app/tools/generate_franka_demos.py
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+            limits:
+              cpu: "8"
+              memory: "32Gi"
+          volumeMounts:
+            - name: checkpoint-storage
+              mountPath: /checkpoint
+            - name: tools-volume
+              mountPath: /app/tools
+      volumes:
+        - name: checkpoint-storage
+          persistentVolumeClaim:
+            claimName: physical-ai-checkpoint-pvc
+        - name: tools-volume
+          configMap:
+            name: physical-ai-tools

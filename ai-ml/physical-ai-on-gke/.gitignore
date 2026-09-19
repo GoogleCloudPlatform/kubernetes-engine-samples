@@ -1,0 +1,31 @@
+# Environments
+.venv/
+env/
+venv/
+
+# Scratch & Temporary directories
+scratch/
+scratch_inspect/
+*.tmp*
+
+# Jupyter Notebooks & Original tutorial folder
+*.ipynb
+.ipynb_checkpoints/
+ray_summit_robotics_2026/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local run logs (captured via kubectl logs, not checked in)
+logs/
+*.log
