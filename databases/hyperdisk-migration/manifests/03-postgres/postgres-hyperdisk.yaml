@@ -1,0 +1,166 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_databases_hyperdisk_03_posgres_cluster_hpd]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-hyperdisk-headless
+  namespace: "default"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: "postgresql"
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+  selector:
+    app.kubernetes.io/instance: postgres-hyperdisk
+    app.kubernetes.io/component: postgresql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-hyperdisk
+  labels: &labels
+    app.kubernetes.io/instance: postgres-hyperdisk
+    app.kubernetes.io/component: postgresql
+spec:
+  replicas: 1
+  podManagementPolicy: "Parallel"
+  serviceName: postgres-hyperdisk-headless
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels: *labels
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: "cloud.google.com/gke-nodepool"
+                operator: In
+                values:
+                - "pool-hyperdisk"
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      containers:
+        - name: postgresql
+          image: docker.io/bitnami/postgresql-repmgr:16.4.0-debian-12-r24
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit, repmgr"
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: REPMGR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: REPMGR_PARTNER_NODES
+              value: postgres-ssd-0.postgres-ssd-headless.$(REPMGR_NAMESPACE),postgres-hyperdisk-0.postgres-hyperdisk-headless.$(REPMGR_NAMESPACE)
+            - name: REPMGR_PRIMARY_HOST
+              value: "postgres-ssd-0.postgres-ssd-headless.$(REPMGR_NAMESPACE)"
+            - name: REPMGR_NODE_NAME
+              value: "$(MY_POD_NAME)"
+            - name: REPMGR_NODE_NETWORK_NAME
+              value: "$(MY_POD_NAME).postgres-hyperdisk-headless.$(REPMGR_NAMESPACE)"
+            - name: REPMGR_USERNAME
+              value: "repmgr"
+            - name: REPMGR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: repmgr-password
+            - name: REPMGR_DATABASE
+              value: "repmgr"
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - bash
+                - -ec
+                - 'PGPASSWORD=$POSTGRES_PASSWORD psql -w -U "postgres" -d "postgres" -h 127.0.0.1 -p 5432 -c "SELECT 1"'
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - bash
+                - -ec
+                - |
+                  exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+          resources:
+            limits:
+              cpu: 2
+              memory: 8Gi
+            requests:
+              cpu: 2
+              memory: 8Gi
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/postgresql
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        storageClassName: "balanced-storage"
+        resources:
+          requests:
+            storage: "20Gi"
+# [END gke_databases_hyperdisk_03_posgres_cluster_hpd]
