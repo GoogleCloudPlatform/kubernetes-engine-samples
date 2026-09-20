@@ -1,0 +1,74 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+  # Build step where a Cloud Storage bucket to store the execution logs of gke-disk-image-builder is created
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: "/bin/bash"
+  args:
+    - "-c"
+    - |
+      gcloud storage buckets create gs://${_BUCKET_NAME} --location=${_REGION} --uniform-bucket-level-access
+
+  # Build step where the repo with gke-disk-image-builder is cloned
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/GoogleCloudPlatform/ai-on-gke.git']
+
+  # Build step where gke-disk-image-builder is run with required parameters
+- name: 'gcr.io/cloud-builders/go:1.21'
+  env: ['GOPATH=./ai-on-gke/tools/gke-disk-image-builder']
+  dir: './ai-on-gke/tools/gke-disk-image-builder'
+  args:
+    - 'run'
+    - './cli'
+    - --project-name=${_PROJECT_ID}
+    - --image-name=${_DISK_IMAGE}
+    - --zone=${_ZONE_A}
+    - --gcs-path=gs://${_BUCKET_NAME}
+    - --disk-size-gb=100
+    - --timeout=120m
+    - --container-image=${_CONTAINER_IMAGE}
+    - --image-pull-auth=ServiceAccountToken
+
+  # Build step where the GKE cluster with GCS Fuse addon enabled is created
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: "/bin/bash"
+  args:
+    - "-c"
+    - |
+      gcloud container clusters create ${_CLUSTER_NAME} \
+        --project=${_PROJECT_ID} \
+        --region=${_REGION} \
+        --workload-pool=${_PROJECT_ID}.svc.id.goog \
+        --release-channel=rapid \
+        --num-nodes=1 \
+        --enable-image-streaming
+
+  # Build step where the node-pool with the secondary boot disk, which already has the cached image for serving the model is created
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: "/bin/bash"
+  args:
+    - "-c"
+    - |
+      gcloud beta container node-pools create gpupool \
+        --accelerator type=nvidia-l4,count=2,gpu-driver-version=latest \
+        --project=${_PROJECT_ID} \
+        --location=${_REGION} \
+        --node-locations=${_ZONE_A},${_ZONE_B},${_ZONE_C} \
+        --cluster=${_CLUSTER_NAME} \
+        --machine-type=g2-standard-24 \
+        --num-nodes=1 \
+        --enable-image-streaming \
+        --disk-size 200 \
+        --secondary-boot-disk=disk-image=projects/${_PROJECT_ID}/global/images/${_DISK_IMAGE},mode=CONTAINER_IMAGE_CACHE
