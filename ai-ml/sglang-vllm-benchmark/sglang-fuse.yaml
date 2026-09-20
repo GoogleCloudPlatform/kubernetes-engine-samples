@@ -1,0 +1,88 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sglang
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sglang
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+      labels:
+        app: sglang
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: sglang
+        image: dganochenko/sglang:v0.5.2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 30000
+        command: ["python3", "-m", "sglang.launch_server"]
+        args: ["--model-path", "/data/Llama-3.3-70B-Instruct", "--served-model-name", "unsloth/Llama-3.3-70B-Instruct", "--host", "0.0.0.0", "--port", "30000", "--tp", "2", "--context-length",  "8192"]
+        resources:
+          limits:
+            cpu: '40'
+            memory: 400Gi
+            nvidia.com/gpu: '2'
+          requests:
+            cpu: '40'
+            memory: 400Gi
+            nvidia.com/gpu: '2'
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - name: gcs-fuse-csi-ephemeral
+          mountPath: /data
+          readOnly: true
+      tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Equal
+        value: present
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-h100-80gb
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: gcs-fuse-csi-ephemeral
+        csi:
+          driver: gcsfuse.csi.storage.gke.io
+          readOnly: true
+          volumeAttributes:
+            bucketName: epam-team-llama-3-70b
+            mountOptions: "implicit-dirs,metadata-cache:ttl-secs:-1,file-cache:max-size-mb:-1,file-cache:cache-file-for-range-read:true,file-cache:enable-parallel-downloads:true"
+            gcsfuseLoggingSeverity: warning
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sglang-endpoint
+spec:
+  selector:
+    app: sglang
+  ports:
+    - protocol: TCP
+      port: 30000
+      targetPort: 30000
