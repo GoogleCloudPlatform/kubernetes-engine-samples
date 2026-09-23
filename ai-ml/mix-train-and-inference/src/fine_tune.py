@@ -166,7 +166,7 @@ if __name__ == "__main__":
     save_model_path = os.environ["MODEL_PATH"]
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"  # Fix weird overflow issue with fp16 training
 
