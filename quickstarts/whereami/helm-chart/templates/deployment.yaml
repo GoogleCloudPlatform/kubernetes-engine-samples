@@ -124,6 +124,11 @@ spec:
               configMapKeyRef:
                 name: {{ include "whereami.fullname" . }}
                 key: ECHO_HEADERS
+          - name: ENABLE_ORCA_HEADERS
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "whereami.fullname" . }}
+                key: ENABLE_ORCA_HEADERS
           - name: GRPC_ENABLED
             valueFrom:
               configMapKeyRef:
