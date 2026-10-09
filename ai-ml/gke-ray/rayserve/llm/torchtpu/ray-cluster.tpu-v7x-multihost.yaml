@@ -1,0 +1,101 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_ray_rayserve_llm_torchtpu_ray_cluster_tpu_v7x_multihost]
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: tpu-multi-host
+spec:
+  headGroupSpec:
+    rayStartParams:
+      num-cpus: "0"
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: ${CUSTOM_IMAGE_URI}
+          env:
+          - name: RAY_TPU_RESOURCE_PER_CHIP
+            value: "2"
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: hf-secret
+                key: hf_api_token
+                optional: true
+          ports:
+          - containerPort: 6379
+            name: gcs
+          - containerPort: 8265
+            name: dashboard
+          - containerPort: 10001
+            name: client
+          - containerPort: 8000
+            name: serve
+          resources:
+            limits:
+              cpu: "4"
+              memory: "16Gi"
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+  workerGroupSpecs:
+  - groupName: tpu7x-8
+    replicas: 1
+    minReplicas: 1
+    maxReplicas: 1
+    numOfHosts: 2
+    rayStartParams: {}
+    template:
+      spec:
+        containers:
+        - name: ray-worker
+          image: ${CUSTOM_IMAGE_URI}
+          env:
+          - name: RAY_TPU_RESOURCE_PER_CHIP
+            value: "2"
+          - name: NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: VBAR_CONTROL_SERVICE_URL
+            value: "$(NODE_IP):8353"
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: hf-secret
+                key: hf_api_token
+                optional: true
+          resources:
+            limits:
+              cpu: "64"
+              memory: "250Gi"
+              google.com/tpu: "4"
+            requests:
+              cpu: "64"
+              memory: "250Gi"
+              google.com/tpu: "4"
+          volumeMounts:
+          - mountPath: /dev/shm
+            name: dshm
+        volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Gi
+        nodeSelector:
+          cloud.google.com/gke-tpu-accelerator: tpu7x
+          cloud.google.com/gke-tpu-topology: 2x2x2
+# [END gke_ai_ml_gke_ray_rayserve_llm_torchtpu_ray_cluster_tpu_v7x_multihost]
