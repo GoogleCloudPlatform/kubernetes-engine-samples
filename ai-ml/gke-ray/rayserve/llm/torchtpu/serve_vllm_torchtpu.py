@@ -15,7 +15,6 @@
 # [START gke_ai_ml_gke_ray_rayserve_llm_torchtpu_serve_vllm_torchtpu]
 import os
 
-from ray import serve
 from ray.serve.llm import (
     LLMConfig,
     LLMServingArgs,
@@ -23,12 +22,20 @@ from ray.serve.llm import (
     build_openai_app,
 )
 
+# Model and TPU topology configuration
 MODEL_ID = os.environ.get("MODEL_ID", "google/gemma-4-26B-A4B-it")
 ACCELERATOR_TYPE = os.environ.get("ACCELERATOR_TYPE", "TPU-V6E")
 TPU_TOPOLOGY = os.environ.get("TPU_TOPOLOGY", "4x4")
+
+# vLLM engine arguments and defaults
 TENSOR_PARALLEL_SIZE = int(os.environ.get("TENSOR_PARALLEL_SIZE", "16"))
 MAX_MODEL_LEN = int(os.environ.get("MAX_MODEL_LEN", "8192"))
-MAX_NUM_BATCHED_TOKENS = int(os.environ.get("MAX_NUM_BATCHED_TOKENS", "2048"))
+MAX_NUM_BATCHED_TOKENS = int(os.environ.get("MAX_NUM_BATCHED_TOKENS", "4096"))
+
+# Replica autoscaling configuration
+MIN_REPLICAS = int(os.environ.get("MIN_REPLICAS", "1"))
+MAX_REPLICAS = int(os.environ.get("MAX_REPLICAS", "1"))
+TARGET_ONGOING_REQUESTS = int(os.environ.get("TARGET_ONGOING_REQUESTS", "32"))
 
 llm_config = LLMConfig(
     model_loading_config=ModelLoadingConfig(
@@ -45,14 +52,9 @@ llm_config = LLMConfig(
     },
     deployment_config={
         "autoscaling_config": {
-            "min_replicas": 1,
-            "max_replicas": 1,
-        },
-        # Allow up to 15 minutes for weight loading and initial XLA graph compilation.
-        "health_check_timeout_s": 900,
-        "health_check_period_s": 30,
-        "ray_actor_options": {
-            "resources": {f"accelerator_type:{ACCELERATOR_TYPE}": 0.001},
+            "min_replicas": MIN_REPLICAS,
+            "max_replicas": MAX_REPLICAS,
+            "target_ongoing_requests": TARGET_ONGOING_REQUESTS,
         },
     },
     engine_kwargs={
@@ -67,14 +69,11 @@ llm_config = LLMConfig(
     runtime_env={
         "env_vars": {
             "TPU_MULTIHOST_BACKEND": "ray",
+            # Execute Gemma 4 routed expert layers on TPU TensorCores instead of SparseCore.
             "USE_MOE_SPARSE_CORE": "0",
         }
     },
 )
 
 app = build_openai_app(LLMServingArgs(llm_configs=[llm_config]))
-
-if __name__ == "__main__":
-    serve.start(http_options={"host": "0.0.0.0", "port": 8000})
-    serve.run(app, blocking=True)
 # [END gke_ai_ml_gke_ray_rayserve_llm_torchtpu_serve_vllm_torchtpu]

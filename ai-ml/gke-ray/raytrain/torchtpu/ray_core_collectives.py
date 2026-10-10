@@ -28,9 +28,7 @@ from torch.distributed.tensor.parallel import (
     parallelize_module,
 )
 import torch.nn as nn
-import torch_tpu  # noqa: F401 - registers the 'tpu' device and 'tpu_dist' backend
-
-os.environ["RAY_DEDUP_LOGS"] = "0"
+import torch_tpu
 
 RANDOM_SEED = 42
 
@@ -191,7 +189,7 @@ def main() -> None:
         assert r["all_reduce_sum"] == [float(expected_sum)] * 4
 
     print(
-        f"SUCCESS: All {len(results)} TorchTPU ranks verified DTensor TP parity "
+        f"All {len(results)} TorchTPU ranks verified DTensor TP parity "
         f"(max_abs_diff={results[0]['max_abs_diff']:.6f}) and "
         f"all_reduce sum = {expected_sum:.1f}"
     )

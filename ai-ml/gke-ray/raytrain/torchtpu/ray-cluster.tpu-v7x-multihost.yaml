@@ -18,8 +18,10 @@ kind: RayCluster
 metadata:
   name: ray-torchtpu-cluster
 spec:
+  rayVersion: "2.58.0"
   headGroupSpec:
     rayStartParams:
+      # Prevents Ray from scheduling TPU workloads onto the CPU-only head Pod.
       num-cpus: "0"
     template:
       spec:
@@ -49,12 +51,14 @@ spec:
               cpu: "4"
               memory: "16Gi"
   workerGroupSpecs:
-  - groupName: tpu-worker-group
+  - groupName: tpu7x-16
     replicas: 1
     minReplicas: 1
     maxReplicas: 1
     numOfHosts: 2
-    rayStartParams: {}
+    resources:
+      # Advertises 8 logical TPU cores (2 chiplets per physical chip) per host.
+      TPU: "8"
     template:
       spec:
         containers:

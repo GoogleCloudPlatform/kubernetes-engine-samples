@@ -15,30 +15,32 @@
 # [START gke_ai_ml_gke_ray_raytrain_torchtpu_ray_train_llm_finetune]
 import argparse
 import os
-import shutil
 import tempfile
 import time
 
 from datasets import load_dataset
 import ray
 import ray.train
-from ray.train import Checkpoint, FailureConfig, RunConfig, ScalingConfig
+from ray.train import (
+    Checkpoint,
+    CheckpointConfig,
+    FailureConfig,
+    RunConfig,
+    ScalingConfig,
+)
 from ray.train.torch import TorchConfig, TorchTrainer
-from ray.train.v2.api.report_config import CheckpointUploadMode
 import torch
-from torch.distributed import ReduceOp, all_reduce, barrier
+from torch.distributed import ReduceOp, all_reduce
 from torch.distributed.checkpoint.state_dict import (
     StateDictOptions,
     get_model_state_dict,
 )
 from torch.distributed.device_mesh import DeviceMesh, init_device_mesh
 from torch.distributed.fsdp import MixedPrecisionPolicy, fully_shard
+from torch.distributed.tensor import DTensor
 from torch.utils.data import DataLoader
-import torch_tpu  # noqa: F401 - registers the 'tpu' device and 'tpu_dist' backend
+import torch_tpu
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
-os.environ["RAY_DEDUP_LOGS"] = "0"
-os.environ.setdefault("TORCH_TPU_DEFER_AND_FUSE", "1")
 
 
 def build_alpaca_dataloader(
@@ -134,15 +136,12 @@ def shard_model_fsdp2(
         param_dtype=torch.bfloat16,
         reduce_dtype=torch.float32,
     )
+    # Prune unused multimodal towers and freeze per-layer embeddings on Gemma 4.
     for attr in ("vision_tower", "audio_tower", "embed_vision", "embed_audio"):
         if hasattr(model.model, attr):
             delattr(model.model, attr)
 
-    text_model = (
-        model.model.language_model
-        if hasattr(model.model, "language_model")
-        else model.model
-    )
+    text_model = getattr(model.model, "language_model", model.model)
     ignored_params = set()
     if hasattr(text_model, "embed_tokens_per_layer"):
         text_model.embed_tokens_per_layer.requires_grad_(False)
@@ -159,74 +158,12 @@ def shard_model_fsdp2(
     return model, mesh
 
 
-def report_epoch_metrics(
-    model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
-    metrics: dict,
-    epoch: int,
-    num_epochs: int,
-    storage_path: str,
-    world_rank: int,
-) -> None:
-    """Reports metrics across ranks and saves a consolidated checkpoint on the final epoch."""
-    if epoch < num_epochs - 1:
-        ray.train.report(metrics)
-        return
-
-    sharded_sd = get_model_state_dict(
-        model,
-        options=StateDictOptions(ignore_frozen_params=True),
-    )
-    full_state_dict = {}
-    for k, v in sharded_sd.items():
-        full_cpu = (
-            v.full_tensor().cpu() if hasattr(v, "full_tensor") else v.cpu()
-        )
-        if world_rank == 0:
-            full_state_dict[k] = full_cpu
-
-    if world_rank == 0:
-        is_local_storage = "://" not in storage_path
-        if is_local_storage:
-            ckpt_dir = os.path.join(
-                storage_path,
-                ray.train.get_context().get_experiment_name(),
-                f"checkpoint_epoch_{epoch + 1}",
-            )
-            os.makedirs(ckpt_dir, exist_ok=True)
-            upload_mode = CheckpointUploadMode.NO_UPLOAD
-        else:
-            ckpt_dir = tempfile.mkdtemp(prefix=f"torchtpu_ckpt_ep{epoch + 1}_")
-            upload_mode = CheckpointUploadMode.SYNC
-
-        torch.save(
-            {
-                "epoch": epoch + 1,
-                "model_state_dict": full_state_dict,
-                "loss": metrics["loss"],
-            },
-            os.path.join(ckpt_dir, "model.pt"),
-        )
-        ray.train.report(
-            metrics,
-            checkpoint=Checkpoint.from_directory(ckpt_dir),
-            checkpoint_upload_mode=upload_mode,
-        )
-        if not is_local_storage:
-            shutil.rmtree(ckpt_dir, ignore_errors=True)
-    else:
-        ray.train.report(metrics)
-
-
 def train_func(config: dict) -> None:
-    """Per-worker SPMD training loop executed on each logical TPU device."""
-    os.environ.setdefault("TORCH_TPU_DEFER_AND_FUSE", "1")
+    """Per-worker distributed PyTorch training loop executed on each logical TPU device."""
     ctx = ray.train.get_context()
     world_rank = ctx.get_world_rank()
     world_size = ctx.get_world_size()
-    local_rank = ctx.get_local_rank()
     device = ray.train.torch.get_device()
-    _ = torch.zeros(1, device=device)
 
     model_id = config["model_id"]
     dataset_name = config["dataset_name"]
@@ -234,19 +171,7 @@ def train_func(config: dict) -> None:
     batch_size_per_device = config["batch_size_per_device"]
     num_epochs = config["num_epochs"]
 
-    # Serialize local Hugging Face downloads so rank 0 populates the node cache first.
-    if local_rank == 0:
-        if "://" not in config["storage_path"]:
-            os.makedirs(
-                os.path.join(config["storage_path"], ctx.get_experiment_name()),
-                exist_ok=True,
-            )
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
-        load_dataset(dataset_name, split=f"train[:{config['max_samples']}]")
-        AutoModelForCausalLM.from_pretrained(model_id, dtype=torch.bfloat16)
-    barrier()
-    if local_rank != 0:
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -264,8 +189,19 @@ def train_func(config: dict) -> None:
         dtype=torch.bfloat16,
     )
     base_model.config.use_cache = False
-    base_model = base_model.to(device)
 
+    start_epoch = 0
+    checkpoint = ray.train.get_checkpoint()
+    if checkpoint:
+        with checkpoint.as_directory() as checkpoint_dir:
+            ckpt = torch.load(
+                os.path.join(checkpoint_dir, "model.pt"),
+                map_location="cpu",
+            )
+            base_model.load_state_dict(ckpt["model_state_dict"], strict=False)
+            start_epoch = ckpt["epoch"]
+
+    base_model = base_model.to(device)
     model, _ = shard_model_fsdp2(
         model=base_model,
         world_size=world_size,
@@ -286,13 +222,11 @@ def train_func(config: dict) -> None:
             f"steps_per_epoch={len(dataloader)})"
         )
 
-    for epoch in range(num_epochs):
-        model.train()
-        if hasattr(dataloader, "sampler") and hasattr(
-            dataloader.sampler, "set_epoch"
-        ):
+    for epoch in range(start_epoch, num_epochs):
+        if world_size > 1:
             dataloader.sampler.set_epoch(epoch)
 
+        model.train()
         epoch_start = time.perf_counter()
         running_loss = torch.zeros(1, device=device, dtype=torch.float32)
         num_steps = 0
@@ -313,11 +247,11 @@ def train_func(config: dict) -> None:
             num_steps += 1
 
         all_reduce(running_loss, op=ReduceOp.AVG)
-        avg_loss = float(running_loss.cpu().item()) / max(num_steps, 1)
+        avg_loss = running_loss.item() / num_steps
         epoch_time = time.perf_counter() - epoch_start
         tokens_per_sec = (
             num_steps * global_batch_size * max_seq_len
-        ) / max(epoch_time, 1e-6)
+        ) / epoch_time
 
         metrics = {
             "epoch": epoch + 1,
@@ -335,16 +269,31 @@ def train_func(config: dict) -> None:
                 f"steps={num_steps} | global_batch_size={global_batch_size}"
             )
 
-        report_epoch_metrics(
-            model=model,
-            optimizer=optimizer,
-            metrics=metrics,
-            epoch=epoch,
-            num_epochs=num_epochs,
-            storage_path=config["storage_path"],
-            world_rank=world_rank,
+        sharded_sd = get_model_state_dict(
+            model,
+            options=StateDictOptions(ignore_frozen_params=True),
         )
-        barrier()
+        full_state_dict = {}
+        for k, v in sharded_sd.items():
+            full_param = (
+                v.full_tensor().cpu() if isinstance(v, DTensor) else v.cpu()
+            )
+            if world_rank == 0:
+                full_state_dict[k] = full_param
+
+        with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
+            checkpoint = None
+            if world_rank == 0:
+                torch.save(
+                    {
+                        "epoch": epoch + 1,
+                        "model_state_dict": full_state_dict,
+                        "loss": metrics["loss"],
+                    },
+                    os.path.join(temp_checkpoint_dir, "model.pt"),
+                )
+                checkpoint = Checkpoint.from_directory(temp_checkpoint_dir)
+            ray.train.report(metrics, checkpoint=checkpoint)
 
 
 def parse_args() -> argparse.Namespace:
@@ -402,8 +351,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--storage-path",
         type=str,
-        default=os.environ.get("STORAGE_PATH", "/tmp/ray_train_torchtpu"),
-        help="Local or Cloud Storage ('gs://...') path for checkpoints.",
+        default=os.environ.get("STORAGE_PATH"),
+        required="STORAGE_PATH" not in os.environ,
+        help="Cloud Storage ('gs://...') or shared file system path for checkpoints.",
     )
     return parser.parse_args()
 
@@ -412,8 +362,6 @@ def main() -> None:
     args = parse_args()
     ray.init()
     run_name = f"torchtpu_gemma4_fsdp2_sft_{int(time.time())}"
-    if "://" not in args.storage_path:
-        os.makedirs(os.path.join(args.storage_path, run_name), exist_ok=True)
 
     print(
         f"Starting Ray Train FSDP2 SFT job: model={args.model_id}, "
@@ -434,7 +382,6 @@ def main() -> None:
             "learning_rate": args.learning_rate,
             "weight_decay": args.weight_decay,
             "num_slices": args.num_slices,
-            "storage_path": args.storage_path,
         },
         torch_config=TorchConfig(backend="tpu_dist"),
         scaling_config=ScalingConfig(
@@ -443,11 +390,15 @@ def main() -> None:
             topology=args.topology,
             accelerator_type=args.accelerator_type,
             resources_per_worker={"TPU": 1},
-            placement_strategy="SPREAD",
         ),
         run_config=RunConfig(
             name=run_name,
             storage_path=args.storage_path,
+            checkpoint_config=CheckpointConfig(
+                num_to_keep=1,
+                checkpoint_score_attribute="loss",
+                checkpoint_score_order="min",
+            ),
             failure_config=FailureConfig(max_failures=args.max_failures),
         ),
     )

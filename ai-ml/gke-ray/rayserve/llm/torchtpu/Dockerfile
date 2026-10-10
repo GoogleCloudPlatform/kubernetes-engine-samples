@@ -17,7 +17,6 @@ FROM us-central1-docker.pkg.dev/cloud-ullm-inference-ci-cd/vllm-torchtpu/torchtp
 
 USER root
 
-# Install wget for KubeRay health probes and Ray Serve on top of the prebuilt vLLM-TorchTPU image
-RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* && \
-    pip install --no-cache-dir "ray[default,serve]==2.58.0"
+# Install Ray Serve on top of the prebuilt vllm-torchtpu image
+RUN pip install --no-cache-dir "ray[default,serve]==2.58.0"
 # [END gke_ai_ml_gke_ray_rayserve_llm_torchtpu_dockerfile]

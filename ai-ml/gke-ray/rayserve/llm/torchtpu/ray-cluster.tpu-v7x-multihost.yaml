@@ -16,19 +16,25 @@
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
-  name: tpu-multi-host
+  name: ray-serve-torchtpu
 spec:
+  rayVersion: "2.58.0"
   headGroupSpec:
     rayStartParams:
+      # Prevents Ray from scheduling LLMServer replicas onto the CPU-only head Pod.
       num-cpus: "0"
     template:
       spec:
         containers:
         - name: ray-head
-          image: ${CUSTOM_IMAGE_URI}
+          image: ${IMAGE_URI}
           env:
           - name: RAY_TPU_RESOURCE_PER_CHIP
             value: "2"
+          - name: ACCELERATOR_TYPE
+            value: "TPU-V7X"
+          - name: TPU_TOPOLOGY
+            value: "2x2x2"
           - name: HF_TOKEN
             valueFrom:
               secretKeyRef:
@@ -52,17 +58,19 @@ spec:
               cpu: "4"
               memory: "16Gi"
   workerGroupSpecs:
-  - groupName: tpu7x-8
+  - groupName: tpu7x-16
     replicas: 1
     minReplicas: 1
     maxReplicas: 1
     numOfHosts: 2
-    rayStartParams: {}
+    resources:
+      # Advertises 8 logical TPU cores (2 chiplets per physical chip) per host.
+      TPU: "8"
     template:
       spec:
         containers:
         - name: ray-worker
-          image: ${CUSTOM_IMAGE_URI}
+          image: ${IMAGE_URI}
           env:
           - name: RAY_TPU_RESOURCE_PER_CHIP
             value: "2"

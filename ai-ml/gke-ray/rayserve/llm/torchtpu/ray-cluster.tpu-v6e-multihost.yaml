@@ -16,16 +16,18 @@
 apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
-  name: tpu-multi-host
+  name: ray-serve-torchtpu
 spec:
+  rayVersion: "2.58.0"
   headGroupSpec:
     rayStartParams:
+      # Prevents Ray from scheduling LLMServer replicas onto the CPU-only head Pod.
       num-cpus: "0"
     template:
       spec:
         containers:
         - name: ray-head
-          image: ${CUSTOM_IMAGE_URI}
+          image: ${IMAGE_URI}
           env:
           - name: HF_TOKEN
             valueFrom:
@@ -55,12 +57,11 @@ spec:
     minReplicas: 1
     maxReplicas: 1
     numOfHosts: 4
-    rayStartParams: {}
     template:
       spec:
         containers:
         - name: ray-worker
-          image: ${CUSTOM_IMAGE_URI}
+          image: ${IMAGE_URI}
           env:
           - name: HF_TOKEN
             valueFrom:

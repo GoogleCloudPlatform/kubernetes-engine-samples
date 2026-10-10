@@ -15,13 +15,9 @@
 # [START gke_ai_ml_gke_ray_raytrain_torchtpu_dockerfile]
 FROM us-docker.pkg.dev/ml-oss-artifacts-transient/torch-tpu-docker-container/torch-tpu:nightly-latest
 
-USER root
-
-# Install wget for KubeRay health probes, Ray (Core + Train + Dashboard), and Hugging Face libraries
-RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/* && \
-    pip install --no-cache-dir \
-    "ray[default,train]>=2.58.0" \
-    transformers \
-    datasets \
-    accelerate
+# Install Ray (Core, Dashboard, and Train) and Hugging Face libraries for fine-tuning
+RUN pip install --no-cache-dir \
+    "ray[default,train]==2.58.0" \
+    "transformers>=5.5.0" \
+    datasets
 # [END gke_ai_ml_gke_ray_raytrain_torchtpu_dockerfile]
