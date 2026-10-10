@@ -53,7 +53,7 @@ spec:
               - all
           privileged: false
           readOnlyRootFilesystem: true
-        image: us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.27
+        image: us-docker.pkg.dev/google-samples/containers/gke/whereami:v1.2.28
         resources:
           requests:
             memory: "512Mi"
@@ -116,6 +116,11 @@ spec:
               configMapKeyRef:
                 name: whereami
                 key: ECHO_HEADERS
+          - name: ENABLE_ORCA_HEADERS
+            valueFrom:
+              configMapKeyRef:
+                name: whereami
+                key: ENABLE_ORCA_HEADERS
           - name: GRPC_ENABLED
             valueFrom:
               configMapKeyRef:

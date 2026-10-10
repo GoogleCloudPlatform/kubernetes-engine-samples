@@ -42,6 +42,8 @@ config:
   metadata: "frontend" # arbitrary string that gets returned in payload - can be used to track which services you're interacting with 
   echoHeaders:
     enabled: false # flag to enable the payload including all headers received in the `echo_headers` field if set to true
+  enableOrcaHeaders:
+    enabled: false # flag to enable ORCA custom metrics in response headers if set to "True" - only used in Flask / HTTP mode
   grpc:
     enabled: false # flag to switch whereami service to gRPC mode
   traceSamplingRatio: "0.00" # trace sampling ratio; i.e. the % likelyhood a trace will be sent to Cloud Trace; setting to zero disables tracing; expects float. "0.10" == 10%
