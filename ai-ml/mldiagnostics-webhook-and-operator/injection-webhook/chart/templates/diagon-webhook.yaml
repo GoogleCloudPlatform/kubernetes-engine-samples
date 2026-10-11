@@ -1,0 +1,35 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "chart.fullname" . }}-mutating-webhook-config
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "chart.fullname" . }}-certificate
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "chart.fullname" . }}-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /mutate
+  failurePolicy: Fail
+  name: '{{ include "chart.fullname" . }}-service.{{ .Release.Namespace }}.svc'
+  namespaceSelector:
+    matchExpressions:
+    - key: diagon-webhook-exempt
+      operator: NotIn
+      values:
+      - "true"
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+    scope: Namespaced
+  sideEffects: NoneOnDryRun

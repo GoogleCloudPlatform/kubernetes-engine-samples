@@ -1,0 +1,49 @@
+diagonConnectionOperator:
+  controller:
+    args:
+    - --leader-elect
+    - --health-probe-bind-address=:8081
+    - --sidecar-timeout=5m
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsUser: 65532
+    image:
+      repository: gcr.io/gke-release/connection-operator
+      tag: v1.0.0-gke.8
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  googleCloudMldiagnosticsProfiler:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsUser: 1001
+    image:
+      repository: gcr.io/gke-release/connection-operator-google-cloud-mldiagnostics-profiler
+      tag: v1.0.0-gke.8
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  replicas: 1
+  serviceAccount:
+    annotations: {}
+kubernetesClusterDomain: cluster.local
+metricsService:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  type: ClusterIP
