@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASEIMAGE=python:3.12-slim-bookworm
+ARG BASEIMAGE=python:3.14-slim-bookworm
 
 # MaxText RL/GRPO Container for Google Cloud TPU (v7x / v6e / v5p)
 # Supports both building from scratch via public GitHub or from an existing base image.
