@@ -18,7 +18,7 @@
 FROM python:3.13-slim
 
 # Copy local code to the container image.
-ENV APP_HOME /app
+ENV APP_HOME=/app
 WORKDIR $APP_HOME
 COPY . ./
 
