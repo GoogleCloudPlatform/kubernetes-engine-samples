@@ -32,7 +32,7 @@ spec:
         components:
           env:
             - name: TOTAL_CHAOS_DURATION
-              value: '600' # in seconds
+              value: '720' # in seconds
 
             #number of CPU cores to be consumed
             #verify the resources the app has been launched with
