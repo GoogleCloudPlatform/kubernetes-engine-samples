@@ -1,0 +1,998 @@
+{
+  "displayName": "Text Generation Inference",
+  "dashboardFilters": [
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "cluster",
+      "stringValue": "",
+      "templateVariable": "cluster",
+      "valueType": "STRING"
+    },
+    {
+      "filterType": "RESOURCE_LABEL",
+      "labelKey": "location",
+      "stringValue": "",
+      "templateVariable": "location",
+      "valueType": "STRING"
+    }
+  ],
+  "mosaicLayout": {
+    "columns": 48,
+    "tiles": [
+      {
+        "width": 12,
+        "height": 16,
+        "widget": {
+          "title": "Requests",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(increase(tgi_request_success{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[1m]))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(increase(tgi_request_failure{cluster=~\"${cluster.value}\",location=~\"${location.value}\"}[1m])) by (err)",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 12,
+        "width": 18,
+        "height": 26,
+        "widget": {
+          "title": "Latency quantiles",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_request_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_request_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_request_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 30,
+        "width": 18,
+        "height": 26,
+        "widget": {
+          "title": "E2E Latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_request_duration/histogram'\n| filter resource.location =~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_request_duration_aggregate:\n       aggregate(value.tgi_request_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 16,
+        "width": 6,
+        "height": 10,
+        "widget": {
+          "title": "Number of replicas",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "Replicas",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "count(tgi_request_count{cluster=~\"${cluster.value}\", location=~\"${location.value}\"})",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 6,
+        "yPos": 16,
+        "width": 6,
+        "height": 10,
+        "widget": {
+          "title": "Queue size",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(tgi_queue_size{cluster=~'${cluster.value}', location=~'${location.value}'})",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 26,
+        "width": 12,
+        "height": 8,
+        "widget": {
+          "title": "Batch Size",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "${labels.pod}",
+                "measures": [],
+                "plotType": "STACKED_AREA",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "avg(tgi_batch_current_size{cluster=~\"${cluster.value}\", location=~\"${location.value}\"})",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 12,
+        "yPos": 26,
+        "width": 18,
+        "height": 18,
+        "widget": {
+          "title": "Speculated Tokens",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_request_skipped_tokens_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_request_skipped_tokens_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_request_skipped_tokens_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 30,
+        "yPos": 26,
+        "width": 18,
+        "height": 18,
+        "widget": {
+          "title": "Generated Tokens",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_request_generated_tokens_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_request_generated_tokens_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_request_generated_tokens_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "yPos": 34,
+        "width": 12,
+        "height": 10,
+        "widget": {
+          "title": "Max tokens per batch",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "${labels.pod}",
+                "measures": [],
+                "plotType": "STACKED_AREA",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "avg(tgi_batch_current_max_tokens{cluster=~\"${cluster.value}\", location=~\"${location.value}\"})",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "yPos": 44,
+        "width": 12,
+        "height": 18,
+        "widget": {
+          "title": "Concatenates",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "Reason: ${labels.reason}",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "sum(increase(tgi_batch_concat{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[1m])) by (reason)",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 12,
+        "yPos": 44,
+        "width": 18,
+        "height": 18,
+        "widget": {
+          "title": "Queue quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_request_queue_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_request_queue_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_request_queue_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 30,
+        "yPos": 44,
+        "width": 18,
+        "height": 18,
+        "widget": {
+          "title": "Inference quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_request_inference_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_request_inference_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_request_inference_duration_bucket{cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "yPos": 62,
+        "width": 24,
+        "height": 22,
+        "widget": {
+          "title": "Prefill Quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_batch_inference_duration_bucket{method=\"prefill\", cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_batch_inference_duration_bucket{method=\"prefill\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_batch_inference_duration_bucket{method=\"prefill\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 62,
+        "width": 24,
+        "height": 22,
+        "widget": {
+          "title": "Prefill Latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_batch_inference_duration/histogram'\n| filter resource.location=~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_batch_inference_duration_aggregate:\n       aggregate(value.tgi_batch_inference_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 84,
+        "width": 24,
+        "height": 22,
+        "widget": {
+          "title": "Decode quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_batch_inference_duration_bucket{method=\"decode\", cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_batch_inference_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_batch_inference_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 84,
+        "width": 24,
+        "height": 22,
+        "widget": {
+          "title": "Decode Latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_batch_decode_duration/histogram'\n| filter resource.location=~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_batch_decode_duration_aggregate:\n       aggregate(value.tgi_batch_decode_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 106,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Forward quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_batch_forward_duration_bucket{method=\"decode\", cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_batch_forward_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_batch_forward_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 12,
+        "yPos": 106,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Forward Latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_batch_forward_duration/histogram'\n| filter resource.location=~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_batch_forward_duration_aggregate:\n       aggregate(value.tgi_batch_forward_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 106,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Token Decode quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_batch_decode_duration_bucket{method=\"decode\", cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_batch_decode_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_batch_decode_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 36,
+        "yPos": 106,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Token Decode Latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_request_mean_time_per_token_duration/histogram'\n| filter resource.location=~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_request_mean_time_per_token_duration_aggregate:\n       aggregate(value.tgi_request_mean_time_per_token_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 128,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Filter Batch quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_batch_filter_duration_bucket{method=\"decode\", cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_batch_filter_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_batch_filter_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 12,
+        "yPos": 128,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Filter Batch Latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_batch_filter_duration/histogram'\n| filter resource.location=~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_batch_filter_duration_aggregate:\n       aggregate(value.tgi_batch_filter_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 128,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Batch Concat quantiles",
+          "xyChart": {
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p50",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.5, sum by (le) (rate(tgi_batch_concat_duration_bucket{method=\"decode\", cluster=~\"${cluster.value}\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p90",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.9, sum by (le) (rate(tgi_batch_concat_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              },
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "legendTemplate": "p99",
+                "measures": [],
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "histogram_quantile(0.99, sum by (le) (rate(tgi_batch_concat_duration_bucket{method=\"decode\", location=~\"${location.value}\"}[10m])))",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": []
+          }
+        }
+      },
+      {
+        "xPos": 36,
+        "yPos": 128,
+        "width": 12,
+        "height": 22,
+        "widget": {
+          "title": "Batch Concat latency",
+          "xyChart": {
+            "chartOptions": {
+              "mode": "COLOR"
+            },
+            "dataSets": [
+              {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
+                "plotType": "HEATMAP",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesQueryLanguage": "fetch prometheus_target\n| metric 'prometheus.googleapis.com/tgi_batch_concat_duration/histogram'\n| filter resource.location=~'${location.value}'\n| align delta(5m)\n| every 5m\n| group_by [],\n    [value_tgi_batch_concat_duration_aggregate:\n       aggregate(value.tgi_batch_concat_duration)]",
+                  "unitOverride": ""
+                }
+              }
+            ],
+            "thresholds": [],
+            "yAxis": {
+              "label": "",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 150,
+        "width": 48,
+        "height": 10,
+        "widget": {
+          "title": "Conversion info",
+          "text": {
+            "content": "Converted from 20246_rev1.json on 2024-7-11 at 17:23:24\n\nFor conversion issues such as no data in charts or missing tiles, please see our [troubleshooting docs](https://github.com/GoogleCloudPlatform/monitoring-dashboard-samples/blob/master/scripts/dashboard-importer/README.md#conversion-issues)\n\n##### Generated Warnings\n\n- This dashboard contains collapsible groups that were not imported because the importer doesn't support their conversion. Tiles in collapsible groups will be unnested.",
+            "format": "MARKDOWN",
+            "style": {
+              "backgroundColor": "",
+              "fontSize": "FONT_SIZE_UNSPECIFIED",
+              "horizontalAlignment": "H_LEFT",
+              "padding": "PADDING_SIZE_UNSPECIFIED",
+              "pointerLocation": "POINTER_LOCATION_UNSPECIFIED",
+              "textColor": "",
+              "verticalAlignment": "V_TOP"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "labels": {
+    "goog-imported-via-script": "",
+    "goog-imported-grafana-revision": "17",
+    "cloud-monitoring-dashboard-importer": "",
+    "goog-imported-grafana-file-name-20246_rev1": "",
+    "goog-imported-grafana-dashboard": "",
+    "goog-imported-grafana-id": "20246"
+  }
+}
