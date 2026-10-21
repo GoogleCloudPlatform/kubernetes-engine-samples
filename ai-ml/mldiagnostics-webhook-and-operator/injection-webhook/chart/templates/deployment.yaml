@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    app: diagon-webhook
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webhookDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: diagon-webhook
+    {{- include "chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: diagon-webhook
+      {{- include "chart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: CERT_PATH
+          value: {{ quote .Values.webhookDeployment.diagonWebhookContainer.env.certPath
+            }}
+        - name: KEY_PATH
+          value: {{ quote .Values.webhookDeployment.diagonWebhookContainer.env.keyPath
+            }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: '{{ .Values.webhookDeployment.diagonWebhookContainer.image.repository }}:{{
+          .Values.webhookDeployment.diagonWebhookContainer.image.tag | default .Chart.AppVersion
+          }}'
+        name: diagon-webhook-container
+        ports:
+        - containerPort: 8443
+          name: webhook-port
+        readinessProbe:
+          tcpSocket:
+            port: webhook-port
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/webhook/certs
+          name: webhook-tls
+          readOnly: true
+      volumes:
+      - name: webhook-tls
+        secret:
+          secretName: diagon-webhook-certificate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "chart.fullname" . }}-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.webhookService.type }}
+  selector:
+    app: diagon-webhook
+    {{- include "chart.selectorLabels" . | nindent 4 }}
+  ports:
+  {{- .Values.webhookService.ports | toYaml | nindent 2 }}
