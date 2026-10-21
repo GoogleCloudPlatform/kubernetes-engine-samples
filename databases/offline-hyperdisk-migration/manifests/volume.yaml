@@ -1,0 +1,40 @@
+transformationRules:
+- description: Rename namespace name from default to clone
+  resourceFilter:
+    namespaces: []
+    jsonPath: ".metadata[?(@.name == 'default')]"
+    groupKinds:
+    - resourceGroup: ""
+      resourceKind: Namespace
+  fieldActions:
+  - op: REPLACE
+    path: "/metadata/name"
+    value: "clone"
+- description: Change all resources from namespace default to clone
+  resourceFilter:
+    namespaces: ["default"]
+  fieldActions:
+  - op: REPLACE
+    path: "/metadata/namespace"
+    value: "clone"
+- description: Change the StorageClass on PVCs from premium-rwo to balanced-storage
+  resourceFilter:
+    namespaces: ["clone"]
+    groupKinds:
+    - resourceGroup: ""
+      resourceKind: PersistentVolumeClaim
+  fieldActions:
+  - op: REPLACE
+    path: "/spec/storageClassName"
+    value: "balanced-storage"
+- description: Change node type from n2-standard-4 to n4-standard-4
+  resourceFilter:
+    namespaces: ["clone"]
+    jsonPath: ".metadata[?(@.name == 'existing-mysql')]"
+    groupKinds:
+    - resourceGroup: apps
+      resourceKind: Deployment
+  fieldActions:
+  - op: REPLACE
+    path: "/spec/template/spec/affinity/nodeAffinity/preferredDuringSchedulingIgnoredDuringExecution/0/preference/matchExpressions/0/values/0"
+    value: "n4-standard-4"
