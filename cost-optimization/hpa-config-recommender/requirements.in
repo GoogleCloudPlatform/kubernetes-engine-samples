@@ -1,5 +1,5 @@
 cachetools==5.5.0
-certifi==2024.8.30
+certifi==2026.10.19
 charset-normalizer==3.4.0
 fastparquet==2024.5.0
 google-api-core==2.22.0
