@@ -1,0 +1,138 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# [START gke_databases_milvus_01_basic_cluster_config]
+cluster:
+  enabled: true
+
+serviceAccount:
+  create: true
+  name: "storage-access"
+
+metrics:
+  enabled: true
+
+etcd:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "500m"
+      memory: 2Gi
+
+proxy:
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 4Gi
+
+mixCoordinator:
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 4Gi
+
+minio:
+  enabled: false
+
+externalS3:
+  enabled: true
+  host: storage.googleapis.com
+  port: 443
+  rootPath: milvus/storage
+  cloudProvider: gcp
+  useSSL: true
+  useIAM: true
+
+pulsarv3:
+  enabled: false
+
+queryNode:
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 4Gi
+
+indexNode:
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 4Gi
+
+dataNode:
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 4Gi
+
+extraConfigFiles:
+  user.yaml: |+
+    common:
+      security:
+        authorizationEnabled: true
+
+tolerations:
+  - key: "app.stateful/component"
+    operator: "Equal"
+    value: "milvus"
+    effect: NoSchedule
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: "app.stateful/component"
+          operator: In
+          values:
+          - "milvus"
+kafka:
+  enabled: true
+  replicaCount: 1
+  defaultReplicationFactor: 1
+  offsetsTopicReplicationFactor: 1
+  persistence:
+    enabled: true
+    storageClass: "standard-rwo"
+    accessMode: ReadWriteOnce
+    size: 50Gi
+  metrics:
+    kafka:
+      enabled: true
+  zookeeper:
+    enabled: true
+    replicaCount: 1
+# [END gke_databases_milvus_01_basic_cluster_config]
+
