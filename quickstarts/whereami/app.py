@@ -264,26 +264,41 @@ class OrcaMetricsTracker:
         self._sample()
 
     def _discover_cgroups(self):
-        cdir = None
+        v2_dir = None
+        v1_cpu_dir = None
+        v1_mem_dir = None
         try:
             with open('/proc/self/cgroup', 'r') as f:
                 for line in f:
                     parts = line.strip().split(':')
-                    if len(parts) == 3:
-                        p = os.path.join('/sys/fs/cgroup', parts[2].lstrip('/'))
+                    if len(parts) != 3:
+                        continue
+                    _, controllers, rel_path = parts
+                    rel_path = rel_path.lstrip('/')
+                    if controllers == '':
+                        p = os.path.join('/sys/fs/cgroup', rel_path)
                         if os.path.exists(p):
-                            cdir = p
-                            break
+                            v2_dir = p
+                    else:
+                        for ctrl in controllers.split(','):
+                            p = os.path.join('/sys/fs/cgroup', controllers, rel_path)
+                            if not os.path.exists(p):
+                                p = os.path.join('/sys/fs/cgroup', ctrl, rel_path)
+                            if os.path.exists(p):
+                                if ctrl in ('cpu', 'cpuacct'):
+                                    v1_cpu_dir = p
+                                elif ctrl == 'memory':
+                                    v1_mem_dir = p
         except Exception:
             pass
-        if not cdir or not os.path.exists(cdir):
-            cdir = '/sys/fs/cgroup'
 
         # Check cgroup v2
+        cdir = v2_dir or '/sys/fs/cgroup'
         v2_cpu_stat = os.path.join(cdir, 'cpu.stat')
         if os.path.exists(v2_cpu_stat):
             self._cgroup_mode = 'v2'
             self._cpu_usage_path = v2_cpu_stat
+            quota_found = False
             cpu_max = os.path.join(cdir, 'cpu.max')
             if os.path.exists(cpu_max):
                 try:
@@ -293,8 +308,22 @@ class OrcaMetricsTracker:
                             q, p = float(parts[0]), float(parts[1])
                             if q > 0 and p > 0:
                                 self._cpu_quota_cpus = q / p
+                                quota_found = True
                 except Exception:
                     pass
+
+            # Fallback to cpu.weight (Kubernetes CPU requests) if no hard limit is set
+            if not quota_found:
+                cpu_weight = os.path.join(cdir, 'cpu.weight')
+                if os.path.exists(cpu_weight):
+                    try:
+                        with open(cpu_weight, 'r') as f:
+                            w = float(f.read().strip())
+                            if w > 0 and w != 100:
+                                shares = 2.0 + ((w - 1.0) * 262142.0) / 9999.0
+                                self._cpu_quota_cpus = max(0.01, shares / 1024.0)
+                    except Exception:
+                        pass
 
             v2_mem_curr = os.path.join(cdir, 'memory.current')
             if os.path.exists(v2_mem_curr):
@@ -313,14 +342,14 @@ class OrcaMetricsTracker:
             return
 
         # Check cgroup v1
-        v1_cpuacct = os.path.join(cdir, 'cpuacct.usage')
-        if not os.path.exists(v1_cpuacct):
-            v1_cpuacct = '/sys/fs/cgroup/cpuacct/cpuacct.usage'
+        cpu_cdir = v1_cpu_dir or '/sys/fs/cgroup/cpuacct'
+        v1_cpuacct = os.path.join(cpu_cdir, 'cpuacct.usage')
         if os.path.exists(v1_cpuacct):
             self._cgroup_mode = 'v1'
             self._cpu_usage_path = v1_cpuacct
-            v1_quota = os.path.join(cdir, 'cpu.cfs_quota_us')
-            v1_period = os.path.join(cdir, 'cpu.cfs_period_us')
+            quota_found = False
+            v1_quota = os.path.join(cpu_cdir, 'cpu.cfs_quota_us')
+            v1_period = os.path.join(cpu_cdir, 'cpu.cfs_period_us')
             if os.path.exists(v1_quota) and os.path.exists(v1_period):
                 try:
                     with open(v1_quota, 'r') as fq, open(v1_period, 'r') as fp:
@@ -328,17 +357,27 @@ class OrcaMetricsTracker:
                         p = float(fp.read().strip())
                         if q > 0 and p > 0:
                             self._cpu_quota_cpus = q / p
+                            quota_found = True
                 except Exception:
                     pass
 
-            v1_mem_usage = os.path.join(cdir, 'memory.usage_in_bytes')
-            if not os.path.exists(v1_mem_usage):
-                v1_mem_usage = '/sys/fs/cgroup/memory/memory.usage_in_bytes'
+            # Fallback to cpu.shares (Kubernetes CPU requests) if no hard limit is set
+            if not quota_found:
+                v1_shares = os.path.join(cpu_cdir, 'cpu.shares')
+                if os.path.exists(v1_shares):
+                    try:
+                        with open(v1_shares, 'r') as f:
+                            shares = float(f.read().strip())
+                            if shares > 0 and shares != 1024:
+                                self._cpu_quota_cpus = max(0.01, shares / 1024.0)
+                    except Exception:
+                        pass
+
+            mem_cdir = v1_mem_dir or '/sys/fs/cgroup/memory'
+            v1_mem_usage = os.path.join(mem_cdir, 'memory.usage_in_bytes')
             if os.path.exists(v1_mem_usage):
                 self._mem_usage_path = v1_mem_usage
-                v1_mem_limit = os.path.join(cdir, 'memory.limit_in_bytes')
-                if not os.path.exists(v1_mem_limit):
-                    v1_mem_limit = '/sys/fs/cgroup/memory/memory.limit_in_bytes'
+                v1_mem_limit = os.path.join(mem_cdir, 'memory.limit_in_bytes')
                 if os.path.exists(v1_mem_limit):
                     try:
                         with open(v1_mem_limit, 'r') as f:
