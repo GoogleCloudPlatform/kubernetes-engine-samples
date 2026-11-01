@@ -20,6 +20,7 @@ import os
 import json
 import time
 import threading
+import resource
 from flask_cors import CORS
 import whereami_payload
 # gRPC stuff
@@ -388,8 +389,16 @@ class OrcaMetricsTracker:
                         pass
             return
 
-        # Fallback to host procfs
+        # Fallback to process rusage (works in gVisor / Cloud Run 1st gen where /proc/stat is zeroed)
         self._cgroup_mode = 'proc'
+        if os.getenv('ORCA_CPU_LIMIT'):
+            try:
+                self._cpu_quota_cpus = max(0.01, float(os.getenv('ORCA_CPU_LIMIT')))
+            except Exception:
+                pass
+        elif os.getenv('K_SERVICE'):
+            # Cloud Run 1st gen defaults to 1 vCPU; os.cpu_count() reports the underlying host's cores
+            self._cpu_quota_cpus = 1.0
 
     def _read_cpu_usage(self):
         if self._cgroup_mode == 'v2' and self._cpu_usage_path:
@@ -404,6 +413,13 @@ class OrcaMetricsTracker:
             try:
                 with open(self._cpu_usage_path, 'r') as f:
                     return float(f.read().strip()) / 1e9
+            except Exception:
+                pass
+        elif self._cgroup_mode == 'proc':
+            try:
+                r_self = resource.getrusage(resource.RUSAGE_SELF)
+                r_child = resource.getrusage(resource.RUSAGE_CHILDREN)
+                return (r_self.ru_utime + r_self.ru_stime) + (r_child.ru_utime + r_child.ru_stime)
             except Exception:
                 pass
         return None
@@ -436,10 +452,12 @@ class OrcaMetricsTracker:
         if usage_sec is not None:
             if self._last_cpu_usage is not None:
                 elapsed = now - self._last_cpu_timestamp
-                if elapsed > 0:
+                # If elapsed > 3.0s, the container was likely frozen/throttled (e.g. Cloud Run idle);
+                # reset baseline instead of diluting utilization across suspended wall-clock time.
+                if 0 < elapsed <= 3.0:
                     delta_usage = usage_sec - self._last_cpu_usage
                     if delta_usage >= 0 and self._cpu_quota_cpus > 0:
-                        self.cpu_utilization = round(max(0.0, delta_usage / (elapsed * self._cpu_quota_cpus)), 4)
+                        self.cpu_utilization = round(max(0.0, min(1.0, delta_usage / (elapsed * self._cpu_quota_cpus))), 4)
             self._last_cpu_usage = usage_sec
             self._last_cpu_timestamp = now
         else:
