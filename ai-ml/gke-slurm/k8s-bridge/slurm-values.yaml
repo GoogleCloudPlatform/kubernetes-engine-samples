@@ -1,0 +1,89 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START gke_ai_ml_gke_slurm_k8s_bridge_slurm_values]
+
+controller:
+  slurmctld:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: TAG
+    env:
+      - name: WORKLOAD_MIXING_PARTITIONS
+        value: "k8s-partition"
+  reconfigure:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: TAG
+  logfile:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmctld
+      tag: TAG
+  extraConf: |-
+    SchedulerParameters=ignore_constraint_validation
+    JobSubmitPlugins=job_submit/lua
+    CliFilterPlugins=cli_filter/lua
+    CliFilterParameters=workload_mixing_partitions=k8s-partition
+    NodeSet=k8s_nodes Feature=k8s_dynamic
+    PartitionName=k8s-partition Nodes=k8s_nodes
+  persistence:
+    enabled: false
+
+restapi:
+  replicas: 1
+  slurmrestd:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmrestd
+      tag: TAG
+
+accounting:
+  enabled: false
+  slurmdbd:
+    image:
+      repository: gcr.io/gke-release/slinky/slurmdbd
+      tag: TAG
+
+# Static Slurm NodeSets and the default `all` partition are disabled because
+# k8s-bridge provisions worker pods dynamically using `workloadmixing.yaml`.
+nodesets:
+  slinky:
+    enabled: false
+    slurmd:
+      image:
+        repository: gcr.io/gke-release/slinky/slurmd
+        tag: TAG
+
+partitions:
+  all:
+    enabled: false
+
+loginsets:
+  slinky:
+    enabled: true
+    replicas: 1
+    login:
+      image:
+        repository: gcr.io/gke-release/slinky/login
+        tag: TAG
+    initconf:
+      image:
+        repository: gcr.io/gke-release/slinky/sackd
+        tag: TAG
+    # Required to expose an external IP on port 22 for SSH access into the login node.
+    # Set `type: ClusterIP` (or `loginsets.slinky.enabled: false`) if external SSH access is not needed.
+    service:
+      spec:
+        type: LoadBalancer
+
+# [END gke_ai_ml_gke_slurm_k8s_bridge_slurm_values]
