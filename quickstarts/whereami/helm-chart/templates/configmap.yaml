@@ -25,6 +25,7 @@ data:
   BACKEND_SERVICE: {{ .Values.config.backend.service }}
   METADATA: {{ .Values.config.metadata }}
   ECHO_HEADERS: {{ if .Values.config.echoHeaders.enabled }}"True"{{ else }}"False"{{ end }}
+  ENABLE_ORCA_HEADERS: {{ if .Values.config.enableOrcaHeaders.enabled }}"True"{{ else }}"False"{{ end }}
   GRPC_ENABLED: {{ if .Values.config.grpc.enabled }}"True"{{ else }}"False"{{ end }}
   TRACE_SAMPLING_RATIO: {{ .Values.config.traceSamplingRatio | quote }}
   HOST: {{ .Values.config.host | quote }}
