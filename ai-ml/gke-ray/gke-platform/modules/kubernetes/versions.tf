@@ -24,7 +24,7 @@ terraform {
     }
     kubectl = {
       source  = "alekc/kubectl"
-      version = "2.2.0"
+      version = "2.4.1"
     }
   }
   provider_meta "google" {
