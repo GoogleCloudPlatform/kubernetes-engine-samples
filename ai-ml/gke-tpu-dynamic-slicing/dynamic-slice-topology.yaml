@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: Topology
 metadata:
   name: superslice-topology
@@ -23,11 +23,16 @@ spec:
   - nodeLabel: cloud.google.com/gce-topology-block
   # Label to identify individual TPU sub-blocks (4x4x4 topology).
   - nodeLabel: cloud.google.com/gke-tpu-partition-4x4x4-id
+  # Labels to identify dynamic sub-slice partitions (GKE 1.36.0-gke.3712000+).
+  - nodeLabel: cloud.google.com/gke-tpu-partition-2x4x4-id
+  - nodeLabel: cloud.google.com/gke-tpu-partition-2x2x4-id
+  - nodeLabel: cloud.google.com/gke-tpu-partition-2x2x2-id
+  - nodeLabel: cloud.google.com/gke-tpu-partition-2x2x1-id
   # Standard Kubernetes label for individual nodes.
   # Required to assign Pods to specific VMs.
   - nodeLabel: kubernetes.io/hostname
 ---
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: ResourceFlavor
 metadata:
   name: superslice-rf
@@ -36,21 +41,30 @@ spec:
     cloud.google.com/gke-tpu-accelerator: tpu7x
   topologyName: superslice-topology
 ---
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+spec: {}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: AdmissionCheck
 metadata:
   name: superslice-ac
 spec:
   controllerName: accelerator.gke.io/slice
 ---
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: ClusterQueue
 metadata:
   name: cq
 spec:
   namespaceSelector: {}
-  admissionChecks:
-  - superslice-ac
+  admissionChecksStrategy:
+    admissionChecks:
+    - name: superslice-ac
+  preemption:
+    withinClusterQueue: LowerPriority
   resourceGroups:
   - coveredResources:
     - google.com/tpu
@@ -59,8 +73,18 @@ spec:
       resources:
       - name: google.com/tpu
         nominalQuota: "999999"  # modeling unlimited quota
+  - coveredResources:
+    - cpu
+    - memory
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: cpu
+        nominalQuota: "999999"
+      - name: memory
+        nominalQuota: "999999Gi"
 ---
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: LocalQueue
 metadata:
   name: lq
