@@ -18,7 +18,6 @@ kind: RayCluster
 metadata:
   name: raycluster-tpu7x-dynamic-slice
   labels:
-    app.kubernetes.io/name: kuberay
     # Target the Kueue LocalQueue
     kueue.x-k8s.io/queue-name: lq
 spec:
@@ -51,8 +50,6 @@ spec:
         annotations:
           # Request the specific GKE TPU subslice topology
           cloud.google.com/gke-tpu-slice-topology: 2x2x2
-        labels:
-          app.kubernetes.io/name: kuberay
       spec:
         nodeSelector:
           cloud.google.com/gke-tpu-accelerator: tpu7x
