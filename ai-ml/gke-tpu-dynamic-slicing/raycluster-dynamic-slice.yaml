@@ -18,6 +18,7 @@ kind: RayCluster
 metadata:
   name: raycluster-tpu7x-dynamic-slice
   labels:
+    app.kubernetes.io/name: kuberay
     # Target the Kueue LocalQueue
     kueue.x-k8s.io/queue-name: lq
 spec:
@@ -62,7 +63,7 @@ spec:
           effect: "NoSchedule"
         containers:
         - name: ray-worker
-          image: rayproject/ray:2.60.0-py312-tpu
+          image: rayproject/ray:2.60.0.b7f425-py312-tpu
           resources:
             limits:
               google.com/tpu: 4
