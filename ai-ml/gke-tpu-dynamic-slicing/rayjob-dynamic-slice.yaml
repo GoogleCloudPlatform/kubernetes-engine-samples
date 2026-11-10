@@ -27,7 +27,6 @@ spec:
     python -u -c '
     import os
     import ray
-    import jax
 
     ray.init()
     print("=== Ray Cluster Initialized ===")
@@ -35,6 +34,7 @@ spec:
 
     @ray.remote(resources={"TPU": 4})
     def check_worker():
+        import jax
         jax.distributed.initialize()
         return {
             "hostname": os.getenv("HOSTNAME"),
@@ -79,8 +79,6 @@ spec:
           annotations:
             # Request the specific GKE TPU subslice topology
             cloud.google.com/gke-tpu-slice-topology: 2x2x2
-          labels:
-            app.kubernetes.io/name: kuberay
         spec:
           nodeSelector:
             cloud.google.com/gke-tpu-accelerator: tpu7x
@@ -91,7 +89,7 @@ spec:
             effect: "NoSchedule"
           containers:
           - name: ray-worker
-            image: rayproject/ray:2.60.0-py312-tpu
+            image: rayproject/ray:2.60.0.b7f425-py312-tpu
             resources:
               limits:
                 google.com/tpu: 4

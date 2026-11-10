@@ -50,8 +50,6 @@ spec:
         annotations:
           # Request the specific GKE TPU subslice topology
           cloud.google.com/gke-tpu-slice-topology: 2x2x2
-        labels:
-          app.kubernetes.io/name: kuberay
       spec:
         nodeSelector:
           cloud.google.com/gke-tpu-accelerator: tpu7x
@@ -62,7 +60,7 @@ spec:
           effect: "NoSchedule"
         containers:
         - name: ray-worker
-          image: rayproject/ray:2.60.0-py312-tpu
+          image: rayproject/ray:2.60.0.b7f425-py312-tpu
           resources:
             limits:
               google.com/tpu: 4
