@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START gke_ai_ml_gke_tpu_dynamic_slicing_kuberay_rayjob_dynamic_slice]
 apiVersion: ray.io/v1
 kind: RayJob
 metadata:
@@ -34,10 +35,12 @@ spec:
 
     @ray.remote(resources={"TPU": 4})
     def check_worker():
+        jax.distributed.initialize()
         return {
             "hostname": os.getenv("HOSTNAME"),
             "backend": jax.default_backend(),
             "device_count": jax.device_count(),
+            "local_device_count": jax.local_device_count(),
             "devices": [str(d) for d in jax.devices()],
         }
 
@@ -49,14 +52,14 @@ spec:
         print(r)
     '
   rayClusterSpec:
-    rayVersion: '2.58.0'
+    rayVersion: '2.60.0'
     headGroupSpec:
       rayStartParams: {}
       template:
         spec:
           containers:
           - name: ray-head
-            image: rayproject/ray:nightly-py312
+            image: rayproject/ray:2.60.0-py312
             resources:
               limits:
                 cpu: "2"
@@ -76,8 +79,6 @@ spec:
           annotations:
             # Request the specific GKE TPU subslice topology
             cloud.google.com/gke-tpu-slice-topology: 2x2x2
-            # REQUIRED FOR SUB-SLICING: Tell Kueue TAS to bin-pack at the 2x2x2 partition level
-            kueue.x-k8s.io/podset-required-topology: cloud.google.com/gke-tpu-partition-2x2x2-id
           labels:
             app.kubernetes.io/name: kuberay
         spec:
@@ -90,9 +91,10 @@ spec:
             effect: "NoSchedule"
           containers:
           - name: ray-worker
-            image: rayproject/ray:nightly-py312-tpu
+            image: rayproject/ray:2.60.0-py312-tpu
             resources:
               limits:
                 google.com/tpu: 4
               requests:
                 google.com/tpu: 4
+# [END gke_ai_ml_gke_tpu_dynamic_slicing_kuberay_rayjob_dynamic_slice]
