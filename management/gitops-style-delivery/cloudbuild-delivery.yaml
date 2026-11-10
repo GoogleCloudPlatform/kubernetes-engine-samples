@@ -13,6 +13,9 @@
 # limitations under the License.
 
 # [START gke_management_gitops_delivery_cloudbuild_delivery]
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
 steps:
 # This step deploys the new version of our container image
 # in the hello-cloudbuild Kubernetes Engine cluster.
@@ -26,6 +29,34 @@ steps:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1'
   - 'CLOUDSDK_CONTAINER_CLUSTER=hello-cloudbuild'
 
+# Set up write access to the hello-cloudbuild-env repository
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Copy private key
+  secretEnv: ['SSH_KEY']
+  entrypoint: /bin/sh
+  args:
+  - -c
+  - |
+    echo "$$SSH_KEY" > /root/.ssh/id_ed25519 && \
+    chmod 400 /root/.ssh/id_ed25519 && \
+    cp known_hosts.github /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+# Clone the hello-cloudbuild-env repository by using SSH
+- name: 'gcr.io/cloud-builders/git'
+  id: Clone env repository
+  entrypoint: /bin/sh
+  args:
+  - -c
+  - |
+    git clone git@github.com:$REPO_FULL_NAME && \
+    cd hello-cloudbuild-env
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
 # This step copies the applied manifest to the production branch
 # The COMMIT_SHA variable is automatically
 # replaced by Cloud Build.
@@ -36,14 +67,23 @@ steps:
   - '-c'
   - |
     set -x && \
+    git remote set-url origin git@github.com:$REPO_FULL_NAME && \
     # Configure Git to create commits with Cloud Build's service account
-    git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)') && \
+    git config user.email $SERVICE_ACCOUNT_EMAIL && \
     # Switch to the production branch and copy the kubernetes.yaml file from the candidate branch
     git fetch origin production && git checkout production && \
     git checkout $COMMIT_SHA kubernetes.yaml && \
     # Commit the kubernetes.yaml file with a descriptive commit message
     git commit -m "Manifest from commit $COMMIT_SHA
     $(git log --format=%B -n 1 $COMMIT_SHA)" && \
-    # Push the changes back to Cloud Source Repository
+    # Push the changes back to the remote repository
     git push origin production
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/gke-github-keys/versions/latest
+    env: 'SSH_KEY'
 # [END gke_management_gitops_delivery_cloudbuild_delivery]
