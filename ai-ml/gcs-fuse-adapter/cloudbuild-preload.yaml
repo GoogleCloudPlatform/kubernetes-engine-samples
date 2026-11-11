@@ -1,0 +1,72 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+# Build step where the bucket for files is created
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: "/bin/bash"
+    args:
+      - "-c"
+      - |
+        gcloud storage buckets create gs://${_BUCKET_NAME} --location=${_REGION} --uniform-bucket-level-access
+  
+# Build step where the kubernetes service account is created
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud container clusters get-credentials ${_CLUSTER_NAME} --location=${_REGION}
+        kubectl create serviceaccount ${_KSA_NAME}
+
+# Build step where the permissions to kubernetes service account are added
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args: 
+      - '-c'
+      - |
+        gcloud storage buckets add-iam-policy-binding gs://${_BUCKET_NAME} \
+          --member "principal://iam.googleapis.com/projects/${_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${_PROJECT_ID}.svc.id.goog/subject/ns/default/sa/${_KSA_NAME}" \
+          --role "${_ROLE_NAME}"
+  
+# Build step where the model weights and configuration files are cloned
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update
+        apt-get install -y git-lfs
+        git lfs install
+        git lfs clone https://$$HF_USERNAME:$$HF_TOKEN@huggingface.co/google/${_MODEL_PATH} ./${_MODEL_PATH}
+    secretEnv: ['HF_USERNAME', 'HF_TOKEN']
+
+# Build step where the files are uploaded to the bucket
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud storage cp -r ./${_MODEL_PATH} gs://${_BUCKET_NAME}/${_MODEL_PATH}
+
+options:
+  machineType: 'E2_MEDIUM'
+  diskSizeGb: 100
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/$_PROJECT_ID/secrets/hf-username/versions/latest
+    env: 'HF_USERNAME'
+  - versionName: projects/$_PROJECT_ID/secrets/hf-token/versions/latest
+    env: 'HF_TOKEN'
