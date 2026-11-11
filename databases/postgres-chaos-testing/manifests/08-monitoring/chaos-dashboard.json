@@ -4,62 +4,30 @@
     {
       "filterType": "RESOURCE_LABEL",
       "labelKey": "cluster",
-      "templateVariable": "Cluster"
+      "templateVariable": "Cluster",
+      "valueType": "STRING"
     },
     {
       "filterType": "RESOURCE_LABEL",
       "labelKey": "location",
-      "templateVariable": "Location"
+      "templateVariable": "Location",
+      "valueType": "STRING"
     },
     {
       "filterType": "RESOURCE_LABEL",
       "labelKey": "namespace",
-      "templateVariable": "Namespace"
+      "templateVariable": "Namespace",
+      "valueType": "STRING"
     }
   ],
-  "category": "CUSTOM",
   "mosaicLayout": {
     "columns": 48,
     "tiles": [
       {
-        "xPos": 15,
-        "yPos": 0,
-        "width": 16,
-        "height": 17,
+        "width": 15,
+        "height": 16,
         "widget": {
-          "title": "Failed experiments",
-          "xyChart": {
-            "chartOptions": {
-              "mode": "COLOR"
-            },
-            "dataSets": [
-              {
-                "breakdowns": [],
-                "dimensions": [],
-                "measures": [],
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "prometheusQuery": "litmuschaos_failed_experiments{${Cluster},${Location},${Namespace}}",
-                  "unitOverride": ""
-                }
-              }
-            ],
-            "thresholds": [],
-            "yAxis": {
-              "label": "",
-              "scale": "LINEAR"
-            }
-          }
-        }
-      },
-      {
-        "xPos": 31,
-        "yPos": 0,
-        "width": 16,
-        "height": 17,
-        "widget": {
-          "title": "Passed experiments",
+          "title": "Finished experiments",
           "xyChart": {
             "chartOptions": {
               "mode": "COLOR"
@@ -86,9 +54,8 @@
         }
       },
       {
-        "xPos": 0,
-        "yPos": 17,
-        "width": 22,
+        "xPos": 15,
+        "width": 16,
         "height": 16,
         "widget": {
           "title": "Success percentage",
@@ -118,9 +85,8 @@
         }
       },
       {
-        "xPos": 22,
-        "yPos": 17,
-        "width": 25,
+        "xPos": 31,
+        "width": 16,
         "height": 16,
         "widget": {
           "title": "Experiments total duration",
@@ -150,8 +116,7 @@
         }
       },
       {
-        "xPos": 0,
-        "yPos": 33,
+        "yPos": 16,
         "width": 22,
         "height": 14,
         "widget": {
@@ -201,7 +166,7 @@
       },
       {
         "xPos": 22,
-        "yPos": 33,
+        "yPos": 16,
         "width": 25,
         "height": 14,
         "widget": {
@@ -233,40 +198,7 @@
         }
       },
       {
-        "xPos": 0,
-        "yPos": 0,
-        "width": 15,
-        "height": 17,
-        "widget": {
-          "title": "Number of experiments",
-          "xyChart": {
-            "chartOptions": {
-              "mode": "COLOR"
-            },
-            "dataSets": [
-              {
-                "breakdowns": [],
-                "dimensions": [],
-                "measures": [],
-                "plotType": "LINE",
-                "targetAxis": "Y1",
-                "timeSeriesQuery": {
-                  "prometheusQuery": "litmuschaos_cluster_scoped_experiments_run_count{${Cluster},${Location},${Namespace}}",
-                  "unitOverride": ""
-                }
-              }
-            ],
-            "thresholds": [],
-            "yAxis": {
-              "label": "",
-              "scale": "LINEAR"
-            }
-          }
-        }
-      },
-      {
-        "xPos": 0,
-        "yPos": 47,
+        "yPos": 30,
         "width": 22,
         "height": 14,
         "widget": {
@@ -299,7 +231,7 @@
       },
       {
         "xPos": 22,
-        "yPos": 47,
+        "yPos": 30,
         "width": 25,
         "height": 14,
         "widget": {
@@ -332,16 +264,18 @@
       },
       {
         "xPos": 22,
-        "yPos": 61,
+        "yPos": 44,
         "width": 8,
         "height": 8,
         "widget": {
           "title": "Postgres availability [15m] %",
           "scorecard": {
+            "dimensions": [],
             "gaugeView": {
               "lowerBound": 0,
               "upperBound": 100
             },
+            "measures": [],
             "thresholds": [
               {
                 "color": "YELLOW",
@@ -365,16 +299,18 @@
       },
       {
         "xPos": 30,
-        "yPos": 61,
+        "yPos": 44,
         "width": 8,
         "height": 8,
         "widget": {
           "title": "Postgres availability [30m] %",
           "scorecard": {
+            "dimensions": [],
             "gaugeView": {
               "lowerBound": 0,
               "upperBound": 100
             },
+            "measures": [],
             "thresholds": [
               {
                 "color": "YELLOW",
@@ -398,16 +334,18 @@
       },
       {
         "xPos": 38,
-        "yPos": 61,
+        "yPos": 44,
         "width": 9,
         "height": 8,
         "widget": {
           "title": "Postgres availability total %",
           "scorecard": {
+            "dimensions": [],
             "gaugeView": {
               "lowerBound": 0,
               "upperBound": 100
             },
+            "measures": [],
             "thresholds": [
               {
                 "color": "YELLOW",
@@ -430,8 +368,7 @@
         }
       },
       {
-        "xPos": 0,
-        "yPos": 61,
+        "yPos": 44,
         "width": 22,
         "height": 8,
         "widget": {
@@ -442,6 +379,9 @@
             },
             "dataSets": [
               {
+                "breakdowns": [],
+                "dimensions": [],
+                "measures": [],
                 "plotType": "LINE",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
