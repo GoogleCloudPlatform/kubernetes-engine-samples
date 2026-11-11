@@ -1,6 +1,6 @@
 accelerate==v1.0.1
 bitsandbytes==0.44.1
-datasets==3.1.0
+datasets==5.0.1
 einops==0.8.0
 gcsfs==2024.9.0
 mlflow==3.11.0rc1
