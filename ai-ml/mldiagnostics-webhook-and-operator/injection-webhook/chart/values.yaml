@@ -1,0 +1,16 @@
+kubernetesClusterDomain: cluster.local
+webhookDeployment:
+  diagonWebhookContainer:
+    env:
+      certPath: /etc/webhook/certs/tls.crt
+      keyPath: /etc/webhook/certs/tls.key
+    image:
+      repository: gcr.io/gke-release/diagon-webhook
+      tag: v1.0.0-gke.7
+  replicas: 1
+webhookService:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: webhook-port
+  type: ClusterIP

@@ -1,0 +1,147 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: mldiagnosticsconnections.diagon.gke.io
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  group: diagon.gke.io
+  names:
+    kind: MLDiagnosticsConnection
+    listKind: MLDiagnosticsConnectionList
+    plural: mldiagnosticsconnections
+    shortNames:
+    - mldc
+    singular: mldiagnosticsconnection
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: Status
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MLDiagnosticsConnection is the Schema for the mldiagnosticsconnections
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MLDiagnosticsConnectionSpec defines the desired state of MLDiagnosticsConnection
+            properties:
+              triggerCapture:
+                description: TriggerCapture contains the details for triggering a diagnostic
+                  capture.
+                properties:
+                  capturePort:
+                    description: CapturePort is the port on the target pod to connect
+                      to.
+                    format: int32
+                    type: integer
+                  durationSeconds:
+                    description: DurationSeconds is the duration of the capture in seconds.
+                    format: int32
+                    minimum: 1
+                    type: integer
+                  podName:
+                    description: PodName is a comma-separated string of target pod names
+                      for diagnostics.
+                    type: string
+                  podNamespace:
+                    description: PodNamespace is the namespace of the target pod.
+                    type: string
+                  profiler:
+                    description: Profiler specifies the type of profiler to use.
+                    enum:
+                    - google_cloud_mldiagnostics
+                    type: string
+                  storageLocation:
+                    description: StorageLocation is the location to store the capture
+                      data. This can be a GCS location or a local path on the pod's
+                      local directory.
+                    type: string
+                required:
+                - capturePort
+                - durationSeconds
+                - podName
+                - podNamespace
+                - profiler
+                - storageLocation
+                type: object
+            required:
+            - triggerCapture
+            type: object
+          status:
+            description: MLDiagnosticsConnectionStatus defines the observed state of
+              MLDiagnosticsConnection
+            properties:
+              captureResult:
+                description: CaptureResult contains the results of the capture operation.
+                properties:
+                  errorMessage:
+                    description: A human-readable message about the job's status.
+                    type: string
+                  outputLocation:
+                    description: The final location of the stored capture output.
+                    type: string
+                  status:
+                    description: Status of the capture (e.g., Succeeded, Failed).
+                    enum:
+                    - Succeeded
+                    - Failed
+                    - Unknown
+                    type: string
+                type: object
+              completionTime:
+                description: CompletionTime is the time the job completed.
+                format: date-time
+                type: string
+              message:
+                description: A human-readable message about the job's status.
+                type: string
+              phase:
+                description: The current phase of the job (e.g., Pending, Running, Succeeded,
+                  Failed).
+                enum:
+                - Pending
+                - Running
+                - Succeeded
+                - Failed
+                type: string
+              startTime:
+                description: StartTime is the time the job started.
+                format: date-time
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
