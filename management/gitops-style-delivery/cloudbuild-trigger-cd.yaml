@@ -13,6 +13,9 @@
 # limitations under the License.
 
 # [START gke_management_gitops_delivery_cloudbuild]
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
 steps:
 # This step runs the unit tests on the app
 - name: 'python:3.7-slim'
@@ -42,17 +45,35 @@ steps:
 # [END gke_management_gitops_delivery_cloudbuild]
 
 # [START gke_management_gitops_delivery_cloudbuild_trigger_cd]
+# Set up write access to the hello-cloudbuild-env repository
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Copy private key
+  secretEnv: ['SSH_KEY']
+  entrypoint: /bin/sh
+  args:
+  - -c
+  - |
+    echo "$$SSH_KEY" > /root/.ssh/id_ed25519 && \
+    chmod 400 /root/.ssh/id_ed25519 && \
+    cp known_hosts.github /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
 # This step clones the hello-cloudbuild-env repository
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Clone env repository
   entrypoint: /bin/sh
   args:
-  - '-c'
+  - -c
   - |
-    gcloud source repos clone hello-cloudbuild-env && \
+    git clone git@github.com:REPOSITORY_OWNER/REPOSITORY_NAME.git && \
     cd hello-cloudbuild-env && \
     git checkout candidate && \
     git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)')
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
 
 # This step generates the new manifest
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -69,7 +90,7 @@ steps:
   id: Push manifest
   entrypoint: /bin/sh
   args:
-  - '-c'
+  - -c
   - |
     set -x && \
     cd hello-cloudbuild-env && \
@@ -78,5 +99,12 @@ steps:
     Built from commit ${COMMIT_SHA} of repository hello-cloudbuild-app
     Author: $(git log --format='%an <%ae>' -n 1 HEAD)" && \
     git push origin candidate
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
 
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/gke-github-keys/versions/latest
+    env: 'SSH_KEY'
 # [END gke_management_gitops_delivery_cloudbuild_trigger_cd]

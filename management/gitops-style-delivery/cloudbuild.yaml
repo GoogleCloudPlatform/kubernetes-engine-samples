@@ -13,6 +13,9 @@
 # limitations under the License.
 
 # [START gke_management_gitops_delivery_cloudbuild]
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
 steps:
 # This step runs the unit tests on the app
 - name: 'python:3.13-slim'
