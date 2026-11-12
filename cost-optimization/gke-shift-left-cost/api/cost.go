@@ -162,12 +162,16 @@ func (c *CostRange) Subtract(costRangePrev CostRange) DiffCostRange {
 	diff.MinLimited = c.MinLimited - costRangePrev.MinLimited
 	diff.MaxLimited = c.MaxLimited - costRangePrev.MaxLimited
 
+	// the percentage is relative to the current cost, so it is undefined when
+	// the current cost has nothing on that line (e.g. the new manifests no
+	// longer request any cpu/memory). Keep it at zero, otherwise the result is
+	// Inf/NaN and the json diff output cannot be marshalled anymore.
 	diffP := CostRange{Kind: c.Kind}
-	diffP.MinRequested = diff.MinRequested * 100 / c.MinRequested
-	diffP.MaxRequested = diff.MaxRequested * 100 / c.MaxRequested
-	diffP.HPABuffer = diff.HPABuffer * 100 / c.HPABuffer
-	diffP.MinLimited = diff.MinLimited * 100 / c.MinLimited
-	diffP.MaxLimited = diff.MaxLimited * 100 / c.MaxLimited
+	diffP.MinRequested = percentageChange(diff.MinRequested, c.MinRequested)
+	diffP.MaxRequested = percentageChange(diff.MaxRequested, c.MaxRequested)
+	diffP.HPABuffer = percentageChange(diff.HPABuffer, c.HPABuffer)
+	diffP.MinLimited = percentageChange(diff.MinLimited, c.MinLimited)
+	diffP.MaxLimited = percentageChange(diff.MaxLimited, c.MaxLimited)
 
 	return DiffCostRange{
 		Kind:           c.Kind,
@@ -176,6 +180,13 @@ func (c *CostRange) Subtract(costRangePrev CostRange) DiffCostRange {
 		DiffValue:      diff,
 		DiffPercentage: diffP,
 	}
+}
+
+func percentageChange(diff, base float64) float64 {
+	if base == 0 {
+		return 0
+	}
+	return diff * 100 / base
 }
 
 func (c *CostRange) max() float64 {
@@ -288,35 +299,38 @@ func (d *DiffCostRange) ToMarkdown() string {
 func (d *DiffCostRange) status() (summary string, costIncrease bool) {
 	var costInc, costDec []string
 
-	if d.DiffPercentage.MinRequested > 0 {
+	// compare the absolute difference, not the percentage: the percentage is
+	// undefined (and kept at zero) when the current cost has no value on that
+	// line, but the line did change and has to be reported.
+	if d.DiffValue.MinRequested > 0 {
 		costInc = append(costInc, headers[0])
 	}
-	if d.DiffPercentage.HPABuffer > 0 {
+	if d.DiffValue.HPABuffer > 0 {
 		costInc = append(costInc, headers[1])
 	}
-	if d.DiffPercentage.MaxRequested > 0 {
+	if d.DiffValue.MaxRequested > 0 {
 		costInc = append(costInc, headers[2])
 	}
-	if d.DiffPercentage.MinLimited > 0 {
+	if d.DiffValue.MinLimited > 0 {
 		costInc = append(costInc, headers[3])
 	}
-	if d.DiffPercentage.MaxLimited > 0 {
+	if d.DiffValue.MaxLimited > 0 {
 		costInc = append(costInc, headers[4])
 	}
 
-	if d.DiffPercentage.MinRequested < 0 {
+	if d.DiffValue.MinRequested < 0 {
 		costDec = append(costDec, headers[0])
 	}
-	if d.DiffPercentage.HPABuffer < 0 {
+	if d.DiffValue.HPABuffer < 0 {
 		costDec = append(costDec, headers[1])
 	}
-	if d.DiffPercentage.MaxRequested < 0 {
+	if d.DiffValue.MaxRequested < 0 {
 		costDec = append(costDec, headers[2])
 	}
-	if d.DiffPercentage.MinLimited < 0 {
+	if d.DiffValue.MinLimited < 0 {
 		costDec = append(costDec, headers[3])
 	}
-	if d.DiffPercentage.MaxLimited < 0 {
+	if d.DiffValue.MaxLimited < 0 {
 		costDec = append(costDec, headers[4])
 	}
 
