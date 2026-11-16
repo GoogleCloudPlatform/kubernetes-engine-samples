@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # [START gke_ai_ml_gke_ray_rayserve_llm_torchtpu_dockerfile]
-FROM vllm/vllm-torchtpu:v0.29.0
+FROM vllm/vllm-torchtpu:v0.32.0
 
 ENV HF_HOME=/dev/shm/huggingface
 ENV RAY_SERVE_DEFAULT_HTTP_HOST=0.0.0.0
