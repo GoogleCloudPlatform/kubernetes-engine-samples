@@ -403,7 +403,7 @@ spec:
         - --add-preferred-node-affinity=true
         command:
         - /manager
-        image: tpuongke/kueue-slice-controller:v0.10
+        image: tpuongke/kueue-slice-controller:v0.11
         livenessProbe:
           httpGet:
             path: /healthz
