@@ -58,7 +58,7 @@ RUN cd /opt/spack-env && \
     spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
 
 # Final image
-FROM rockylinux:8.9
+FROM rockylinux:8.10
 
 # Install required rpm library for correct version (for RDMA)
 RUN dnf update -y && dnf install https://depot.ciq.com/public/files/gce-accelerator/irdma-kernel-modules-el8-x86_64/irdma-repos.rpm -y
