@@ -45,8 +45,8 @@ metadata:
     networking.gke.io/managed-certificates: elastic-stack
     networking.gke.io/v1beta1.FrontendConfig: elastic-stack
     kubernetes.io/ingress.global-static-ip-name: elastic-stack
-    kubernetes.io/ingress.class: gce
 spec:
+  ingressClassName: gce
   defaultBackend:
     service:
       name: kibana-kb-http
