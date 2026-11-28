@@ -21,7 +21,7 @@ protobuf==5.29.6
 pyasn1==0.6.3
 pyasn1_modules==0.4.1
 python-dateutil==2.9.0.post0
-pyarrow==19.0.0
+pyarrow==23.0.1
 pytz==2024.2
 requests==2.33.0
 rsa==4.9
